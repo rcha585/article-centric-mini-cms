@@ -1,8 +1,8 @@
-import bcrypt from "bcrypt";
 import express from "express";
 import { getDatabase } from "../data/database.js";
 import yup from "yup";
-import { createUserSchema, encryptPassword } from "../data/util.js"
+import { createUserSchema, encryptPassword } from "../data/util.js";
+import { requiresAuthentication } from "../middleware/authentication.js";
 
 const router = express.Router();
 
@@ -23,4 +23,19 @@ router.post("/", async (req, res) => {
       return res.sendStatus(500);
     }
   }
+});
+
+router.get("/", requiresAuthentication, async (req, res) => {
+  if (req.user.is_admin == 0) {
+    return res.sendStatus(403);
+  }
+  const db = await getDatabase();
+  const users = await db.all("SELECT id, username, first_name, last_name, date_of_birth, description, avatar_path FROM users");
+  return res.status(200).json(users);
+});
+
+router.get("/:uid/articles", requiresAuthentication, async (req, res) => {
+  const db = await getDatabase();
+  const articles = await db.all("SELECT * FROM articles WHERE author_id = ?", req.params.uid);
+  return res.status(200).json(articles);
 });
