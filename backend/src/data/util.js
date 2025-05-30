@@ -1,39 +1,33 @@
-/**
- * Builds and executes an SQL UPDATE statement with the given data.
- * 
- * For example, if the tableName = "Customers", and updateData.firstName = "John", updateData.lastName = "Doe",
- * id = 3, and idColumn = "id", then the following statement will be run:
- * 
- * UPDATE Customers SET firstName = 'John', lastName = 'Doe' WHERE id = 3
- * 
- * You are welcome to use this function in your own code.
- * 
- * @author Andrew Meads
- * 
- * @param {any} db the database
- * @param {string} tableName the name of the table to update
- * @param {any} updateData the object containing the update data
- * @param {any} id the primary key
- * @param {string} idColumn the name of the primary key column. Defaults to "id".
- * @returns 
- */
-export async function updateDatabase(db, tableName, updateData, id, idColumn = "id") {
+import bcrypt from "bcrypt";
+import jsonwebtoken from "jsonwebtoken";
+import yup from "yup";
 
-    const updateOperations = [];
-    const updateParams = [];
+export async function encryptPassword(password) {
+    const encryptedPassword = await bcrypt.hash(password, 10);
+    return encryptedPassword;
+}
 
-    // Build update statement based on props in supplied updateData object.
-    for (const prop in updateData) {
-        const value = updateData[prop];
-        updateOperations.push(`${prop} = ?`);
-        updateParams.push(value);
-    }
+export async function checkPassword(password, encryptedPassword) {
+    const isMatch = await bcrypt.compare(password, encryptedPassword);
+    return isMatch;
+}
 
-    // Build actual SQL statement
-    const sql = `UPDATE ${tableName} SET ${updateOperations.join(", ")} WHERE ${idColumn} = ?`;
-    console.log(sql);
+export const createUserSchema = yup.object({
+  username: yup.string().max(100).required(),
+  password: yup.string().max(100).required(),
+  first_name: yup.string().max(100).required(),
+  last_name: yup.string().max(100).required(),
+  date_of_birth: yup.string().matches(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/, "Invalid date format (YYYY-MM-DD HH:mm:ss)"),
+  description: yup.string().max(255).required(),
+  avatar_path: yup.string().max(255).required()
+}).required();
 
-    // Execute update and return result
-    const dbResult = await db.run(sql, ...updateParams, parseInt(id));
-    return dbResult;
+export function getTokenFromUsername(username) {
+    const token = jsonwebtoken.sign({ username }, process.env.TOKEN_SECRET_KEY);
+    return token;
+}
+
+export function getUsernameFromToken(token) {
+    const payload = jsonwebtoken.verify(token, process.env.TOKEN_SECRET_KEY);
+    return payload.username;
 }
