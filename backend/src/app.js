@@ -45,10 +45,10 @@ import likesRoutes from "./routes/likes.js";
 app.use("/api/likes", likesRoutes);
 
 import notificationsRoutes from "./routes/notifications.js";
-app.use("/api/notifications", routes);
+app.use("/api/notifications", notificationsRoutes);
 
-import routes from "./routes/subscriptions.js";
-app.use("/api/subscriptions", notificationsRoutes);
+import subscriptionsRoutes from "./routes/subscriptions.js";
+app.use("/api/subscriptions", subscriptionsRoutes);
 
 import tagsRoutes from "./routes/tags.js";
 app.use("/api/tags", tagsRoutes);
