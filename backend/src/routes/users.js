@@ -26,12 +26,23 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/", requiresAuthentication, async (req, res) => {
-  if (req.user.is_admin == 0) {
+  if (req.user.is_admin) {
+    const db = await getDatabase();
+    const users = await db.all("SELECT id, username, first_name, last_name, date_of_birth, description, avatar_path FROM users");
+    return res.status(200).json(users);
+  }
+  if (!req.query.username) {
     return res.sendStatus(403);
   }
-  const db = await getDatabase();
-  const users = await db.all("SELECT id, username, first_name, last_name, date_of_birth, description, avatar_path FROM users");
-  return res.status(200).json(users);
+  if (req.query.username) {
+    const db = await getDatabase();
+    const user = await db.get("SELECT id, username FROM users WHERE username = ?", req.query.username);
+    if (user == null) {
+      return res.sendStatus(404);
+    } else {
+      return res.status(200).json(user);
+    }
+  }
 });
 
 router.get("/:uid/articles", requiresAuthentication, async (req, res) => {

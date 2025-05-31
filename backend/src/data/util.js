@@ -38,3 +38,9 @@ export const createArticleSchema = yup.object({
     created_at: yup.string().matches(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/, "Invalid date format (YYYY-MM-DD HH:mm:ss)").required(),
     image_path: yup.string().max(100).required()
 }).required();
+
+export const createCommentSchema = yup.object({
+    content: yup.string().required(),
+    created_at: yup.string().matches(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/, "Invalid date format (YYYY-MM-DD HH:mm:ss)").required(),
+    mentioned_users: yup.array().of(yup.number().integer().positive()).required()
+}).required();

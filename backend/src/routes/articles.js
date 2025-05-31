@@ -2,7 +2,7 @@ import express from "express";
 import yup from "yup";
 import { getDatabase } from "../data/database.js";
 import { requiresAuthentication } from "../middleware/authentication.js";
-import { createArticleSchema } from "../data/util.js";
+import { createArticleSchema, createCommentSchema } from "../data/util.js";
 
 const router = express.Router();
 
@@ -29,7 +29,24 @@ router.post("/", requiresAuthentication, async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
-    const db = await getDatabase();
-    const articles = await db.all("SELECT * FROM articles");
-    return res.status(200).json(articles);
-})
+  const db = await getDatabase();
+  const articles = await db.all("SELECT * FROM articles");
+  return res.status(200).json(articles);
+});
+
+router.post("/:aid/comments", requiresAuthentication, async (req, res) => {
+  const {content, created_at, mentioned_user_ids} = req.body;
+  const validatedInput = createCommentSchema.validateSync({content, created_at, mentioned_user_ids}, {abortEarly: false, stripUnknown: true});
+  const db = await getDatabase();
+  const article = await db.get("SELECT * FROM articles WHERE id = ?", req.params.aid);
+  if (!article) {
+    return res.sendStatus(404);
+  }
+  const comment = await db.run("INSERT INTO comments (content, created_at, article_id, user_id) VALUES (?, ?, ?, ?)", validatedInput.content, validatedInput.created_at, req.params.aid, req.user.id);
+  if (mentioned_user_ids && mentioned_user_ids.length > 0) {
+    for (let i = 0; i < mentioned_user_ids.length; i++) {
+      await db.run("INSERT INTO notifications (created_at, user_id, article_id, comment_id) VALUES (?, ?, ?, ?)", validatedInput.created_at, mentioned_user_ids[i], null, comment.lastID);
+    }
+  }
+  return res.sendStatus(201);
+});
