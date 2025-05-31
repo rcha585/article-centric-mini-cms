@@ -1,8 +1,8 @@
-import bcrypt from "bcrypt";
 import express from "express";
-import { getDatabase } from "../data/database.js";
 import yup from "yup";
-import { createUserSchema, encryptPassword } from "../data/util.js"
+import { getDatabase } from "../data/database.js";
+import { createUserSchema, encryptPassword } from "../data/util.js";
+import { requiresAuthentication } from "../middleware/authentication.js";
 
 const router = express.Router();
 
@@ -13,8 +13,8 @@ router.post("/", async (req, res) => {
     const {username, password, first_name, last_name, date_of_birth, description, avatar_path} = req.body;
     const validatedInput = createUserSchema.validateSync({username, password, first_name, last_name, date_of_birth, description, avatar_path}, {abortEarly: false, stripUnknown: true});
     const db = await getDatabase();
-    const encryptedPassword = await encryptPassword(password);
-    const response = await db.run("INSERT INTO users (username, password, first_name, last_name, date_of_birth, description, avatar_path) VALUES(?, ?, ?, ?, ?, ?, ?)", username, encryptedPassword, first_name, last_name, date_of_birth, description, avatar_path);
+    const encryptedPassword = await encryptPassword(validatedInput.password);
+    await db.run("INSERT INTO users (username, password, first_name, last_name, date_of_birth, description, avatar_path) VALUES (?, ?, ?, ?, ?, ?, ?)", validatedInput.username, encryptedPassword, validatedInput.first_name, validatedInput.last_name, validatedInput.date_of_birth, validatedInput.description, validatedInput.avatar_path);
     return res.sendStatus(201);
   } catch (error) {
     if (error instanceof yup.ValidationError) {
@@ -23,4 +23,30 @@ router.post("/", async (req, res) => {
       return res.sendStatus(500);
     }
   }
+});
+
+router.get("/", requiresAuthentication, async (req, res) => {
+  if (req.user.is_admin) {
+    const db = await getDatabase();
+    const users = await db.all("SELECT id, username, first_name, last_name, date_of_birth, description, avatar_path FROM users");
+    return res.status(200).json(users);
+  }
+  if (!req.query.username) {
+    return res.sendStatus(403);
+  }
+  if (req.query.username) {
+    const db = await getDatabase();
+    const user = await db.get("SELECT id, username FROM users WHERE username = ?", req.query.username);
+    if (user == null) {
+      return res.sendStatus(404);
+    } else {
+      return res.status(200).json(user);
+    }
+  }
+});
+
+router.get("/:uid/articles", requiresAuthentication, async (req, res) => {
+  const db = await getDatabase();
+  const articles = await db.all("SELECT * FROM articles WHERE author_id = ?", req.params.uid);
+  return res.status(200).json(articles);
 });
