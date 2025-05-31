@@ -84,14 +84,14 @@ CREATE TABLE likes (
 INSERT INTO users (id, username, password, first_name, last_name, date_of_birth, description, is_admin, avatar_path) VALUES
 (1, 'alice01', 'pass123', 'Alice', 'Johnson', '1990-04-23', 'Tech enthusiast.', 0, 'avatars/alice.jpg'),
 (2, 'bobsmith', 'bobpass', 'Bob', 'Smith', '1985-12-11', 'Writer and blogger.', 0, 'avatars/bob.jpg'),
-(3, 'carla_dev', 'carlapw', 'Carla', 'Mendes', '1993-07-05', 'Full-stack developer.', 1, 'avatars/carla.png'),
+(3, 'carla_dev', 'carlapw', 'Carla', 'Mendes', '1993-07-05', 'Full-stack developer.', 0, 'avatars/carla.png'),
 (4, 'derek_l', 'derekpw', 'Derek', 'Lee', '1988-03-15', 'Photographer.', 0, 'avatars/derek.png'),
 (5, 'emilyC', 'emilypass', 'Emily', 'Clark', '1995-10-01', 'Nature lover.', 0, 'avatars/emily.jpg'),
 (6, 'felix_the_cat', 'felixtop', 'Felix', 'Khan', '1991-06-21', 'Just a regular user.', 0, 'avatars/felix.png'),
 (7, 'grace_b', 'gracepw', 'Grace', 'Bell', '1982-01-30', 'Travel blogger.', 0, 'avatars/grace.jpg'),
 (8, 'harryPotts', 'harry123', 'Harry', 'Potts', '1996-09-10', 'Student of history.', 0, 'avatars/harry.jpg'),
 (9, 'isla_m', 'islapw', 'Isla', 'Morrison', '1989-08-18', 'Book reviewer.', 0, 'avatars/isla.jpg'),
-(10, 'jackie_chan', 'kickpass', 'Jackie', 'Chan', '1974-04-07', 'Martial arts lover.', 1, 'avatars/jackie.jpg');
+(10, 'jackie_chan', 'kickpass', 'Jackie', 'Chan', '1974-04-07', 'Martial arts lover.', 0, 'avatars/jackie.jpg');
 
 -- TAGS
 INSERT INTO tags (id, content) VALUES
