@@ -50,3 +50,13 @@ router.post("/:aid/comments", requiresAuthentication, async (req, res) => {
   }
   return res.sendStatus(201);
 });
+
+router.get("/:aid/comments", async (req, res) => {
+  const db = await getDatabase();
+  const article = await db.get("SELECT * FROM articles WHERE id = ?", req.params.aid);
+  if (!article) {
+    return res.sendStatus(404);
+  }
+  const comments = await db.all("SELECT c.content, c.created_at, u.username FROM comments AS c, users AS u WHERE c.user_id = u.id AND c.article_id = ? ORDER BY c.created_at ASC", req.params.aid);
+  return res.status(200).json(comments);
+});
