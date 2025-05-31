@@ -1,6 +1,6 @@
 import express from "express";
-import { getDatabase } from "../data/database.js";
 import yup from "yup";
+import { getDatabase } from "../data/database.js";
 import { createUserSchema, encryptPassword } from "../data/util.js";
 import { requiresAuthentication } from "../middleware/authentication.js";
 
@@ -13,8 +13,8 @@ router.post("/", async (req, res) => {
     const {username, password, first_name, last_name, date_of_birth, description, avatar_path} = req.body;
     const validatedInput = createUserSchema.validateSync({username, password, first_name, last_name, date_of_birth, description, avatar_path}, {abortEarly: false, stripUnknown: true});
     const db = await getDatabase();
-    const encryptedPassword = await encryptPassword(password);
-    const response = await db.run("INSERT INTO users (username, password, first_name, last_name, date_of_birth, description, avatar_path) VALUES(?, ?, ?, ?, ?, ?, ?)", username, encryptedPassword, first_name, last_name, date_of_birth, description, avatar_path);
+    const encryptedPassword = await encryptPassword(validatedInput.password);
+    await db.run("INSERT INTO users (username, password, first_name, last_name, date_of_birth, description, avatar_path) VALUES (?, ?, ?, ?, ?, ?, ?)", validatedInput.username, encryptedPassword, validatedInput.first_name, validatedInput.last_name, validatedInput.date_of_birth, validatedInput.description, validatedInput.avatar_path);
     return res.sendStatus(201);
   } catch (error) {
     if (error instanceof yup.ValidationError) {
