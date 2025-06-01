@@ -72,3 +72,14 @@ router.get("/:aid/comments", async (req, res) => {
   const comments = await db.all("SELECT c.content, c.created_at, u.username FROM comments AS c, users AS u WHERE c.user_id = u.id AND c.article_id = ? ORDER BY c.created_at ASC", req.params.aid);
   return res.status(200).json(comments);
 });
+
+router.post("/:aid/likes", requiresAuthentication, async (req, res) => {
+  const db = await getDatabase();
+  const like = await db.get("SELECT * FROM likes WHERE user_id = ? AND article_id = ?", req.user.id, req.params.aid);
+  if (!like) {
+    await db.run("INSERT INTO likes (user_id, article_id) VALUES (?, ?)", req.user.id, req.params.aid);
+  } else {
+    await db.run("DELETE FROM likes WHERE user_id = ? AND article_id = ?", req.user.id, req.params.aid);
+  }
+  return res.sendStatus(200);
+});
