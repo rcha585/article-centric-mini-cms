@@ -34,32 +34,13 @@ router.get("/", async (req, res) => {
   return res.status(200).json(articles);
 });
 
-// get one article
 router.get("/:aid", async (req, res) => {
   const db = await getDatabase();
   const article = await db.get("SELECT * FROM articles WHERE id = ?", req.params.aid);
   if (!article) {
     return res.sendStatus(404);
   }
-  // future extension, users, tags, comments, likes...
   return res.status(200).json(article);
-});
-
-// edit article, only author can edit
-router.put("/:aid", requiresAuthentication, async (req, res) => {
-  const { title, content, image_path } = req.body;
-  const db = await getDatabase();
-  const article = await db.get("SELECT * FROM articles WHERE id = ?", req.params.aid);
-  if (!article) return res.sendStatus(404);
-  // if not the author, return 403 forbidden.
-  if (article.author_id !== req.user.id) {
-    return res.sendStatus(403);
-  }
-  await db.run(
-    "UPDATE articles SET title=?, content=?, image_path=? WHERE id=?",
-    title, content, image_path, req.params.aid
-  );
-  return res.sendStatus(200);
 });
 
 router.post("/:aid/comments", requiresAuthentication, async (req, res) => {
