@@ -159,3 +159,16 @@ router.delete("/:aid", requiresAuthentication, async (req, res) => {
   await db.run("DELETE FROM articles WHERE id = ?", req.params.aid);
   return res.sendStatus(204);
 });
+
+router.delete("/:aid/tags/:tid", requiresAuthentication, async (req, res) => {
+  const db = await getDatabase();
+  const article = await db.get("SELECT * FROM articles WHERE id = ?", req.params.aid);
+  if (!article) {
+    return res.sendStatus(404);
+  }
+  if (req.user.id != article.author_id) {
+    return res.sendStatus(403);
+  }
+  await db.run("DELETE FROM taggings WHERE article_id = ? AND tag_id = ?", req.params.aid, req.params.tid);
+  return res.sendStatus(204);
+});
