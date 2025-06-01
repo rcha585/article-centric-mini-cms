@@ -36,8 +36,21 @@ router.post("/", requiresAuthentication, async (req, res) => {
 
 router.get("/", async (req, res) => {
   const db = await getDatabase();
-  const articles = await db.all("SELECT * FROM articles");
-  return res.status(200).json(articles);
+  if (req.query.date) {
+    const articles = await db.all("SELECT a.id, a.title, a.content, a.created_at, a.image_path, a.author_id , u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id WHERE created_at LIKE ?", `${req.query.date}%`);
+    return res.status(200).json(articles);
+  } else if (req.query.title) {
+    const key = req.query.match == "exact" ? req.query.title : `%${req.query.title}%`;
+    const articles = await db.all("SELECT a.id, a.title, a.content, a.created_at, a.image_path, a.author_id , u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id WHERE title LIKE ? COLLATE NOCASE", key);
+    return res.status(200).json(articles);
+  } else if (req.query.username) {
+    const key = req.query.match == "exact" ? req.query.username : `%${req.query.username}%`;
+    const articles = await db.all("SELECT a.id, a.title, a.content, a.created_at, a.image_path, a.author_id , u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id WHERE u.username LIKE ? COLLATE NOCASE", key);
+    return res.status(200).json(articles);
+  } else {
+    const articles = await db.all("SELECT a.id, a.title, a.content, a.created_at, a.image_path, a.author_id , u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id");
+    return res.status(200).json(articles);
+  }
 });
 
 router.get("/:aid", async (req, res) => {
