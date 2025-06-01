@@ -83,3 +83,9 @@ router.post("/:aid/likes", requiresAuthentication, async (req, res) => {
   }
   return res.sendStatus(200);
 });
+
+router.get("/:aid/likes", async (req, res) => {
+  const db = await getDatabase();
+  const likes = await db.all("SELECT u.username FROM likes AS l INNER JOIN users AS u ON l.user_id = u.id WHERE l.article_id = ?", req.params.aid);
+  return res.status(200).json(likes);
+});
