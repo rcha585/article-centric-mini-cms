@@ -77,19 +77,31 @@ const editUserSchema = yup.object({
   avatar_path: yup.string().max(255)
 }).required();
 
-router.post("/", async (req, res) => {
+router.patch("/", requiresAuthentication, async (req, res) => {
   try {
     const {username, password, first_name, last_name, date_of_birth, description, avatar_path} = req.body;
-    const validatedInput = createUserSchema.validateSync({username, password, first_name, last_name, date_of_birth, description, avatar_path}, {abortEarly: false, stripUnknown: true});
+    const validatedInput = editUserSchema.validateSync({username, password, first_name, last_name, date_of_birth, description, avatar_path}, {abortEarly: false, stripUnknown: true});
     const db = await getDatabase();
-    const encryptedPassword = await encryptPassword(validatedInput.password);
-    await db.run("INSERT INTO users (username, password, first_name, last_name, date_of_birth, description, avatar_path) VALUES (?, ?, ?, ?, ?, ?, ?)", validatedInput.username, encryptedPassword, validatedInput.first_name, validatedInput.last_name, validatedInput.date_of_birth, validatedInput.description, validatedInput.avatar_path);
-    return res.sendStatus(201);
+    const user = await db.get("SELECT * FROM users WHERE id = ?", req.user.id);
+    if (!user) {
+      return req.sendStatus(404);
+    }
+    const newUsername = validatedInput.username ?? user.username;
+    const newPassword = validatedInput.password ? await encryptPassword(validatedInput.password) : user.password;
+    const newFirstName = validatedInput.first_name ?? user.first_name;
+    const newLastName = validatedInput.last_name ?? user.last_name;
+    const newDateOfBirth = validatedInput.date_of_birth ?? user.date_of_birth;
+    const newDescription = validatedInput.description ?? user.description;
+    const newAvatarPath = validatedInput.avatar_path ?? user.avatar_path;
+    await db.run("UPDATE users SET username = ?, password = ?, first_name = ?, last_name = ?, date_of_birth = ?, description = ?, avatar_path = ? WHERE id = ?", newUsername, newPassword, newFirstName, newLastName, newDateOfBirth, newDescription, newAvatarPath, req.user.id);
+    return res.sendStatus(200);
   } catch (error) {
     if (error instanceof yup.ValidationError) {
       return res.status(400).json({errors: error.errors});
-    } else {
-      return res.sendStatus(500);
     }
+    if (error.code == "SQLITE_CONSTRAINT") {
+      return res.sendStatus(409);
+    }
+    return res.sendStatus(500);
   }
 });
