@@ -21,7 +21,7 @@ CREATE TABLE users (
 
 CREATE TABLE tags (
     id INTEGER PRIMARY KEY,
-    content VARCHAR(100) NOT NULL
+    content VARCHAR(100) NOT NULL UNIQUE
 );
 
 CREATE TABLE articles (
