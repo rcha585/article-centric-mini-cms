@@ -105,3 +105,16 @@ router.patch("/", requiresAuthentication, async (req, res) => {
     return res.sendStatus(500);
   }
 });
+
+router.delete("/:uid", requiresAuthentication, async (req, res) => {
+  if (!req.user.is_admin && req.user.id != req.params.uid) {
+    return res.sendStatus(403);
+  }
+  const db = await getDatabase();
+  const user = await db.get("SELECT * FROM users WHERE id = ?", req.params.uid);
+  if (!user) {
+    return res.sendStatus(404);
+  }
+  await db.run("DELETE FROM users WHERE id = ?", req.params.uid);
+  return res.sendStatus(204);
+});
