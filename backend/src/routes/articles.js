@@ -78,7 +78,7 @@ router.get("/:aid/comments", async (req, res) => {
   if (!article) {
     return res.sendStatus(404);
   }
-  const comments = await db.all("SELECT c.content, c.created_at, u.username FROM comments AS c, users AS u WHERE c.user_id = u.id AND c.article_id = ? ORDER BY c.created_at ASC", req.params.aid);
+  const comments = await db.all("SELECT c.id, c.content, c.created_at, u.username FROM comments AS c, users AS u WHERE c.user_id = u.id AND c.article_id = ? ORDER BY c.created_at ASC", req.params.aid);
   return res.status(200).json(comments);
 });
 

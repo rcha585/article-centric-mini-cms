@@ -33,3 +33,17 @@ router.patch("/:cid", requiresAuthentication, async (req, res) => {
   }
   return res.sendStatus(200);
 });
+
+router.delete("/:cid", requiresAuthentication, async (req, res) => {
+  const db = await getDatabase();
+  const comment = await db.get("SELECT * FROM comments WHERE id = ?", req.params.cid);
+  if (!comment) {
+    return res.sendStatus(404);
+  }
+  if (req.user.id != comment.user_id) {
+    return res.sendStatus(403);
+  }
+  await db.run("DELETE FROM comments WHERE id = ?", req.params.cid);
+  await db.run("DELETE FROM notifications WHERE comment_id = ?", req.params.cid);
+  return res.sendStatus(204);
+});
