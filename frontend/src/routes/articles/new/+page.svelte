@@ -3,13 +3,13 @@
 
   const BASE_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
 
-  async function handlePublish({ title, content, image_path }) {
-    const res = await fetch(`${BASE_URL}/articles`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, content, image_path })
-    });
+  async function handlePublish(article) {
+  const res = await fetch('/api/articles', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(article)
+  });
     if (!res.ok) {
       alert('Failed to publish: ' + (await res.text()));
     } else {

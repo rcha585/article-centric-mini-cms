@@ -15,8 +15,13 @@
   $: wordCount = content.replace(/<[^>]*>/g, '').trim().length;
 
   function handlePublish() {
-    // function wait for test.
-    onPublish({ title, tags, content });
+    onPublish({
+      title,
+      tags,
+      content,
+      image_path: 'placeholder.png',
+      // created_at: formatDate()
+    });
   }
 
   function handleSave() {
