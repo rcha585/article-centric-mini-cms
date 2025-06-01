@@ -2,6 +2,16 @@
   import { PUBLIC_IMAGES_URL } from "$env/static/public";
   import MessageView from "$lib/components/MessageView.svelte";
   export let data;
+
+  import SideProfileCard from '$lib/components/SideProfileCard.svelte';
+  import ArticleCard from '$lib/components/ArticleCard.svelte';
+
+  let selectedTab = 'overview';
+
+  //NEED TO BE EDITED LATER ***************************************************
+  let overviewArticles = [];
+  let likedArticles = [];
+  let commentArticles = [];
 </script>
 
 <svelte:head>
