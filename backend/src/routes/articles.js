@@ -1,22 +1,28 @@
+import dayjs from "dayjs";
 import express from "express";
-import yup from "yup";
 import { getDatabase } from "../data/database.js";
 import { requiresAuthentication } from "../middleware/authentication.js";
-import { createArticleSchema, createCommentSchema } from "../data/util.js";
+import yup from "yup";
 
 const router = express.Router();
-
 export default router;
+
+const createArticleSchema = yup.object({
+    title: yup.string().max(100).required(),
+    content: yup.string().required(),
+    image_path: yup.string().max(100).required()
+}).required();
 
 router.post("/", requiresAuthentication, async (req, res) => {
   try {
-    const {title, content, created_at, image_path} = req.body;
-    const validatedInput = createArticleSchema.validateSync({title, content, created_at, image_path}, {abortEarly: false, stripUnknown: true});
+    const {title, content, image_path} = req.body;
+    const validatedInput = createArticleSchema.validateSync({title, content, image_path}, {abortEarly: false, stripUnknown: true});
     const db = await getDatabase();
-    const article = await db.run("INSERT INTO articles (title, content, created_at, image_path, author_id) VALUES(?, ?, ?, ?, ?)", validatedInput.title, validatedInput.content, validatedInput.created_at, validatedInput.image_path, req.user.id);
+    const created_at = dayjs().format("YYYY-MM-DD HH:mm:ss")
+    const article = await db.run("INSERT INTO articles (title, content, created_at, image_path, author_id) VALUES(?, ?, ?, ?, ?)", validatedInput.title, validatedInput.content, created_at, validatedInput.image_path, req.user.id);
     const subscribed_users = await db.all("SELECT subscriber_user_id FROM subscriptions WHERE subscribed_user_id = ?", req.user.id);
     for (let i = 0; i < subscribed_users.length; i++) {
-        await db.run("INSERT INTO notifications (created_at, user_id, article_id, comment_id) VALUES (?, ?, ?, ?)", validatedInput.created_at, subscribed_users[i].subscriber_user_id, article.lastID, null);
+        await db.run("INSERT INTO notifications (created_at, user_id, article_id, comment_id) VALUES (?, ?, ?, ?)", created_at, subscribed_users[i].subscriber_user_id, article.lastID, null);
     }
     return res.sendStatus(201);
   } catch (error) {
@@ -34,18 +40,24 @@ router.get("/", async (req, res) => {
   return res.status(200).json(articles);
 });
 
+const createCommentSchema = yup.object({
+    content: yup.string().required(),
+    mentioned_user_ids: yup.array().of(yup.number().integer().positive()).required()
+}).required();
+
 router.post("/:aid/comments", requiresAuthentication, async (req, res) => {
-  const {content, created_at, mentioned_user_ids} = req.body;
-  const validatedInput = createCommentSchema.validateSync({content, created_at, mentioned_user_ids}, {abortEarly: false, stripUnknown: true});
+  const {content, mentioned_user_ids} = req.body;
+  const validatedInput = createCommentSchema.validateSync({content, mentioned_user_ids}, {abortEarly: false, stripUnknown: true});
   const db = await getDatabase();
   const article = await db.get("SELECT * FROM articles WHERE id = ?", req.params.aid);
   if (!article) {
     return res.sendStatus(404);
   }
-  const comment = await db.run("INSERT INTO comments (content, created_at, article_id, user_id) VALUES (?, ?, ?, ?)", validatedInput.content, validatedInput.created_at, req.params.aid, req.user.id);
+  const created_at = dayjs().format("YYYY-MM-DD HH:mm:ss");
+  const comment = await db.run("INSERT INTO comments (content, created_at, article_id, user_id) VALUES (?, ?, ?, ?)", validatedInput.content, created_at, req.params.aid, req.user.id);
   if (mentioned_user_ids && mentioned_user_ids.length > 0) {
     for (let i = 0; i < mentioned_user_ids.length; i++) {
-      await db.run("INSERT INTO notifications (created_at, user_id, article_id, comment_id) VALUES (?, ?, ?, ?)", validatedInput.created_at, mentioned_user_ids[i], null, comment.lastID);
+      await db.run("INSERT INTO notifications (created_at, user_id, article_id, comment_id) VALUES (?, ?, ?, ?)", created_at, mentioned_user_ids[i], null, comment.lastID);
     }
   }
   return res.sendStatus(201);

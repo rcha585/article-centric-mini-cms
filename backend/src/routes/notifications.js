@@ -3,7 +3,6 @@ import { getDatabase } from "../data/database.js";
 import { requiresAuthentication } from "../middleware/authentication.js";
 
 const router = express.Router();
-
 export default router;
 
 router.get("/", requiresAuthentication, async (req, res) => {

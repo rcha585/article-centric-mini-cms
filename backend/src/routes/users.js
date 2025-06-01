@@ -1,12 +1,26 @@
+import bcrypt from "bcrypt";
 import express from "express";
-import yup from "yup";
 import { getDatabase } from "../data/database.js";
-import { createUserSchema, encryptPassword } from "../data/util.js";
 import { requiresAuthentication } from "../middleware/authentication.js";
+import yup from "yup";
 
 const router = express.Router();
-
 export default router;
+
+const createUserSchema = yup.object({
+  username: yup.string().max(100).required(),
+  password: yup.string().max(100).required(),
+  first_name: yup.string().max(100).required(),
+  last_name: yup.string().max(100).required(),
+  date_of_birth: yup.string().matches(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/, "Invalid date format (YYYY-MM-DD HH:mm:ss)").required(),
+  description: yup.string().max(255).required(),
+  avatar_path: yup.string().max(255).required()
+}).required();
+
+async function encryptPassword(password) {
+    const encryptedPassword = await bcrypt.hash(password, 10);
+    return encryptedPassword;
+}
 
 router.post("/", async (req, res) => {
   try {
