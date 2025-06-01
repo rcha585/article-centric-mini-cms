@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS users;
 
 CREATE TABLE users (
     id INTEGER PRIMARY KEY,
-    username VARCHAR(100) NOT NULL,
+    username VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE users (
 
 CREATE TABLE tags (
     id INTEGER PRIMARY KEY,
-    content VARCHAR(100) NOT NULL
+    content VARCHAR(100) NOT NULL UNIQUE
 );
 
 CREATE TABLE articles (

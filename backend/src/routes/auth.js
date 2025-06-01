@@ -1,11 +1,21 @@
+import bcrypt from "bcrypt";
 import express from "express";
-import { requiresAuthentication } from "../middleware/authentication.js"
 import { getDatabase } from "../data/database.js";
-import { checkPassword, getTokenFromUsername } from "../data/util.js";
+import jsonwebtoken from "jsonwebtoken";
+import { requiresAuthentication } from "../middleware/authentication.js"
 
 const router = express.Router();
-
 export default router;
+
+async function checkPassword(password, encryptedPassword) {
+    const isMatch = await bcrypt.compare(password, encryptedPassword);
+    return isMatch;
+}
+
+function getTokenFromUsername(username) {
+    const token = jsonwebtoken.sign({ username }, process.env.TOKEN_SECRET_KEY);
+    return token;
+}
 
 router.post("/login", async (req, res) => {
   const username = req.body.username;
