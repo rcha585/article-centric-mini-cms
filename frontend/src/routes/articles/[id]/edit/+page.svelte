@@ -15,7 +15,7 @@
       image_path: updated.image_path || 'images/tmp.jpg'
     });
     alert('Success updated!');
-    // future extension. 
+    // future extension. after edit jump to other pages.
   } catch (e) {
     alert('Failed: ' + e.message);
   }
