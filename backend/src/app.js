@@ -41,9 +41,6 @@ app.use("/api/auth", authRoutes);
 import commentsRoutes from "./routes/comments.js";
 app.use("/api/comments", commentsRoutes);
 
-import likesRoutes from "./routes/likes.js";
-app.use("/api/likes", likesRoutes);
-
 import notificationsRoutes from "./routes/notifications.js";
 app.use("/api/notifications", notificationsRoutes);
 

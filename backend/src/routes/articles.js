@@ -40,6 +40,15 @@ router.get("/", async (req, res) => {
   return res.status(200).json(articles);
 });
 
+router.get("/:aid", async (req, res) => {
+  const db = await getDatabase();
+  const article = await db.get("SELECT * FROM articles WHERE id = ?", req.params.aid);
+  if (!article) {
+    return res.sendStatus(404);
+  }
+  return res.status(200).json(article);
+});
+
 const createCommentSchema = yup.object({
     content: yup.string().required(),
     mentioned_user_ids: yup.array().of(yup.number().integer().positive()).required()
@@ -77,7 +86,7 @@ router.post("/:aid/likes", requiresAuthentication, async (req, res) => {
   try {
     const db = await getDatabase();
     await db.run("INSERT INTO likes (user_id, article_id) VALUES (?, ?)", req.user.id, req.params.aid);
-    return res.sendStatus(200);
+    return res.sendStatus(201);
   } catch (error) {
     if (error.code == "SQLITE_CONSTRAINT") {
       return res.sendStatus(409);
@@ -112,4 +121,28 @@ router.post("/:aid/tags/:tid", requiresAuthentication, async (req, res) => {
     }
     return res.sendStatus(500);
   }
+});
+
+const editArticleSchema = yup.object({
+    title: yup.string().max(100),
+    content: yup.string(),
+    image_path: yup.string().max(100)
+}).required();
+
+router.patch("/:aid", requiresAuthentication, async (req, res) => {
+  const {title, content, image_path} = req.body;
+  const validatedInput = editArticleSchema.validateSync({title, content, image_path}, {abortEarly: false, stripUnknown: true});
+  const db = await getDatabase();
+  const article = await db.get("SELECT * FROM articles WHERE id = ?", req.params.aid);
+  if (!article) {
+    return res.sendStatus(404);
+  }
+  if (req.user.id != article.author_id) {
+    return res.sendStatus(403);
+  }
+  const newTitle = validatedInput.title ?? article.title;
+  const newContent = validatedInput.content ?? article.content;
+  const newImagePath = validatedInput.image_path?? article.image_path;
+  await db.run("UPDATE articles SET title = ?, content = ?, image_path = ? WHERE id = ?", newTitle, newContent, newImagePath, req.params.aid);
+  return res.sendStatus(200);
 });
