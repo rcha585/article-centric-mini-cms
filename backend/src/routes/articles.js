@@ -74,12 +74,23 @@ router.get("/:aid/comments", async (req, res) => {
 });
 
 router.post("/:aid/likes", requiresAuthentication, async (req, res) => {
-  const db = await getDatabase();
-  const like = await db.get("SELECT * FROM likes WHERE user_id = ? AND article_id = ?", req.user.id, req.params.aid);
-  if (!like) {
+  try {
+    const db = await getDatabase();
     await db.run("INSERT INTO likes (user_id, article_id) VALUES (?, ?)", req.user.id, req.params.aid);
-  } else {
-    await db.run("DELETE FROM likes WHERE user_id = ? AND article_id = ?", req.user.id, req.params.aid);
+    return res.sendStatus(200);
+  } catch (error) {
+    if (error.code == "SQLITE_CONSTRAINT") {
+      return res.sendStatus(409);
+    }
+    return res.sendStatus(500);
+  }
+});
+
+router.delete("/:aid/likes", requiresAuthentication, async (req, res) => {
+  const db = await getDatabase();
+  const result = await db.run("DELETE FROM likes WHERE user_id = ? AND article_id = ?", req.user.id, req.params.aid);
+  if (result.changes == 0) {
+    return res.sendStatus(404);
   }
   return res.sendStatus(200);
 });
