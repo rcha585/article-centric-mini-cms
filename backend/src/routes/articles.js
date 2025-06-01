@@ -100,3 +100,16 @@ router.get("/:aid/likes", async (req, res) => {
   const likes = await db.all("SELECT u.username FROM likes AS l INNER JOIN users AS u ON l.user_id = u.id WHERE l.article_id = ?", req.params.aid);
   return res.status(200).json(likes);
 });
+
+router.post("/:aid/tags/:tid", requiresAuthentication, async (req, res) => {
+  try {
+    const db = await getDatabase();
+    await db.run("INSERT INTO taggings (article_id, tag_id) VALUES (?, ?)", req.params.aid, req.params.tid);
+    return res.sendStatus(200);
+  } catch (error) {
+    if (error.code == "SQLITE_CONSTRAINT") {
+      return res.sendStatus(409);
+    }
+    return res.sendStatus(500);
+  }
+});
