@@ -1,17 +1,21 @@
 <script>
   import "$lib/css/app.css";
-
-  import { page } from "$app/stores";
-  $: path = $page.url.pathname;
+  import Header from '$lib/components/Header.svelte';
 </script>
 
-<nav>
-  <p>This is the navbar. You will need to style this (if you even want a navbar at all...)</p>
-  <ul>
-    <li><a href="/" class:active={path === "/"}>Home</a></li>
-  </ul>
-</nav>
+<Header />
 
-<div class="container">
+<main class="main-content">
   <slot />
-</div>
+</main>
+
+<style>
+.main-content {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;      
+  padding-left: 20px;
+  padding-right: 20px;
+  box-sizing: border-box;
+}
+</style>
