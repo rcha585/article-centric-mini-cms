@@ -12,3 +12,4 @@ export async function load({ fetch }) {
   const messages = await response.json();
   return { messages };
 }
+
