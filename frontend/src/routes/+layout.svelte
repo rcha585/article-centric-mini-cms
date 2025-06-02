@@ -1,20 +1,22 @@
 <!-- src/routes/+layout.svelte -->
 <script>
-  import Navbar from '$lib/components/Navbar.svelte';
+  import "$lib/css/app.css";
+  import Header from '$lib/components/Header.svelte';
 </script>
 
-<!-- Always render the Navbar at the top -->
-<Navbar />
+<Header />
 
-<!-- The <slot /> renders whichever page is active -->
-<slot />
+<main class="main-content">
+  <slot />
+</main>
 
 <style>
-  /* Example global reset or global styles can go here */
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f5f6fa;
-    color: #2c3e50;
-  }
+.main-content {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;      
+  padding-left: 20px;
+  padding-right: 20px;
+  box-sizing: border-box;
+}
 </style>

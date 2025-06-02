@@ -32,8 +32,26 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // Import and use our application routes.
-import routes from "./routes/routes.js";
-app.use("/", routes);
+import articlesRoutes from "./routes/articles.js";
+app.use("/api/articles", articlesRoutes);
+
+import authRoutes from "./routes/auth.js";
+app.use("/api/auth", authRoutes);
+
+import commentsRoutes from "./routes/comments.js";
+app.use("/api/comments", commentsRoutes);
+
+import notificationsRoutes from "./routes/notifications.js";
+app.use("/api/notifications", notificationsRoutes);
+
+import subscriptionsRoutes from "./routes/subscriptions.js";
+app.use("/api/subscriptions", subscriptionsRoutes);
+
+import tagsRoutes from "./routes/tags.js";
+app.use("/api/tags", tagsRoutes);
+
+import usersRoutes from "./routes/users.js";
+app.use("/api/users", usersRoutes);
 
 // Make sure our database is up and running
 import { getDatabase } from "./data/database.js";
