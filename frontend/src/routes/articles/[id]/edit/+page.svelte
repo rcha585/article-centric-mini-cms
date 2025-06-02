@@ -1,106 +1,84 @@
-<script>
-  import { onMount } from 'svelte';
-  import { ARTICLES_URL } from '$lib/js/api-urls.js';
-
-  let articles = [];
-  let search = '';
-  let exactMatch = false;
-  let sortBy = 'date';
-
-  let loading = true;
-  let error = '';
-
-  async function fetchArticles() {
-    loading = true;
-    try {
-      const query = new URLSearchParams({
-        search,
-        exact: exactMatch,
-        sort: sortBy
-      });
-      const res = await fetch(`${ARTICLES_URL}?${query}`);
-      if (res.ok) {
-        articles = await res.json();
-      } else {
-        error = 'Failed to load articles.';
-      }
-    } catch (e) {
-      error = 'Network error.';
-    }
-    loading = false;
-  }
-
-  function toggleLike(article) {
-    fetch(`${ARTICLES_URL}/${article.id}/like`, {
-      method: article.likedByUser ? 'DELETE' : 'POST',
-      credentials: 'include'
-    }).then(() => fetchArticles());
-  }
-
-  onMount(fetchArticles);
+<!-- src/routes/articles/[id]/edit/+page.svelte -->
+<script context="module">
+  /** 
+   * Example load() to fetch existing article data to prefill fields:
+   * export async function load({ params, fetch }) {
+   *   const articleId = params.id;
+   *   const res = await fetch(`/api/articles/${articleId}`);
+   *   const articleData = await res.json();
+   *   return { props: { articleData } };
+   * }
+   */
 </script>
 
-<svelte:head>
-  <title>Articles</title>
-</svelte:head>
+<script>
+  // In a real app, articleData would come from load()
+  export let articleData = {
+    title: 'How to get refund for my damaged product',
+    body: '<p>Step 1: …</p><p>Step 2: …</p>'
+  };
 
-<h1>Articles</h1>
+  let title = articleData.title;
+  let body = articleData.body;
 
-<div class="controls">
-  <input type="text" bind:value={search} placeholder="Search articles..." />
+  function saveArticle() {
+    // TODO: submit updated title/body to your backend
+    console.log('Saving article:', { title, body });
+  }
+</script>
+
+<section class="edit-article-page">
+  <h2>Edit Article</h2>
   <label>
-    <input type="checkbox" bind:checked={exactMatch} />
-    Exact match
+    Title
+    <input type="text" bind:value={title} />
   </label>
-  <select bind:value={sortBy}>
-    <option value="title">Title</option>
-    <option value="username">Author</option>
-    <option value="date">Date</option>
-  </select>
-  <button on:click={fetchArticles}>Search</button>
-</div>
-
-{#if loading}
-  <p>Loading...</p>
-{:else if error}
-  <p class="error">{error}</p>
-{:else if articles.length === 0}
-  <p>No articles found.</p>
-{:else}
-  <ul class="article-list">
-    {#each articles as article}
-      <li>
-        <h2>{article.title}</h2>
-        <p>By {article.username} — {new Date(article.date).toLocaleDateString()}</p>
-        <p>{@html article.preview || article.content.slice(0, 200)}...</p>
-        <button on:click={() => toggleLike(article)}>
-          {article.likedByUser ? "Unlike" : "Like"} ({article.likes})
-        </button>
-      </li>
-    {/each}
-  </ul>
-{/if}
+  <label>
+    Body (HTML)
+    <textarea bind:value={body} rows="10"></textarea>
+  </label>
+  <button on:click={saveArticle}>Save Changes</button>
+</section>
 
 <style>
-  .controls {
+  .edit-article-page {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 1rem;
-    margin-bottom: 1rem;
   }
-
-  .article-list {
-    list-style: none;
-    padding: 0;
+  .edit-article-page h2 {
+    margin: 0 0 1rem 0;
   }
-
-  .article-list li {
-    border-bottom: 1px solid #ccc;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
+  .edit-article-page label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
   }
-
-  .error {
-    color: red;
+  .edit-article-page input,
+  .edit-article-page textarea {
+    padding: 0.5rem;
+    margin-top: 0.25rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  .edit-article-page button {
+    align-self: flex-start;
+    padding: 0.5rem 1rem;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  .edit-article-page button:hover {
+    background: #1e8449;
   }
 </style>

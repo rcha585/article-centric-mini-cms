@@ -1,31 +1,44 @@
+<!-- src/routes/user/+page.svelte -->
 <script>
-  import { PUBLIC_IMAGES_URL } from "$env/static/public";
-  import MessageView from "$lib/components/MessageView.svelte";
-  export let data;
-
-  import SideProfileCard from '$lib/components/SideProfileCard.svelte';
-  import ArticleCard from '$lib/components/ArticleCard.svelte';
-
-  let selectedTab = 'overview';
-
-  //NEED TO BE EDITED LATER ***************************************************
-  let overviewArticles = [];
-  let likedArticles = [];
-  let commentArticles = [];
+  // In a real app, you’d fetch the current user’s data in a load function or via a store
+  let currentUser = {
+    name: 'Jane Doe',
+    avatar: '/avatars/jane_doe.jpg',
+    bio: 'Front-end developer and content writer.'
+  };
 </script>
 
-<svelte:head>
-  <title>Home</title>
-</svelte:head>
+<section class="profile-page">
+  <img src={currentUser.avatar} alt="Avatar" class="profile-avatar" />
+  <h2>{currentUser.name}</h2>
+  <p>{currentUser.bio}</p>
+  <a href="/user/edit" class="edit-profile-link">Edit Profile</a>
+</section>
 
-<h1>Home page</h1>
-<p>This is the homepage.</p>
-
-<!-- These images are stored on our Express server. -->
-<img src={`${PUBLIC_IMAGES_URL}/Dragonite.png`} alt="Dragonite" style="width: 320px" />
-$IMAGE
-
-<h2>Messages from server</h2>
-{#each data.messages as message (message.id)}
-  <MessageView {message} />
-{/each}
+<style>
+  .profile-page {
+    max-width: 600px;
+    margin: 2rem auto;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+  }
+  .edit-profile-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #2980b9;
+    text-decoration: none;
+  }
+  .edit-profile-link:hover {
+    text-decoration: underline;
+  }
+</style>

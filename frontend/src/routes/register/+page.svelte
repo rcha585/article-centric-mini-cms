@@ -1,28 +1,68 @@
+<!-- src/routes/register/+page.svelte -->
 <script>
-  import { PUBLIC_IMAGES_URL } from "$env/static/public";
-  import ArticleCard from "$lib/components/ArticleCard.svelte";
-  import IconButton from "$lib/components/IconButton.svelte";
+  let name = '';
+  let email = '';
+  let password = '';
+
+  function handleRegister() {
+    // TODO: call your registration API
+    console.log('Registering:', { name, email, password });
+  }
 </script>
 
-<svelte:head>
-  <title>Home</title>
-</svelte:head>
+<form on:submit|preventDefault={handleRegister} class="register-form">
+  <h2>Sign Up</h2>
+  <label>
+    Name
+    <input type="text" bind:value={name} required />
+  </label>
+  <label>
+    Email
+    <input type="email" bind:value={email} required />
+  </label>
+  <label>
+    Password
+    <input type="password" bind:value={password} required />
+  </label>
+  <button type="submit">Register</button>
+</form>
 
-<h1>Home page</h1>
-<p>This is the homepage.</p>
-
-<!-- These images are stored on your Express server. -->
-<img src={`${PUBLIC_IMAGES_URL}/Dragonite.png`} alt="Dragonite" style="width: 320px" />
-
-<!-- Optional: display article cards here -->
-<!-- Example -->
-<ArticleCard
-  article={{
-    title: "Sample Title",
-    content: "Some summary or content preview goes here.",
-    imageUrl: `${PUBLIC_IMAGES_URL}/Dragonite.png`,
-    created: "30/5/2025",
-    likes: "100K",
-    favorites: "90K"
-  }}
-/>
+<style>
+  .register-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .register-form h2 {
+    margin: 0 0 1rem 0;
+    text-align: center;
+  }
+  .register-form label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+  }
+  .register-form input {
+    padding: 0.5rem;
+    margin-top: 0.25rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  .register-form button {
+    padding: 0.5rem;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  .register-form button:hover {
+    background: #1e8449;
+  }
+</style>
