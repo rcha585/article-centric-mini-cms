@@ -1,14 +1,24 @@
 import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
-const MESSAGES_URL = `${PUBLIC_API_BASE_URL}/messages`;
-
-/**
- * TODO Load your own data in the homepage here.
- *
- * You may need other *.js files with other load functions too.
- */
 export async function load({ fetch }) {
-  const response = await fetch(MESSAGES_URL, { credentials: "include" });
-  const messages = await response.json();
-  return { messages };
+  const res = await fetch(`${PUBLIC_API_BASE_URL}/articles`);
+  const articlesRaw = await res.json();
+
+  console.log("articlesRaw fetch:", articlesRaw);
+
+  // do not have taggings data, modify in future.
+
+  const articles = articlesRaw.map(a => ({
+    id: a.id,
+    title: a.title,
+    excerpt: a.content.slice(0, 100), 
+    coverUrl: a.image_path,
+    createdAt: a.created_at,
+    author: {
+      name: a.username,
+      avatarUrl: "/default-avatar.png" 
+    }
+  }));
+
+  return { articles };
 }

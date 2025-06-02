@@ -1,21 +1,40 @@
 <script>
-  import { PUBLIC_IMAGES_URL } from "$env/static/public";
-  import MessageView from "$lib/components/MessageView.svelte";
   export let data;
+  import ArticleCard from '$lib/components/ArticleCard.svelte';
+
+  let { articles = [] } = data;
+
+  import { goto } from '$app/navigation';
+  function toDetail(e) {
+    goto(`/articles/${e.detail.id}`);
+  }
 </script>
 
-<svelte:head>
-  <title>Home</title>
-</svelte:head>
+<div class="main-page">
+  <div class="article-grid">
+    {#each articles as a (a.id)}
+      <ArticleCard article={a} on:readmore={toDetail} />
+    {/each}
+  </div>
+</div>
 
-<h1>Home page</h1>
-<p>This is the homepage.</p>
+<style>
+  .main-page {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-<!-- These images are stored on our Express server. -->
-<img src={`${PUBLIC_IMAGES_URL}/Dragonite.png`} alt="Dragonite" style="width: 320px" />
-$IMAGE
-
-<h2>Messages from server</h2>
-{#each data.messages as message (message.id)}
-  <MessageView {message} />
-{/each}
+  .article-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    gap: 20px 10px;
+    width: 100%;
+    max-width: 1200px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    padding: 0 20px;
+    box-sizing: border-box;
+  }
+</style>
