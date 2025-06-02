@@ -23,6 +23,8 @@
   },
   "type": "module",
   "dependencies": {
-    "dayjs": "^1.11.11"
+    "@tinymce/tinymce-svelte": "^3.1.0",
+    "dayjs": "^1.11.11",
+    "tinymce": "^7.9.1"
   }
 }
