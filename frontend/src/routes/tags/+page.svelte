@@ -1,6 +1,5 @@
 <script>
   import { PUBLIC_IMAGES_URL } from "$env/static/public";
-  import MessageView from "$lib/components/MessageView.svelte";
   export let data;
 </script>
 
