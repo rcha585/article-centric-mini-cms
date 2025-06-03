@@ -18,8 +18,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import model.AllUserData;
 import model.SingleUserData;
@@ -59,14 +62,32 @@ public class MainFrame extends JFrame {
         UserTablePanel tableModel = new UserTablePanel<>(userInfo);
         tableView.setModel(tableModel);
         
-		// Set listener to respond when login is successful
+		// row selection listener
+        tableView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tableView.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    int selectedRow = tableView.getSelectedRow();
+                    if (selectedRow != -1) {
+                        // If table sorting is enabled, convert to model index
+                        int modelIndex = tableView.convertRowIndexToModel(selectedRow);
+                        SingleUserData selectedUser = userInfo.getDataAt(modelIndex);
+                        System.out.println("Selected User ID: " + selectedUser.userID);
+                        // TODO: You can update a profile view panel here if needed
+                    }
+                }
+            }
+        });
+
+		// Set listener to respond when login/logout is successful
 		registrationPanel.setLoginListener(new LoginListener() {
 			@Override
 			public void isLoginSuccess(List<SingleUserData> data) {
 				for (SingleUserData user : data) {
 					userInfo.addUserData(user);
 				}
-				tableModel.fireTableDataChanged(); //notifies all listeners that all cell values in the table's rows may have changed
+				tableModel.fireTableDataChanged(); //refresh data once log in, notifies all listeners that all cell values in the table's rows have changed
 			}
 		
 			@Override
