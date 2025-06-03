@@ -14,7 +14,7 @@ const createUserSchema = yup.object({
   last_name: yup.string().max(100).required(),
   date_of_birth: yup.string().matches(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)").required(),
   description: yup.string().max(255).required(),
-  avatar_path: yup.string().max(255).required()
+  avatar_id: yup.number().integer().positive().required()
 }).required();
 
 async function encryptPassword(password) {
@@ -24,11 +24,11 @@ async function encryptPassword(password) {
 
 router.post("/", async (req, res) => {
   try {
-    const {username, password, first_name, last_name, date_of_birth, description, avatar_path} = req.body;
-    const validatedInput = createUserSchema.validateSync({username, password, first_name, last_name, date_of_birth, description, avatar_path}, {abortEarly: false, stripUnknown: true});
+    const {username, password, first_name, last_name, date_of_birth, description, avatar_id} = req.body;
+    const validatedInput = createUserSchema.validateSync({username, password, first_name, last_name, date_of_birth, description, avatar_id}, {abortEarly: false, stripUnknown: true});
     const db = await getDatabase();
     const encryptedPassword = await encryptPassword(validatedInput.password);
-    await db.run("INSERT INTO users (username, password, first_name, last_name, date_of_birth, description, avatar_path) VALUES (?, ?, ?, ?, ?, ?, ?)", validatedInput.username, encryptedPassword, validatedInput.first_name, validatedInput.last_name, validatedInput.date_of_birth, validatedInput.description, validatedInput.avatar_path);
+    await db.run("INSERT INTO users (username, password, first_name, last_name, date_of_birth, description, avatar_id) VALUES (?, ?, ?, ?, ?, ?, ?)", validatedInput.username, encryptedPassword, validatedInput.first_name, validatedInput.last_name, validatedInput.date_of_birth, validatedInput.description, validatedInput.avatar_id);
     return res.sendStatus(201);
   } catch (error) {
     if (error instanceof yup.ValidationError) {
@@ -44,7 +44,7 @@ router.post("/", async (req, res) => {
 router.get("/", requiresAuthentication, async (req, res) => {
   if (req.user.is_admin) {
     const db = await getDatabase();
-    const users = await db.all("SELECT id, username, first_name, last_name, date_of_birth, description, avatar_path FROM users");
+    const users = await db.all("SELECT id, username, first_name, last_name, date_of_birth, description, avatar_id FROM users");
     return res.status(200).json(users);
   }
   if (!req.query.username) {
@@ -52,7 +52,7 @@ router.get("/", requiresAuthentication, async (req, res) => {
   }
   if (req.query.username) {
     const db = await getDatabase();
-    const user = await db.get("SELECT id, username FROM users WHERE username = ?", req.query.username);
+    const user = await db.get("SELECT id, username, avatar_id FROM users WHERE username = ?", req.query.username);
     if (user == null) {
       return res.sendStatus(404);
     } else {
@@ -74,13 +74,13 @@ const editUserSchema = yup.object({
   last_name: yup.string().max(100),
   date_of_birth: yup.string().matches(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
   description: yup.string().max(255),
-  avatar_path: yup.string().max(255)
+  avatar_id: yup.number().integer().positive()
 }).required();
 
 router.patch("/", requiresAuthentication, async (req, res) => {
   try {
-    const {username, password, first_name, last_name, date_of_birth, description, avatar_path} = req.body;
-    const validatedInput = editUserSchema.validateSync({username, password, first_name, last_name, date_of_birth, description, avatar_path}, {abortEarly: false, stripUnknown: true});
+    const {username, password, first_name, last_name, date_of_birth, description, avatar_id} = req.body;
+    const validatedInput = editUserSchema.validateSync({username, password, first_name, last_name, date_of_birth, description, avatar_id}, {abortEarly: false, stripUnknown: true});
     const db = await getDatabase();
     const user = await db.get("SELECT * FROM users WHERE id = ?", req.user.id);
     if (!user) {
@@ -92,8 +92,8 @@ router.patch("/", requiresAuthentication, async (req, res) => {
     const newLastName = validatedInput.last_name ?? user.last_name;
     const newDateOfBirth = validatedInput.date_of_birth ?? user.date_of_birth;
     const newDescription = validatedInput.description ?? user.description;
-    const newAvatarPath = validatedInput.avatar_path ?? user.avatar_path;
-    await db.run("UPDATE users SET username = ?, password = ?, first_name = ?, last_name = ?, date_of_birth = ?, description = ?, avatar_path = ? WHERE id = ?", newUsername, newPassword, newFirstName, newLastName, newDateOfBirth, newDescription, newAvatarPath, req.user.id);
+    const newAvatarId = validatedInput.avatar_id ?? user.avatar_id;
+    await db.run("UPDATE users SET username = ?, password = ?, first_name = ?, last_name = ?, date_of_birth = ?, description = ?, avatar_id = ? WHERE id = ?", newUsername, newPassword, newFirstName, newLastName, newDateOfBirth, newDescription, newAvatarId, req.user.id);
     return res.sendStatus(200);
   } catch (error) {
     if (error instanceof yup.ValidationError) {
