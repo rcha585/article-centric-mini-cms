@@ -80,51 +80,126 @@ CREATE TABLE likes (
     FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
 );
 
--- Insert users
-INSERT INTO users (username, password, first_name, last_name, date_of_birth, description, is_admin, avatar_path) VALUES
-('alice', 'password123', 'Alice', 'Smith', '1990-04-15', 'Enthusiastic writer and reader.', 0, '/avatars/alice.png'),
-('bob', 'securepass', 'Bob', 'Johnson', '1985-09-30', 'Loves technology and blogging.', 0, '/avatars/bob.png'),
-('carol', 'carolpass', 'Carol', 'Williams', '1992-12-20', 'Editor and content curator.', 1, '/avatars/carol.png');
+-- USERS
+INSERT INTO users (id, username, password, first_name, last_name, date_of_birth, description, is_admin, avatar_path) VALUES
+(1, 'alice',  '$2b$10$S95qbYMTb5B.AzIsYZPxJ.RCV4nVn1Ghal6zvYUWuVW3WpXsQRH.G', 'Alice', 'Wong',    '1990-03-15', 'Tech enthusiast.', FALSE, '/avatars/alice.png'),
+(2, 'bob',    '$2b$10$S95qbYMTb5B.AzIsYZPxJ.RCV4nVn1Ghal6zvYUWuVW3WpXsQRH.G', 'Bob',   'Smith',   '1985-07-22', 'Travel blogger.', FALSE, '/avatars/bob.png'),
+(3, 'carol',  '$2b$10$S95qbYMTb5B.AzIsYZPxJ.RCV4nVn1Ghal6zvYUWuVW3WpXsQRH.G', 'Carol', 'Johnson', '1992-12-01', 'Lifestyle writer.', TRUE,  '/avatars/carol.png'),
+(4, 'dave',   '$2b$10$S95qbYMTb5B.AzIsYZPxJ.RCV4nVn1Ghal6zvYUWuVW3WpXsQRH.G', 'Dave',  'Lee',     '1988-11-11', 'Photographer.', FALSE, '/avatars/dave.png'),
+(5, 'eva',    '$2b$10$S95qbYMTb5B.AzIsYZPxJ.RCV4nVn1Ghal6zvYUWuVW3WpXsQRH.G', 'Eva',   'Brown',   '1995-05-30', 'Food reviewer.', FALSE, '/avatars/eva.png'),
+(6, 'frank',  '$2b$10$S95qbYMTb5B.AzIsYZPxJ.RCV4nVn1Ghal6zvYUWuVW3WpXsQRH.G', 'Frank', 'Green',   '1983-04-18', 'History geek.', FALSE, '/avatars/frank.png'),
+(7, 'grace',  '$2b$10$S95qbYMTb5B.AzIsYZPxJ.RCV4nVn1Ghal6zvYUWuVW3WpXsQRH.G', 'Grace', 'Kim',     '1990-09-23', 'Science lover.', FALSE, '/avatars/grace.png'),
+(8, 'henry',  '$2b$10$S95qbYMTb5B.AzIsYZPxJ.RCV4nVn1Ghal6zvYUWuVW3WpXsQRH.G', 'Henry', 'Moore',   '1987-06-07', 'Freelance coder.', FALSE, '/avatars/henry.png'),
+(9, 'irene',  '$2b$10$S95qbYMTb5B.AzIsYZPxJ.RCV4nVn1Ghal6zvYUWuVW3WpXsQRH.G', 'Irene', 'Zhang',   '1993-02-14', 'Nature blogger.', FALSE, '/avatars/irene.png'),
+(10, 'jack',  '$2b$10$S95qbYMTb5B.AzIsYZPxJ.RCV4nVn1Ghal6zvYUWuVW3WpXsQRH.G', 'Jack',  'White',   '1991-08-19', 'Fitness coach.', FALSE, '/avatars/jack.png');
 
--- Insert tags
-INSERT INTO tags (content) VALUES
-('Technology'),
-('Lifestyle'),
-('Education');
+-- TAGS
+INSERT INTO tags (id, content) VALUES
+(1, 'Technology'),
+(2, 'Travel'),
+(3, 'Food'),
+(4, 'Lifestyle'),
+(5, 'Fitness'),
+(6, 'Photography'),
+(7, 'Programming'),
+(8, 'History'),
+(9, 'Science'),
+(10, 'Nature');
 
--- Insert articles
-INSERT INTO articles (title, content, created_at, image_path, author_id) VALUES
-('The Future of AI', 'Artificial intelligence is transforming the world...', '2025-06-01 10:00:00', '/images/ai.jpg', 1),
-('Healthy Living Tips', 'Maintaining a balanced diet is crucial...', '2025-06-02 12:30:00', '/images/health.jpg', 2),
-('Online Learning Platforms', 'E-learning has become more accessible...', '2025-06-03 09:15:00', '/images/elearning.jpg', 3);
+-- ARTICLES
+INSERT INTO articles (id, title, content, created_at, image_path, author_id) VALUES
+(1, 'Intro to SQLite', 'Content A', '2024-01-01', '/images/a1.png', 1),
+(2, 'Top 10 Travel Tips', 'Content B', '2024-01-02', '/images/a2.png', 2),
+(3, 'Homemade Bread Guide', 'Content C', '2024-01-03', '/images/a3.png', 5),
+(4, 'Daily Workout Plan', 'Content D', '2024-01-04', '/images/a4.png', 10),
+(5, 'iPhone Photography Tips', 'Content E', '2024-01-05', '/images/a5.png', 4),
+(6, 'Machine Learning 101', 'Content F', '2024-01-06', '/images/a6.png', 7),
+(7, 'Cooking Thai Curry', 'Content G', '2024-01-07', '/images/a7.png', 5),
+(8, 'Backpacking in Asia', 'Content H', '2024-01-08', '/images/a8.png', 2),
+(9, 'Time Management Hacks', 'Content I', '2024-01-09', '/images/a9.png', 3),
+(10, 'Running for Beginners', 'Content J', '2024-01-10', '/images/a10.png', 10),
+(11, 'Tech Trends 2025', 'Content K', '2024-01-11', '/images/a11.png', 1),
+(12, 'Photoshop for Beginners', 'Content L', '2024-01-12', '/images/a12.png', 4),
+(13, 'Coding with Python', 'Content M', '2024-01-13', '/images/a13.png', 8),
+(14, 'Keto Diet Explained', 'Content N', '2024-01-14', '/images/a14.png', 5),
+(15, 'Digital Nomad Life', 'Content O', '2024-01-15', '/images/a15.png', 2),
+(16, 'Eco-Friendly Living', 'Content P', '2024-01-16', '/images/a16.png', 9),
+(17, 'Ancient Roman History', 'Content Q', '2024-01-17', '/images/a17.png', 6),
+(18, 'Photography Lighting', 'Content R', '2024-01-18', '/images/a18.png', 4),
+(19, 'Basics of JavaScript', 'Content S', '2024-01-19', '/images/a19.png', 8),
+(20, 'Urban Gardening Tips', 'Content T', '2024-01-20', '/images/a20.png', 9);
 
--- Insert taggings (linking articles and tags)
+-- TAGGINGS (Assign each article 1–3 tags)
 INSERT INTO taggings (article_id, tag_id) VALUES
-(1, 1), -- The Future of AI -> Technology
-(2, 2), -- Healthy Living Tips -> Lifestyle
-(3, 3); -- Online Learning Platforms -> Education
-
--- Insert comments (in English)
-INSERT INTO comments (content, created_at, article_id, user_id) VALUES
-('Great insights on AI, very informative!', '2025-06-01 11:00:00', 1, 2),
-('I found these healthy tips very useful, thanks!', '2025-06-02 13:00:00', 2, 1),
-('Online learning has really changed education for the better.', '2025-06-03 10:00:00', 3, 2);
-
--- Insert notifications
-INSERT INTO notifications (created_at, is_viewed, user_id, article_id, comment_id) VALUES
-('2025-06-01 11:05:00', 0, 1, 1, 1),
-('2025-06-02 13:05:00', 0, 2, 2, 2),
-('2025-06-03 10:05:00', 0, 3, 3, 3);
-
--- Insert subscriptions
-INSERT INTO subscriptions (subscriber_user_id, subscribed_user_id) VALUES
-(2, 1), -- Bob subscribes to Alice
-(3, 2), -- Carol subscribes to Bob
-(1, 3); -- Alice subscribes to Carol
-
--- Insert likes
-INSERT INTO likes (user_id, article_id) VALUES
-(1, 1),
-(2, 1),
+(1, 1), (1, 7),
 (2, 2),
-(3, 3);
+(3, 3),
+(4, 5),
+(5, 6),
+(6, 1), (6, 9),
+(7, 3),
+(8, 2),
+(9, 4),
+(10, 5),
+(11, 1),
+(12, 6),
+(13, 1), (13, 7),
+(14, 3), (14, 4),
+(15, 2), (15, 4),
+(16, 4), (16, 10),
+(17, 8),
+(18, 6),
+(19, 1), (19, 7),
+(20, 10), (20, 4);
+
+-- LIKES (some users like some articles)
+INSERT INTO likes (user_id, article_id) VALUES
+(1, 2), (1, 3), (1, 5),
+(2, 1), (2, 4),
+(3, 6), (3, 7),
+(4, 8), (4, 9), (4, 10),
+(5, 1), (5, 11),
+(6, 17),
+(7, 6), (7, 13),
+(8, 19),
+(9, 20), (9, 16),
+(10, 4), (10, 10), (10, 14);
+
+-- COMMENTS
+INSERT INTO comments (id, content, created_at, article_id, user_id) VALUES
+(1, 'Great read!', '2024-01-02', 1, 2),
+(2, 'Nice tips!', '2024-01-03', 2, 1),
+(3, 'Thanks for sharing!', '2024-01-04', 3, 4),
+(4, 'Very useful!', '2024-01-05', 4, 3),
+(5, 'Love this!', '2024-01-06', 5, 7),
+(6, 'Well written.', '2024-01-07', 6, 6),
+(7, 'I’ll try this.', '2024-01-08', 7, 5),
+(8, 'Bookmarking this.', '2024-01-09', 8, 9),
+(9, 'Motivating!', '2024-01-10', 9, 10),
+(10, 'Awesome article!', '2024-01-11', 10, 8);
+
+-- NOTIFICATIONS
+INSERT INTO notifications (id, created_at, is_viewed, user_id, article_id, comment_id) VALUES
+(1, '2024-01-03', FALSE, 1, NULL, 1),
+(2, '2024-01-04', FALSE, 2, 2, NULL),
+(3, '2024-01-05', FALSE, 3, NULL, 3),
+(4, '2024-01-06', TRUE, 4, 4, NULL),
+(5, '2024-01-07', TRUE, 5, NULL, 5),
+(6, '2024-01-08', FALSE, 6, 6, NULL),
+(7, '2024-01-09', TRUE, 7, NULL, 7),
+(8, '2024-01-10', FALSE, 8, 8, NULL),
+(9, '2024-01-11', TRUE, 9, NULL, 9),
+(10, '2024-01-12', FALSE, 10, 10, NULL);
+
+-- SUBSCRIPTIONS
+INSERT INTO subscriptions (subscriber_user_id, subscribed_user_id) VALUES
+(1, 2), (1, 3), (1, 4),
+(2, 1), (2, 5),
+(3, 6),
+(4, 1), (4, 7),
+(5, 3),
+(6, 2), (6, 8),
+(7, 9),
+(8, 10),
+(9, 5),
+(10, 4);
