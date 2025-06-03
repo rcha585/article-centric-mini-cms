@@ -7,6 +7,7 @@ export async function load({ fetch }) {
   console.log("articlesRaw fetch:", articlesRaw);
 
   // do not have taggings data, modify in future.
+  // add a dummy tag to test first.
 
   const articles = articlesRaw.map(a => ({
     id: a.id,
@@ -17,7 +18,8 @@ export async function load({ fetch }) {
     author: {
       name: a.username,
       avatarUrl: "/default-avatar.png" 
-    }
+    },
+     tags: a.tags ?? ["tags"],
   }));
 
   return { articles };
