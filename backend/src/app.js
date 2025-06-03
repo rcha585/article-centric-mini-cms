@@ -38,6 +38,9 @@ app.use("/api/articles", articlesRoutes);
 import authRoutes from "./routes/auth.js";
 app.use("/api/auth", authRoutes);
 
+import avatarsRoutes from "./routes/avatars.js";
+app.use("/api/avatars", avatarsRoutes);
+
 import commentsRoutes from "./routes/comments.js";
 app.use("/api/comments", commentsRoutes);
 
