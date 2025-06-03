@@ -3,6 +3,7 @@ package gui;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
 import java.awt.Dimension;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import javax.management.relation.RelationSupport;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -27,7 +29,7 @@ import javax.swing.event.ListSelectionListener;
 import model.AllUserData;
 import model.SingleUserData;
 import util.HttpHelper;
-import controller.LoginListener;
+import controller.ButtonListener;
 
 
 public class MainFrame extends JFrame {
@@ -35,6 +37,12 @@ public class MainFrame extends JFrame {
     /* Main model for this application. */
 	private AllUserData userInfo;
 
+	// store selected userID
+	private SingleUserData selectedUser;
+
+	private UserTablePanel tableModel;
+
+	public JButton deleteButton = new JButton("Delete Selected User");
 	// private UserTablePanel<SingleUserData> userTablePanel; // to understand
 
 
@@ -59,7 +67,8 @@ public class MainFrame extends JFrame {
         JTable tableView = new JTable(); 
         
         /* Adapters. */
-        UserTablePanel tableModel = new UserTablePanel<>(userInfo);
+        // UserTablePanel tableModel = new UserTablePanel<>(userInfo);
+		tableModel = new UserTablePanel<>(userInfo);
         tableView.setModel(tableModel);
         
 		// row selection listener
@@ -72,16 +81,20 @@ public class MainFrame extends JFrame {
                     if (selectedRow != -1) {
                         // If table sorting is enabled, convert to model index
                         int modelIndex = tableView.convertRowIndexToModel(selectedRow);
-                        SingleUserData selectedUser = userInfo.getDataAt(modelIndex);
+                        selectedUser = userInfo.getDataAt(modelIndex);
                         System.out.println("Selected User ID: " + selectedUser.userID);
-                        // TODO: You can update a profile view panel here if needed
+						deleteButton.setEnabled(true);
                     }
+					else {
+						selectedUser = null;
+						deleteButton.setEnabled(false);
+					}
                 }
             }
         });
 
 		// Set listener to respond when login/logout is successful
-		registrationPanel.setLoginListener(new LoginListener() {
+		registrationPanel.setLoginListener(new ButtonListener() {
 			@Override
 			public void isLoginSuccess(List<SingleUserData> data) {
 				for (SingleUserData user : data) {
@@ -130,6 +143,30 @@ public class MainFrame extends JFrame {
         bottom.add(scrollPane);
         bottom.add(Box.createRigidArea(new Dimension(10, 0)));
 
+		JPanel deletePanel = new JPanel();
+		// JButton deleteButton = new JButton("Delete Selected User");
+		deleteButton.setEnabled(false);
+		deletePanel.add(deleteButton);
+
+		deleteButton.addActionListener(e -> {
+			if (selectedUser != null) {
+				int selectedUserID = selectedUser.getUserID();
+				userInfo.removeUserByID(selectedUserID);
+				System.out.println(selectedUserID);
+				// to add a HTML to delete user from the database
+				try {
+					HttpHelper.sendDeleteRequest(selectedUserID);
+				} catch (IOException | InterruptedException e1) {
+					e1.printStackTrace();
+				}
+
+				selectedUser = null; // Clear reference
+				tableModel.fireTableDataChanged(); // Refresh table
+			} else {
+				// JOptionPane.showMessageDialog(MainFrame.this, "Please select a row to delete.");
+			}
+		});
+
         /* Create main pane for the application. */
 		JPanel mainPane = new JPanel();
 		mainPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -137,6 +174,7 @@ public class MainFrame extends JFrame {
 		mainPane.add(top);
 		mainPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		mainPane.add(bottom);
+		mainPane.add(deletePanel);
 
 		add(mainPane);
 

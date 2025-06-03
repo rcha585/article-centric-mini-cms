@@ -193,5 +193,25 @@ public class HttpHelper {
         return response;
     }
 
+    public static void sendDeleteRequest(int userID) throws IOException, InterruptedException {
+        // Send POST (Sign Out) if user is valid but not admin
+        String deleteURL = "http://localhost:3000/api/users/"+userID;
+        System.out.println(deleteURL);
+        HttpRequest deleteRequest = HttpRequest.newBuilder()
+                .uri(URI.create(deleteURL))
+                .header("Cookie", cookie)  // if using session cookie
+                .DELETE()
+                .build();
+
+        HttpResponse<String> deleteResponse = client.send(deleteRequest, HttpResponse.BodyHandlers.ofString());
+        // System.out.println("Signout success: "+postResponse.statusCode());
+        if (deleteResponse.statusCode() !=204) {
+            System.out.println("Delete user from database was uncessfull");
+        }
+        else {
+            System.out.println("Delete user from database was sucessfull");
+        }
+    }
+
 
 }

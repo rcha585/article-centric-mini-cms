@@ -32,7 +32,6 @@ public class SingleUserData {
         // this.numLikes = numLikes;
     }
 
-    @Override
     public String toString() {
     return "SingleUserData{" +
             "id=" + userID +
@@ -43,7 +42,10 @@ public class SingleUserData {
             ", description='" + description + '\'' +
             ", avatarPath='" + avatarPath + '\'' +
             '}';
-}
+    }
 
+    public int getUserID() {
+        return userID;
+    }
 
 }

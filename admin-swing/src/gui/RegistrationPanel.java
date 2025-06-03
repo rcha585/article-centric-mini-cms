@@ -2,7 +2,7 @@ package gui;
 
 import javax.swing.*;
 
-import controller.LoginListener;
+import controller.ButtonListener;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -28,7 +28,7 @@ public class RegistrationPanel extends JPanel implements ActionListener {
     protected static String userName;
     protected static String userPassWord;
     public JLabel loginStatusLabel = new JLabel();
-    private LoginListener loginListener;
+    private ButtonListener loginListener;
     protected static List<SingleUserData> usersData;
 
     /**
@@ -104,7 +104,7 @@ public class RegistrationPanel extends JPanel implements ActionListener {
         this.logoutButton.addActionListener(this);
     }
 
-    public void setLoginListener(LoginListener listener) {
+    public void setLoginListener(ButtonListener listener) {
         this.loginListener = listener;
     }
     /**

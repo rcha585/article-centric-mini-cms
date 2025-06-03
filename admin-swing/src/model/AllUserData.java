@@ -133,5 +133,13 @@ public class AllUserData {
 		for (UserListener listener : listeners) {
 			listener.userHasChanged(this); // Notify observers
 		}
+	}
+
+	public void removeUserByID(int userID) {
+		userData.remove(userID);
+		indexedData = new ArrayList<>(userData.values()); // Rebuild index
+		for (UserListener listener : listeners) {
+			listener.userHasChanged(this); // Notify observers
+		}
 }
 }
