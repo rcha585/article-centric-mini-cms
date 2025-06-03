@@ -6,11 +6,12 @@ import { PUBLIC_API_BASE_URL } from "$env/static/public";
  * Each tag should have: { id, content }
  */
 
-
-const articlesRaw = await res.json();
-
 export async function load({ fetch }) {
-  const res = await fetch(`${PUBLIC_API_BASE_URL}/tags`); 
+  // const res = await fetch('/api/tags');
+  const res = await fetch('${PUBLIC_API_BASE_URL}/api/tags');
+  const tagsRaw = await res.json();
+  console.log("tagsRaw fetch: ", tagsRaw);
+
   if (!res.ok) {
     throw new Error('Failed to fetch tags');
   }

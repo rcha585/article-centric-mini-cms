@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { ARTICLES_URL } from '$lib/js/api-urls.js';
+  // import { ARTICLES_URL } from '$lib/js/api-urls.js';
 
   let articles = [];
   let search = '';
