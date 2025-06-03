@@ -4,6 +4,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -14,8 +15,10 @@ import javax.management.relation.RelationSupport;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -44,6 +47,12 @@ public class MainFrame extends JFrame {
 
 	public JButton deleteButton = new JButton("Delete Selected User");
 	// private UserTablePanel<SingleUserData> userTablePanel; // to understand
+
+	public JPanel mainPane = new JPanel();
+
+	// Declare this field somewhere in your class:
+	private UserProfilePanel currentUserProfile = null;
+
 
 
     public MainFrame() {
@@ -79,10 +88,19 @@ public class MainFrame extends JFrame {
                 if (!e.getValueIsAdjusting()) {
                     int selectedRow = tableView.getSelectedRow();
                     if (selectedRow != -1) {
+
                         // If table sorting is enabled, convert to model index
                         int modelIndex = tableView.convertRowIndexToModel(selectedRow);
                         selectedUser = userInfo.getDataAt(modelIndex);
                         System.out.println("Selected User ID: " + selectedUser.userID);
+
+                       // Dispose old window if it exists
+						if (currentUserProfile != null) {
+							currentUserProfile.dispose();
+						}
+						// Create and show new UserProfilePanel window
+						currentUserProfile = new UserProfilePanel(selectedUser, mainPane);
+
 						deleteButton.setEnabled(true);
                     }
 					else {
@@ -162,13 +180,16 @@ public class MainFrame extends JFrame {
 
 				selectedUser = null; // Clear reference
 				tableModel.fireTableDataChanged(); // Refresh table
+
+				currentUserProfile.dispose();
+				
 			} else {
 				// JOptionPane.showMessageDialog(MainFrame.this, "Please select a row to delete.");
 			}
 		});
 
         /* Create main pane for the application. */
-		JPanel mainPane = new JPanel();
+		// JPanel mainPane = new JPanel();
 		mainPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.Y_AXIS));
 		mainPane.add(top);

@@ -180,14 +180,4 @@ public class RegistrationPanel extends JPanel implements ActionListener {
         public void setLoginListener(Object listener) {
         }
 
-//     /**
-//      * A library method that rounds a double to 2dp
-//      *
-//      * @param amount to round as a double
-//      * @return the amount rounded to 2dp
-//      */
-//     private double roundTo2DecimalPlaces(double amount) {
-//         return ((double) Math.round(amount * 100)) / 100;
-//     }
-
 }
