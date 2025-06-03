@@ -168,6 +168,7 @@ public class RegistrationPanel extends JPanel implements ActionListener {
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
+                
             }
 
 

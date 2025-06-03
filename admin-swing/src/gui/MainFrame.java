@@ -124,6 +124,12 @@ public class MainFrame extends JFrame {
 			@Override
 			public void clickLogout() {
 				userInfo.clear(); // model clears and notifies the table
+				
+				// dispose user profile when logout
+				if (currentUserProfile != null) {
+					currentUserProfile.dispose();
+					currentUserProfile = null;
+				}
 			}
 		});
 		
@@ -182,7 +188,7 @@ public class MainFrame extends JFrame {
 				tableModel.fireTableDataChanged(); // Refresh table
 
 				currentUserProfile.dispose();
-				
+
 			} else {
 				// JOptionPane.showMessageDialog(MainFrame.this, "Please select a row to delete.");
 			}
