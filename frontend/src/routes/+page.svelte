@@ -8,6 +8,10 @@
   function toDetail(e) {
     goto(`/articles/${e.detail.id}`);
   }
+
+  function goToLogin() {
+    goto('/login');
+  }
 </script>
 
 <div class="main-page">
