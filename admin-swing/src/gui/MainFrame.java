@@ -50,6 +50,7 @@ public class MainFrame extends JFrame {
 		 */
 
         /* View components. */
+		RegistrationPanel frameContent = new RegistrationPanel();
         JTable tableView = new JTable(); 
         
         /* Adapters. */
@@ -60,7 +61,7 @@ public class MainFrame extends JFrame {
         // Construct the GUI in the ED thread.
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				buildGUI(tableView);
+				buildGUI(frameContent,tableView);
 			}
 		});
     }
@@ -68,12 +69,21 @@ public class MainFrame extends JFrame {
     /*
 	 * Builds the GUI.
 	 */
-    private void buildGUI(JTable userDataView) {
+    private void buildGUI(RegistrationPanel registrationView,JTable userDataView) {
 		/*
 		 * Create a Panel to combine the distribution and statistics visual
 		 * representations.
             */
-        
+		JPanel left = new JPanel();
+		left.setBorder(BorderFactory
+				.createTitledBorder("User Register"));
+		left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
+		left.add(registrationView);
+		left.add(Box.createRigidArea(new Dimension(10, 0)));
+		// right.add(statisticsView);
+
+
+
         JPanel right = new JPanel();
         right.setBorder(BorderFactory.createTitledBorder("All User Data"));
         right.setLayout(new BoxLayout(right, BoxLayout.Y_AXIS));
@@ -85,9 +95,9 @@ public class MainFrame extends JFrame {
 		JPanel mainPane = new JPanel();
 		mainPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.X_AXIS));
+		mainPane.add(left);
+		mainPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		mainPane.add(right);
-		// mainPane.add(Box.createRigidArea(new Dimension(10, 0)));
-		// mainPane.add(right);
 
 		add(mainPane);
 
