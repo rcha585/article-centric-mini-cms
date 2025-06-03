@@ -24,14 +24,16 @@ import javax.swing.SwingWorker;
 import model.AllUserData;
 import model.SingleUserData;
 import util.HttpHelper;
+import controller.LoginListener;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MainFrame extends JFrame {
 
     /* Main model for this application. */
 	private AllUserData userInfo;
+
+	// private UserTablePanel<SingleUserData> userTablePanel; // to understand
+
 
     public MainFrame() {
         super("Administration Panel");
@@ -50,18 +52,34 @@ public class MainFrame extends JFrame {
 		 */
 
         /* View components. */
-		RegistrationPanel frameContent = new RegistrationPanel();
+		RegistrationPanel registrationPanel = new RegistrationPanel();
         JTable tableView = new JTable(); 
         
         /* Adapters. */
         UserTablePanel tableModel = new UserTablePanel<>(userInfo);
         tableView.setModel(tableModel);
         
+		// Set listener to respond when login is successful
+		registrationPanel.setLoginListener(new LoginListener() {
+			@Override
+			public void isLoginSuccess(List<SingleUserData> data) {
+				for (SingleUserData user : data) {
+					userInfo.addUserData(user);
+				}
+				tableModel.fireTableDataChanged(); //notifies all listeners that all cell values in the table's rows may have changed
+			}
+		
+			@Override
+			public void clickLogout() {
+				userInfo.clear(); // model clears and notifies the table
+			}
+		});
+		
 
         // Construct the GUI in the ED thread.
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				buildGUI(frameContent,tableView);
+				buildGUI(registrationPanel,tableView);
 			}
 		});
     }
@@ -74,30 +92,30 @@ public class MainFrame extends JFrame {
 		 * Create a Panel to combine the distribution and statistics visual
 		 * representations.
             */
-		JPanel left = new JPanel();
-		left.setBorder(BorderFactory
+		JPanel top = new JPanel();
+		top.setBorder(BorderFactory
 				.createTitledBorder("User Register"));
-		left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
-		left.add(registrationView);
-		left.add(Box.createRigidArea(new Dimension(10, 0)));
+		top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
+		top.add(registrationView);
+		top.add(Box.createRigidArea(new Dimension(10, 0)));
 		// right.add(statisticsView);
 
 
 
-        JPanel right = new JPanel();
-        right.setBorder(BorderFactory.createTitledBorder("All User Data"));
-        right.setLayout(new BoxLayout(right, BoxLayout.Y_AXIS));
+        JPanel bottom = new JPanel();
+        bottom.setBorder(BorderFactory.createTitledBorder("All User Data"));
+        bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
         JScrollPane scrollPane = new JScrollPane(userDataView);
-        right.add(scrollPane);
-        right.add(Box.createRigidArea(new Dimension(10, 0)));
+        bottom.add(scrollPane);
+        bottom.add(Box.createRigidArea(new Dimension(10, 0)));
 
         /* Create main pane for the application. */
 		JPanel mainPane = new JPanel();
 		mainPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.X_AXIS));
-		mainPane.add(left);
+		mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.Y_AXIS));
+		mainPane.add(top);
 		mainPane.add(Box.createRigidArea(new Dimension(10, 0)));
-		mainPane.add(right);
+		mainPane.add(bottom);
 
 		add(mainPane);
 

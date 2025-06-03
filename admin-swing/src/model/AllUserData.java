@@ -123,4 +123,15 @@ public class AllUserData {
 		listeners.remove(listener);
 	}
 
+	/**
+	 * Clears all user data from the model.
+	 */
+	public void clear() {
+		userData.clear();
+		indexedData.clear();
+
+		for (UserListener listener : listeners) {
+			listener.userHasChanged(this); // Notify observers
+		}
+}
 }

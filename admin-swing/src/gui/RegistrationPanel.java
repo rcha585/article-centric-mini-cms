@@ -1,6 +1,9 @@
 package gui;
 
 import javax.swing.*;
+
+import controller.LoginListener;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,6 +28,7 @@ public class RegistrationPanel extends JPanel implements ActionListener {
     protected static String userName;
     protected static String userPassWord;
     public JLabel loginStatusLabel = new JLabel();
+    private LoginListener loginListener;
     protected static List<SingleUserData> usersData;
 
     /**
@@ -39,6 +43,7 @@ public class RegistrationPanel extends JPanel implements ActionListener {
         // also access them.
 
         GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
@@ -99,7 +104,9 @@ public class RegistrationPanel extends JPanel implements ActionListener {
         this.logoutButton.addActionListener(this);
     }
 
-
+    public void setLoginListener(LoginListener listener) {
+        this.loginListener = listener;
+    }
     /**
      * When a button is clicked, this method should detect which button was clicked, and display either the BMI or the
      * maximum healthy weight, depending on which JButton was pressed.
@@ -119,16 +126,23 @@ public class RegistrationPanel extends JPanel implements ActionListener {
                 }
 
                 if (isAdmin == 1) {
-                        // Call the method to get the JSON string
-                    String json;
                     try {
-                        json = HttpHelper.getAllUserData(RegistrationPanel.userName, RegistrationPanel.userPassWord);
+                        String json = HttpHelper.getAllUserData(RegistrationPanel.userName, RegistrationPanel.userPassWord);
                         usersData = JsonManualParser.parseUsers(json);
                         System.out.println(usersData);
+
+                         // Notify MainFrame
+                        if (loginListener != null) {
+                            loginListener.isLoginSuccess(usersData);
+                        }
+
                     } catch (IOException | InterruptedException e) {
                         e.printStackTrace();
                     }
                     // System.out.println("Raw GET response: " + json);
+                    if (loginListener != null) {
+                        loginListener.isLoginSuccess(usersData);
+                    }
                     logoutButton.setEnabled(true);
                     loginButton.setEnabled(false);
                     loginStatusLabel.setText("");
@@ -145,6 +159,12 @@ public class RegistrationPanel extends JPanel implements ActionListener {
                     HttpHelper.sendLogoutRequest();
                     logoutButton.setEnabled(false);
                     loginButton.setEnabled(true);
+
+                    // Notify MainFrame about logout
+                    if (loginListener != null) {
+                        loginListener.clickLogout();  // NEW
+                    }
+
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -155,6 +175,9 @@ public class RegistrationPanel extends JPanel implements ActionListener {
 
         public static List<SingleUserData> getUsersData() {
             return usersData;
+        }
+
+        public void setLoginListener(Object listener) {
         }
 
 //     /**
