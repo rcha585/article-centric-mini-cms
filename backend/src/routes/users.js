@@ -93,7 +93,7 @@ router.patch("/", requiresAuthentication, async (req, res) => {
     const newDateOfBirth = validatedInput.date_of_birth ?? user.date_of_birth;
     const newDescription = validatedInput.description ?? user.description;
     const newAvatarId = validatedInput.avatar_id ?? user.avatar_id;
-    await db.run("UPDATE users SET username = ?, password = ?, first_name = ?, last_name = ?, date_of_birth = ?, description = ?, avatar_path = ? WHERE id = ?", newUsername, newPassword, newFirstName, newLastName, newDateOfBirth, newDescription, newAvatarId, req.user.id);
+    await db.run("UPDATE users SET username = ?, password = ?, first_name = ?, last_name = ?, date_of_birth = ?, description = ?, avatar_id = ? WHERE id = ?", newUsername, newPassword, newFirstName, newLastName, newDateOfBirth, newDescription, newAvatarId, req.user.id);
     return res.sendStatus(200);
   } catch (error) {
     if (error instanceof yup.ValidationError) {
