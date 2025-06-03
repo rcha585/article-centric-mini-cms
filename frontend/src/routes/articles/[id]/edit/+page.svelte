@@ -1,4 +1,4 @@
-<script>
+<!-- <script>
   import ArticleEditor from '$lib/components/ArticleEditor.svelte';
   import { updateArticle } from '$lib/api.js';
 
@@ -28,4 +28,4 @@
   defaultTags={article.tags.join(', ')}
   defaultContent={article.content}
   onPublish={handlePublish}
-/>
+/> -->

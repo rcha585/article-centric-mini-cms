@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-
+import javax.management.relation.RelationSupport;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -130,46 +130,39 @@ public class MainFrame extends JFrame {
 
 		@Override
 		protected List<SingleUserData> doInBackground() {
-			try {
-                // Call the method to get the JSON string
-                String json = HttpHelper.sendPostThenGet("http://localhost:3000/api/auth/login", "http://localhost:3000/api/users?username=paige_phan");
-                // System.out.println("Raw GET response: " + json);
-				List<SingleUserData> data = JsonManualParser.parseUsers(json);
-			
-                // Parse JSON string to List<StudentResult>
-                // ObjectMapper mapper = new ObjectMapper();
-                // List<SingleUserData> data = mapper.readValue(json, new TypeReference<List<SingleUserData>>() {});
-        
-                System.out.println("check: " + data);
-                return data;
-        
-            } catch (Exception e) {
-                e.printStackTrace();
-                return List.of(); // return empty list on failure
-            }
+			List<SingleUserData> data = RegistrationPanel.getUsersData();
+			System.out.println(data);
+			return data;
 		}
 
 		@Override
 		protected void done() {
-			List<SingleUserData> data;
 			try {
-				data = get();
-
-				if (data == null) {
-					// No data loaded.
-					JOptionPane
-							.showMessageDialog(
-									MainFrame.this,
-									"Unable to load student results. The data file is empty, missing or corrupt. \nUse modelview.admin.CourseDataManager to (re)create the data file.",
-									"Load error", JOptionPane.WARNING_MESSAGE);
-				} else {
-					// Populate the Course model object with the loaded data.
-					for (SingleUserData result : data) {
-						userInfo.addUserData(result);
-					}
+				List<SingleUserData> data = get();
+		
+				if (data == null || data.isEmpty()) {
+					// JOptionPane.showMessageDialog(
+					// 	MainFrame.this,
+					// 	"Unable to load user data. You may not be authorized or the data is missing.",
+					// 	"Load Warning",
+					// 	JOptionPane.WARNING_MESSAGE
+					// );
+					return;
 				}
+		
+				// Only loop if data is valid
+				for (SingleUserData result : data) {
+					userInfo.addUserData(result);
+				}
+		
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
+				JOptionPane.showMessageDialog(
+					MainFrame.this,
+					"An error occurred while loading user data:\n" + e.getCause(),
+					"Load Error",
+					JOptionPane.ERROR_MESSAGE
+				);
 			}
 		}
 	}

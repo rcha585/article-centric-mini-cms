@@ -12,7 +12,7 @@ const createUserSchema = yup.object({
   password: yup.string().max(100).required(),
   first_name: yup.string().max(100).required(),
   last_name: yup.string().max(100).required(),
-  date_of_birth: yup.string().matches(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/, "Invalid date format (YYYY-MM-DD HH:mm:ss)").required(),
+  date_of_birth: yup.string().matches(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)").required(),
   description: yup.string().max(255).required(),
   avatar_path: yup.string().max(255).required()
 }).required();
@@ -72,7 +72,7 @@ const editUserSchema = yup.object({
   password: yup.string().max(100),
   first_name: yup.string().max(100),
   last_name: yup.string().max(100),
-  date_of_birth: yup.string().matches(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/, "Invalid date format (YYYY-MM-DD HH:mm:ss)"),
+  date_of_birth: yup.string().matches(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
   description: yup.string().max(255),
   avatar_path: yup.string().max(255)
 }).required();
