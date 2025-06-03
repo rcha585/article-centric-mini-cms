@@ -1,6 +1,7 @@
 <script>
 const PUBLIC_API_BASE_URL = "http://localhost:3000/api"; 
 const PUBLIC_IMAGES_URL = "http://localhost:3000/images";
+
 import { writable } from "svelte/store";
 import { goto } from "$app/navigation";
 import { onMount } from 'svelte';
