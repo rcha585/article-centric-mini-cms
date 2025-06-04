@@ -27,9 +27,9 @@ export async function load({ fetch }) {
 
 	/* ---------- subscribers ---------- */
 	const subsRes = await fetch(
-    	`${PUBLIC_API_BASE_URL}/subscriptions/${rawUser.id}`,
-    	{ credentials: 'include' }
-  	);
+   		`${PUBLIC_API_BASE_URL}/users/${rawUser.id}/subscriptions`,
+   		{ credentials: 'include' }
+ 	);
   	let subscriberCount = 0;
   	if (subsRes.ok && subsRes.status !== 204) {
     	const subs = await subsRes.json();
