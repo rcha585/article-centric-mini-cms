@@ -8,15 +8,15 @@ export async function load({ fetch }) {
 
   // do not have taggings data, modify in future.
 
-  const articles = articlesRaw.map(a => ({
+  const articles = articlesRaw.map((a) => ({
     id: a.id,
     title: a.title,
-    excerpt: a.content.slice(0, 100), 
+    excerpt: a.content.slice(0, 100),
     coverUrl: a.image_path,
     createdAt: a.created_at,
     author: {
       name: a.username,
-      avatarUrl: "/default-avatar.png" 
+      avatarUrl: "/default-avatar.png"
     }
   }));
 

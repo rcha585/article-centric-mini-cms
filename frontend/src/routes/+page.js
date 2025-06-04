@@ -9,19 +9,18 @@ export async function load({ fetch }) {
   // do not have taggings data, modify in future.
   // add a dummy tag to test first.
 
-  const articles = articlesRaw.map(a => ({
+  const articles = articlesRaw.map((a) => ({
     id: a.id,
     title: a.title,
-    excerpt: a.content.slice(0, 100), 
+    excerpt: a.content.slice(0, 100),
     coverUrl: a.image_path,
     createdAt: a.created_at,
     author: {
       name: a.username,
-      avatarUrl: "/default-avatar.png" 
+      avatarUrl: "/default-avatar.png"
     },
-     tags: a.tags ?? ["tags"],
+    tags: a.tags ?? ["tags"]
   }));
 
   return { articles };
 }
-

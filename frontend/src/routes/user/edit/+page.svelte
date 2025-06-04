@@ -1,12 +1,12 @@
 <!-- src/routes/user/edit/+page.svelte -->
 <script>
   // In a real app, you’d load user’s current data in load() or from a store
-  let name = 'Jane Doe';
-  let bio = 'Front-end developer and content writer.';
+  let name = "Jane Doe";
+  let bio = "Front-end developer and content writer.";
 
   function saveProfile() {
     // TODO: send updated name/bio to your API
-    console.log('Saving profile:', { name, bio });
+    console.log("Saving profile:", { name, bio });
   }
 </script>
 
@@ -30,7 +30,7 @@
     background: white;
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     gap: 1rem;

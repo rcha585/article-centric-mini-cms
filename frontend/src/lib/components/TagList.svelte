@@ -1,8 +1,8 @@
 <script>
   export let tag = {
-    id: '',
-    content: '',
-    image_path: ''
+    id: "",
+    content: "",
+    image_path: ""
   };
 </script>
 
@@ -51,7 +51,7 @@
     border-radius: 8px;
     overflow: hidden;
     background-color: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-right: 16px;
     display: flex;
     align-items: center;
@@ -74,4 +74,3 @@
     line-height: 1.2;
   }
 </style>
-

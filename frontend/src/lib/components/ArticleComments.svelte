@@ -2,9 +2,7 @@
 <script>
   export let commentsData = [];
   // If you want “Latest first” sorting built‐in, you can do it here:
-  $: sortedComments = [...commentsData].sort(
-    (a, b) => new Date(b.date) - new Date(a.date)
-  );
+  $: sortedComments = [...commentsData].sort((a, b) => new Date(b.date) - new Date(a.date));
 </script>
 
 <section class="article-comments">
@@ -27,7 +25,7 @@
     background: white;
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
   .article-comments h2 {
     margin: 0 0 1rem 0;

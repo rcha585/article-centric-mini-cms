@@ -1,6 +1,6 @@
 <!-- src/routes/users/[id]/+page.svelte -->
 <script context="module">
-  /** 
+  /**
    * Example load() to fetch “other user” data:
    * export async function load({ params, fetch }) {
    *   const userId = params.id;
@@ -14,10 +14,10 @@
 <script>
   // Replace this with actual data from load()
   export let userData = {
-    id: '123',
-    name: 'Samuel Jackson',
-    avatar: '/avatars/sam_jackson.jpg',
-    bio: 'Music blogger and producer.'
+    id: "123",
+    name: "Samuel Jackson",
+    avatar: "/avatars/sam_jackson.jpg",
+    bio: "Music blogger and producer."
   };
 </script>
 
@@ -34,7 +34,7 @@
     background: white;
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
   }
   .profile-avatar {

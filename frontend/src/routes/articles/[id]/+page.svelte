@@ -14,7 +14,7 @@
 
   <!-- 2) “By {username} on {date}” -->
   <p class="meta">
-    By <strong>{article.username}</strong> on 
+    By <strong>{article.username}</strong> on
     {new Date(article.created_at).toLocaleDateString()}
   </p>
 
@@ -40,7 +40,7 @@
       {#each comments as comment (comment.id)}
         <li class="comment-item">
           <p class="comment-meta">
-            <strong>{comment.username}</strong> 
+            <strong>{comment.username}</strong>
             • {new Date(comment.created_at).toLocaleDateString()}
           </p>
           <p class="comment-content">{comment.content}</p>

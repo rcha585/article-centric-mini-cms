@@ -1,5 +1,5 @@
 // src/routes/articles/[id]/+page.js
-import { error } from '@sveltejs/kit';
+import { error } from "@sveltejs/kit";
 
 export async function load({ fetch, params }) {
   const { id } = params;
@@ -7,7 +7,7 @@ export async function load({ fetch, params }) {
   // 1) Fetch the article itself
   const articleRes = await fetch(`http://localhost:3000/api/articles/${id}`);
   if (articleRes.status === 404) {
-    throw error(404, 'Article not found');
+    throw error(404, "Article not found");
   }
   if (!articleRes.ok) {
     throw error(articleRes.status, `Could not fetch article (${articleRes.status})`);
@@ -29,12 +29,12 @@ export async function load({ fetch, params }) {
   // 3) Fetch the user row for article.author_id
   const userRes = await fetch(`http://localhost:3000/api/users/${article.author_id}`);
   if (userRes.status === 404) {
-    article.username = 'Unknown';
+    article.username = "Unknown";
   } else if (!userRes.ok) {
     throw error(userRes.status, `Could not fetch author (${userRes.status})`);
   } else {
     const user = await userRes.json();
-    article.username = user.username; 
+    article.username = user.username;
   }
 
   // 4) Return BOTH the article and the comments array

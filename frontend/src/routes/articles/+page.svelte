@@ -1,14 +1,14 @@
 <script>
-  import { onMount } from 'svelte';
-  import { ARTICLES_URL } from '$lib/js/api-urls.js';
+  import { onMount } from "svelte";
+  import { ARTICLES_URL } from "$lib/js/api-urls.js";
 
   let articles = [];
-  let search = '';
+  let search = "";
   let exactMatch = false;
-  let sortBy = 'date';
+  let sortBy = "date";
 
   let loading = true;
-  let error = '';
+  let error = "";
 
   async function fetchArticles() {
     loading = true;
@@ -22,18 +22,18 @@
       if (res.ok) {
         articles = await res.json();
       } else {
-        error = 'Failed to load articles.';
+        error = "Failed to load articles.";
       }
     } catch (e) {
-      error = 'Network error.';
+      error = "Network error.";
     }
     loading = false;
   }
 
   function toggleLike(article) {
     fetch(`${ARTICLES_URL}/${article.id}/like`, {
-      method: article.likedByUser ? 'DELETE' : 'POST',
-      credentials: 'include'
+      method: article.likedByUser ? "DELETE" : "POST",
+      credentials: "include"
     }).then(() => fetchArticles());
   }
 
@@ -100,7 +100,6 @@
   </div>
 {/each}
 
-
 <style>
   .controls {
     display: flex;
@@ -125,20 +124,18 @@
   }
 
   .tags-list {
-  margin-bottom: 0.75rem;
-}
-.tag {
-  display: inline-block;
-  background: #f1f5f9;
-  color: #2563eb;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  margin-right: 0.25rem;
-  padding: 0.15rem 0.7rem;
-}
-.tag-empty {
-  color: #64748b;
-}
-
+    margin-bottom: 0.75rem;
+  }
+  .tag {
+    display: inline-block;
+    background: #f1f5f9;
+    color: #2563eb;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    margin-right: 0.25rem;
+    padding: 0.15rem 0.7rem;
+  }
+  .tag-empty {
+    color: #64748b;
+  }
 </style>
-

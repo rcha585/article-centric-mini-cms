@@ -1,9 +1,9 @@
 <script>
-  import RichEditor from '$lib/components/RichEditor.svelte';
+  import RichEditor from "$lib/components/RichEditor.svelte";
 
-  export let defaultTitle = '';
-  export let defaultTags = '';
-  export let defaultContent = '';
+  export let defaultTitle = "";
+  export let defaultTags = "";
+  export let defaultContent = "";
   export let apiKey;
   export let onPublish = () => {};
   export let onSaveDraft = () => {};
@@ -12,14 +12,14 @@
   let tags = defaultTags;
   let content = defaultContent;
 
-  $: wordCount = content.replace(/<[^>]*>/g, '').trim().length;
+  $: wordCount = content.replace(/<[^>]*>/g, "").trim().length;
 
   function handlePublish() {
     onPublish({
       title,
       tags,
       content,
-      image_path: 'placeholder.png',
+      image_path: "placeholder.png"
       // created_at: formatDate()
     });
   }
@@ -30,7 +30,6 @@
   }
 </script>
 
-
 <div class="article-editor">
   <input
     class="editor-title"
@@ -40,11 +39,7 @@
     bind:value={title}
   />
 
-  <input
-    class="editor-tags"
-    placeholder="#tags you want to place"
-    bind:value={tags}
-  />
+  <input class="editor-tags" placeholder="#tags you want to place" bind:value={tags} />
 
   <div class="editor-toolbar">
     <div>
@@ -57,16 +52,15 @@
   <RichEditor bind:value={content} {apiKey} />
 </div>
 
-
 <style>
-    .article-editor {
+  .article-editor {
     max-width: 800px;
     margin: 32px auto;
     display: flex;
     flex-direction: column;
     gap: 24px;
-    }
-    .editor-title {
+  }
+  .editor-title {
     font-size: 2rem;
     font-weight: bold;
     border: none;
@@ -74,25 +68,24 @@
     background: transparent;
     color: #222;
     padding: 8px 0;
-    }
-    .editor-title::placeholder {
+  }
+  .editor-title::placeholder {
     color: #bbb;
-    }
-    .editor-tags {
+  }
+  .editor-tags {
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 8px 12px;
     font-size: 1rem;
     background: #fafafa;
-    }
-    .editor-toolbar {
+  }
+  .editor-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    }
+  }
 
-
-    .btn-publish {
+  .btn-publish {
     background: #2563eb;
     color: #fff;
     padding: 8px 30px;
@@ -103,12 +96,12 @@
     font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.2s;
-    }
-    .btn-publish:hover {
+  }
+  .btn-publish:hover {
     background: #d1d5db;
-    }
+  }
 
-    .btn-save {
+  .btn-save {
     background: #2563eb;
     color: #fff;
     padding: 8px 36px;
@@ -118,14 +111,13 @@
     font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.2s;
-    }
-    .btn-save:hover {
+  }
+  .btn-save:hover {
     background: #d1d5db;
-    }
+  }
 
-    .word-count {
+  .word-count {
     color: #666;
     font-size: 0.95rem;
-    }
-
+  }
 </style>

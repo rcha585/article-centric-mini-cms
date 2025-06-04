@@ -17,8 +17,8 @@
 
 // src/routes/search/+page.js
 export async function load({ fetch }) {
-  const res = await fetch('http://localhost:3000/api/articles');
-  if (!res.ok) throw new Error('Failed to load articles');
+  const res = await fetch("http://localhost:3000/api/articles");
+  if (!res.ok) throw new Error("Failed to load articles");
   const articles = await res.json();
   return { articles };
 }

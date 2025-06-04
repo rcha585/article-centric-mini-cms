@@ -1,7 +1,7 @@
 <script>
   import { page } from "$app/stores";
   $: path = $page.url.pathname;
-  
+
   // default value, future extension.
   let hasUnread = false;
 </script>
@@ -16,11 +16,11 @@
     </form>
     <!-- main navigation, path need modify -->
     <div class="nav-tabs">
-      <a href="/"      class:active-tab={path === '/'}>Articles</a>
-      <a href="/tags"  class:active-tab={path.startsWith('/tags')}>Tags</a>
-      <a href="/user"  class:active-tab={path.startsWith('/user')}>Me</a>
+      <a href="/" class:active-tab={path === "/"}>Articles</a>
+      <a href="/tags" class:active-tab={path.startsWith("/tags")}>Tags</a>
+      <a href="/user" class:active-tab={path.startsWith("/user")}>Me</a>
     </div>
-    
+
     <div class="nav-right">
       <a href="/notifications" class="notif-bell">
         <span class="icon-bell">🔔</span>
@@ -37,7 +37,7 @@
   .nav-bar {
     width: 100vw;
     background: linear-gradient(90deg, #39c4fa 0%, #4683ea 100%);
-    box-shadow: 0 2px 8px rgba(65,100,180,0.06);
+    box-shadow: 0 2px 8px rgba(65, 100, 180, 0.06);
     padding: 0;
     margin: 0;
   }
@@ -70,7 +70,7 @@
     width: 190px;
     background: #fff;
     color: #2b2b3c;
-    box-shadow: 0 1px 4px rgba(70,131,234,0.08);
+    box-shadow: 0 1px 4px rgba(70, 131, 234, 0.08);
   }
   .nav-search button {
     position: absolute;
@@ -97,19 +97,20 @@
     text-decoration: none;
     padding: 6px 16px;
     border-radius: 9px;
-    transition: background-color 0.15s, color 0.15s;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
   }
   .nav-tabs a:hover {
-    background: rgba(255,255,255,0.18);
+    background: rgba(255, 255, 255, 0.18);
     color: #f3f6fa;
   }
   .active-tab {
-    background: rgba(255,255,255,0.23);
+    background: rgba(255, 255, 255, 0.23);
     color: #22315c;
     font-weight: 700;
   }
 
-  
   .nav-right {
     display: flex;
     align-items: center;
@@ -123,8 +124,10 @@
     border-radius: 999px;
     margin-left: 10px;
     text-decoration: none;
-    box-shadow: 0 2px 10px rgba(65,100,180,0.07);
-    transition: background-color 0.16s, color 0.16s;
+    box-shadow: 0 2px 10px rgba(65, 100, 180, 0.07);
+    transition:
+      background-color 0.16s,
+      color 0.16s;
   }
   .nav-login:hover {
     background: #f2f7fe;

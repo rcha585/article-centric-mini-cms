@@ -23,11 +23,7 @@
 </script>
 
 <article class="article-card">
-  <img
-    class="article-cover"
-    src={article.coverUrl || '/default-cover.png'}
-    alt={article.title}
-  />
+  <img class="article-cover" src={article.coverUrl || "/default-cover.png"} alt={article.title} />
 
   <div class="article-content">
     <h3 class="article-title">{article.title}</h3>
@@ -52,18 +48,15 @@
         <span class="meta-label">By</span>
         <img
           class="author-avatar"
-          src={article.author.avatarUrl || '/default-avatar.png'}
+          src={article.author.avatarUrl || "/default-avatar.png"}
           alt={article.author.name}
         />
         <span class="author-name">{article.author.name}</span>
       </div>
-      <button class="read-more-btn" on:click={handleReadMore}>
-        Read More
-      </button>
+      <button class="read-more-btn" on:click={handleReadMore}> Read More </button>
     </div>
   </div>
 </article>
-
 
 <style>
   .article-card {
@@ -133,7 +126,6 @@
     border-radius: 0 0 16px 16px;
   }
 
-
   .meta-row {
     display: flex;
     align-items: center;
@@ -151,7 +143,6 @@
     font-size: 0.97rem;
   }
 
-
   .author-avatar {
     width: 28px;
     height: 28px;
@@ -168,7 +159,6 @@
     font-weight: 500;
   }
 
-  
   .read-more-btn {
     align-self: flex-end;
     margin-top: 4px;
@@ -176,11 +166,11 @@
     color: #fff;
     border: none;
     border-radius: 16px;
-    padding: 6px 24px;            
+    padding: 6px 24px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 1px 2px rgba(24,116,208,0.07);
+    box-shadow: 0 1px 2px rgba(24, 116, 208, 0.07);
     display: flex;
     align-items: center;
     gap: 6px;

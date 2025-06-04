@@ -1,25 +1,27 @@
 <!-- src/lib/components/Navbar.svelte -->
 <script>
-  import { page } from '$app/stores';
+  import { page } from "$app/stores";
   $: currentPath = $page.url.pathname;
 </script>
 
 <nav class="navbar">
   <ul class="nav-list">
     <li>
-      <a href="/" class:active={currentPath === '/'}>Home</a>
+      <a href="/" class:active={currentPath === "/"}>Home</a>
     </li>
     <li>
-      <a href="/articles" class:active={currentPath.startsWith('/articles')}>Articles</a>
+      <a href="/articles" class:active={currentPath.startsWith("/articles")}>Articles</a>
     </li>
     <li>
-      <a href="/tags" class:active={currentPath.startsWith('/tags')}>Tags</a>
+      <a href="/tags" class:active={currentPath.startsWith("/tags")}>Tags</a>
     </li>
     <li>
-      <a href="/notifications" class:active={currentPath.startsWith('/notifications')}>Notifications</a>
+      <a href="/notifications" class:active={currentPath.startsWith("/notifications")}
+        >Notifications</a
+      >
     </li>
     <li>
-      <a href="/user" class:active={currentPath.startsWith('/user')}>My Profile</a>
+      <a href="/user" class:active={currentPath.startsWith("/user")}>My Profile</a>
     </li>
   </ul>
 </nav>
