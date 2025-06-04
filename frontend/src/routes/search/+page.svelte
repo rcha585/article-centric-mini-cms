@@ -1,57 +1,97 @@
 <script>
-  export let data; // contains: articles, totalCount, page, perPage, search
+  // Receive data prop from parent or +page.js load function.
+  // Data shape: { articles, totalCount, page, perPage, search }
+  export let data;
 
-  // You'd receive these from your load function
-  const { articles = [], totalCount = 0, page = 1, perPage = 6, search = "" } = data;
+  // Destructure with default values to avoid runtime errors if any field is missing.
+  const {
+    articles = [],        // List of article objects to display
+    totalCount = 0,       // Total number of articles matching the query
+    page = 1,             // Current page number (1-based)
+    perPage = 6,          // How many articles per page
+    search = ""           // Current search query (string)
+  } = data;
 
-  // Pagination helpers
+  // Calculate the total number of pages needed for pagination.
   const totalPages = Math.ceil(totalCount / perPage);
+
+  /**
+   * Navigate to a specific page number while retaining the current search query.
+   * Uses window.location for a full reload; in SvelteKit, you could use goto from $app/navigation for SPA navigation.
+   * @param {number} p - The page number to go to.
+   */
   function goToPage(p) {
-    // Use SvelteKit's navigation, or window.location for SPA
+    // Encode the search query for safe URL usage
     window.location.href = `/search?query=${encodeURIComponent(search)}&page=${p}`;
   }
 </script>
 
+<!-- =================== PAGE LAYOUT =================== -->
+
 <!-- GRADIENT BACKGROUND & WRAPPER -->
 <div class="search-background">
-  <!-- MAIN CONTENT WRAPPER -->
+  <!-- Content container to center and style the articles list -->
   <div class="content-wrapper">
     <h2 class="all-articles-title">All Articles</h2>
 
-    <ul class="article-list">
-      {#each articles as article (article.id)}
-        <li class="article-card">
-          <img class="thumbnail" src={article.image_path} alt={article.title} />
-          <div class="info">
-            <h3>
-              <a href={`/articles/${article.id}`} class="article-link">
-                {article.title}
-              </a>
-            </h3>
-            <p class="desc">
-              {article.content.slice(0, 110)}{article.content.length > 110 ? "..." : ""}
-            </p>
-            <div class="meta">
-              By <span class="author">{article.username}</span>
-            </div>
-          </div>
-        </li>
-      {/each}
-    </ul>
+    <!-- If no articles, show friendly message -->
+    {#if articles.length === 0}
+      <p style="color: #223; font-size: 1.1em; margin-top: 1.5em;">
+        No articles found{search ? ` for "${search}"` : ""}. Try adjusting your search or check back later.
+      </p>
+    {:else}
+      <ul class="article-list">
+        {#each articles as article (article.id)}
+          <li class="article-card">
+            <!-- Article thumbnail image, fallback background if missing -->
+            <img
+              class="thumbnail"
+              src={article.image_path}
+              alt={"Thumbnail for " + article.title}
+              on:error="{(e) => e.target.style.background='#e0e0e0'}"
+            />
 
-    <!-- PAGINATION -->
-    <div class="pagination">
-      <span
-        >{(page - 1) * perPage + 1} - {Math.min(page * perPage, totalCount)} of {totalCount} results</span
-      >
-      <button disabled={page === 1} on:click={() => goToPage(page - 1)}>&lt;</button>
-      <button disabled={page === totalPages} on:click={() => goToPage(page + 1)}>&gt;</button>
-    </div>
+            <div class="info">
+              <!-- Article title, links to full article page -->
+              <h3>
+                <a href={`/articles/${article.id}`} class="article-link">
+                  {article.title}
+                </a>
+              </h3>
+              <!-- Article preview: show only the first 110 chars -->
+              <p class="desc">
+                {article.content.slice(0, 110)}{article.content.length > 110 ? "..." : ""}
+              </p>
+              <!-- Author info (you can link author page if needed) -->
+              <div class="meta">
+                By <span class="author">{article.username}</span>
+              </div>
+            </div>
+          </li>
+        {/each}
+      </ul>
+    {/if}
+
+    <!-- PAGINATION CONTROLS: Show only if there are more than one page -->
+    {#if totalPages > 1}
+      <div class="pagination">
+        <span>
+          Showing {(page - 1) * perPage + 1}
+          –
+          {Math.min(page * perPage, totalCount)}
+          of {totalCount} results
+        </span>
+        <!-- Previous page button -->
+        <button disabled={page === 1} on:click={() => goToPage(page - 1)} title="Previous Page">&lt;</button>
+        <!-- Next page button -->
+        <button disabled={page === totalPages} on:click={() => goToPage(page + 1)} title="Next Page">&gt;</button>
+      </div>
+    {/if}
   </div>
 </div>
 
 <style>
-  /* GRADIENT BACKGROUND */
+  /* GRADIENT BACKGROUND: Full-page soft blue gradient */
   .search-background {
     min-height: 100vh;
     background: linear-gradient(110deg, #214a80 0%, #97a1b8 100%);
@@ -59,27 +99,7 @@
     font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   }
 
-  /* SEARCH BAR */
-  .search-bar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 32px;
-    margin-bottom: 18px;
-  }
-  .search-bar input {
-    width: 420px;
-    max-width: 80vw;
-    border-radius: 22px;
-    border: none;
-    font-size: 1.4rem;
-    padding: 0.6em 2em 0.6em 2.2em;
-    background: #e6eef7;
-    outline: none;
-    box-shadow: 0 2px 16px #0001;
-  }
-
-  /* MAIN CONTENT */
+  /* MAIN CONTENT AREA: Light glassmorphism box with rounded corners */
   .content-wrapper {
     background: linear-gradient(90deg, #fff6 60%, #fff5 100%);
     margin: 0 auto;
@@ -90,6 +110,7 @@
     padding: 30px 36px 30px 36px;
     box-shadow: 0 4px 24px #0002;
   }
+
   .all-articles-title {
     font-size: 2rem;
     font-weight: 700;
@@ -98,12 +119,13 @@
     margin-bottom: 16px;
   }
 
-  /* ARTICLE LIST */
+  /* ARTICLE LISTING */
   .article-list {
     list-style: none;
     margin: 0;
     padding: 0;
   }
+
   .article-card {
     display: flex;
     align-items: flex-start;
@@ -115,6 +137,7 @@
   .article-card:last-child {
     border-bottom: none;
   }
+
   .thumbnail {
     width: 64px;
     height: 64px;
@@ -124,9 +147,11 @@
     box-shadow: 0 2px 8px #0001;
     background: #ccc;
   }
+
   .info {
     flex: 1;
   }
+
   .info h3 {
     margin: 0 0 2px 0;
     font-size: 1.17rem;
@@ -149,7 +174,7 @@
     font-weight: 600;
   }
 
-  /* PAGINATION */
+  /* PAGINATION BUTTONS */
   .pagination {
     display: flex;
     align-items: center;

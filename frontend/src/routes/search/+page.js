@@ -1,24 +1,26 @@
-// // src/routes/search/+page.js
-// export async function load({ fetch, url }) {
-//   // Get search and pagination params from the URL
-//   const search = url.searchParams.get('query') || '';
-//   const page = Number(url.searchParams.get('page') || 1);
-//   const perPage = 6;
-
-//   // You only need to fetch once!
-//   const res = await fetch(
-//     `/api/articles?query=${encodeURIComponent(search)}&page=${page}&perPage=${perPage}`
-//   );
-//   if (!res.ok) throw new Error('Failed to load articles');
-//   const { articles, totalCount } = await res.json();
-
-//   return { articles, totalCount, page, perPage, search };
-// }
-
-// src/routes/search/+page.js
+/**
+ * SvelteKit page load function to fetch articles from backend API.
+ * Runs on the server (or client, for client-side navigation).
+ * 
+ * @param {object} context - The SvelteKit load context.
+ * @param {function} context.fetch - The fetch function to make HTTP requests.
+ * @returns {Promise<object>} - Returns an object with articles for the page.
+ */
 export async function load({ fetch }) {
+  // Attempt to fetch articles from the API endpoint.
   const res = await fetch("http://localhost:3000/api/articles");
-  if (!res.ok) throw new Error("Failed to load articles");
+
+  // If the response is not OK (status not 2xx), throw an error with details.
+  if (!res.ok) {
+    // Optional: include status and statusText for easier debugging.
+    throw new Error(
+      `Failed to load articles (status ${res.status}: ${res.statusText})`
+    );
+  }
+
+  // Parse the response JSON body as an array of article objects.
   const articles = await res.json();
+
+  // Return articles for use in the Svelte page.
   return { articles };
 }
