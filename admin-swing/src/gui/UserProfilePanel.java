@@ -25,22 +25,31 @@ public class UserProfilePanel extends JFrame {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JLabel nameLabel = new JLabel("Name: " + user.userName);
+        JLabel usernameLabel = new JLabel("Username: " + user.userName);
+        JLabel realnameLabel = new JLabel("Realname: " + user.firstName +" "+ user.lastName);
         JLabel dobLabel = new JLabel("DOB: " + user.dateOfBirth);
+        JLabel descriptionLabel = new JLabel("Description: " + user.description);
 
-        ImageIcon avatar = new ImageIcon(user.avatarPath);
+        // frontend/static/avatars/favicon.png
+        String avatar_url = "frontend/static/"+user.avatarPath;
+        System.out.println(avatar_url);
+        ImageIcon avatar = new ImageIcon(avatar_url);
         if (avatar.getIconWidth() == -1) {
             avatar = new ImageIcon("fallback.png");
         }
         JLabel avatarLabel = new JLabel(avatar);
         avatarLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        dobLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        usernameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        realnameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        dobLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        descriptionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         panel.add(avatarLabel);
         panel.add(Box.createVerticalStrut(10));
-        panel.add(nameLabel);
+        panel.add(usernameLabel);
+        panel.add(realnameLabel);
         panel.add(dobLabel);
+        panel.add(descriptionLabel);
 
         add(panel);
 
