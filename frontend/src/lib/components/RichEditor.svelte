@@ -6,19 +6,18 @@
   export let value = "";
   export let apiKey;
 
-  // default config.
-  const editorInit = {
-    height: 500,
-    menubar: true,
-    statusbar: true,
-    toolbar_sticky: false,
-    elementpath: false,
-    plugins: "wordcount lists link image code table",
-    placeholder: "Here starts with your story~~",
-    toolbar:
-      "undo redo | bold italic underline | alignleft aligncenter alignright | " +
-      "bullist numlist outdent indent | link image table | code",
-    branding: true
+    // default config.
+    const editorInit = {
+      height: 500,
+      menubar: true,
+      statusbar: true,
+      toolbar_sticky: false,
+      elementpath: false,
+      plugins: 'wordcount lists code table',
+      placeholder:'Here starts with your story~~',
+      toolbar:'undo redo | bold italic underline | alignleft aligncenter alignright | ' +
+      'bullist numlist outdent indent | table | code',
+      branding: true
   };
 </script>
 

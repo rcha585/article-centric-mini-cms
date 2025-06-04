@@ -1,45 +1,40 @@
-// src/routes/articles/[id]/+page.js
-import { error } from "@sveltejs/kit";
+export async function load({ params, fetch }) {
+  const id = params.id;
 
-export async function load({ fetch, params }) {
-  const { id } = params;
+  const BASE_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
 
-  // 1) Fetch the article itself
-  const articleRes = await fetch(`http://localhost:3000/api/articles/${id}`);
-  if (articleRes.status === 404) {
-    throw error(404, "Article not found");
-  }
+  // fetch article information
+  const articleRes = await fetch(`${BASE_URL}/articles/${id}`);
   if (!articleRes.ok) {
-    throw error(articleRes.status, `Could not fetch article (${articleRes.status})`);
+    return { error: true, status: articleRes.status };
   }
   const article = await articleRes.json();
 
-  // 2) Fetch the comments for that article
-  const commentsRes = await fetch(`http://localhost:3000/api/articles/${id}/comments`);
-  if (!commentsRes.ok) {
-    // You could return an empty array instead of error if you prefer:
-    // const comments = [];
-    // Or, throw if you really want to fail:
-    throw error(commentsRes.status, `Could not fetch comments (${commentsRes.status})`);
-  }
-  const comments = await commentsRes.json();
-  // Each comment object already has a `username` property:
-  //    e.g. { id: 2, content: "Very informative.", created_at: "...", username: "janedoe" }
-
-  // 3) Fetch the user row for article.author_id
-  const userRes = await fetch(`http://localhost:3000/api/users/${article.author_id}`);
-  if (userRes.status === 404) {
-    article.username = "Unknown";
-  } else if (!userRes.ok) {
-    throw error(userRes.status, `Could not fetch author (${userRes.status})`);
-  } else {
-    const user = await userRes.json();
-    article.username = user.username;
+  // fetch author information
+  let user = null;
+  if (article.author_id) {
+    const userRes = await fetch(`${BASE_URL}/users/${article.author_id}`);
+    if (userRes.ok) user = await userRes.json();
   }
 
-  // 4) Return BOTH the article and the comments array
+  // fetch tags
+  const tagsRes = await fetch(`${BASE_URL}/articles/${id}/tags`);
+  const tags = tagsRes.ok ? await tagsRes.json() : [];
+
+  // fetch likes
+  const likesRes = await fetch(`${BASE_URL}/articles/${id}/likes`);
+  const likes = likesRes.ok ? (await likesRes.json()).length : 0;
+
+  // fetch comments
+  const commentsRes = await fetch(`${BASE_URL}/articles/${id}/comments`);
+  const comments = commentsRes.ok ? await commentsRes.json() : [];
+
   return {
     article,
-    comments
+    user,
+    tags,
+    likes,
+    comments,
+    error: false
   };
-}
+};
