@@ -44,7 +44,7 @@ router.post("/", async (req, res) => {
 router.get("/", requiresAuthentication, async (req, res) => {
   if (req.user.is_admin) {
     const db = await getDatabase();
-    const users = await db.all("SELECT id, username, first_name, last_name, date_of_birth, description, avatar_id FROM users");
+    const users = await db.all("SELECT u.id, u.username, u.first_name, u.last_name, u.date_of_birth, u.description, a.avatar_path FROM users AS u LEFT JOIN avatars AS a ON u.avatar_id = a.id");
     return res.status(200).json(users);
   }
   if (!req.query.username) {
