@@ -81,6 +81,26 @@
   </ul>
 {/if}
 
+{#each articles as article (article.id)}
+  <div class="card">
+    <!-- ...other card stuff... -->
+
+    <!-- Tags Section -->
+    <div class="tags-list">
+      {#if article.tags && article.tags.length > 0}
+        {#each article.tags as tag}
+          <span class="tag">#{tag}</span>
+        {/each}
+      {:else}
+        <span class="tag tag-empty">No tags</span>
+      {/if}
+    </div>
+
+    <!-- ...created at, author, read more... -->
+  </div>
+{/each}
+
+
 <style>
   .controls {
     display: flex;
@@ -103,4 +123,22 @@
   .error {
     color: red;
   }
+
+  .tags-list {
+  margin-bottom: 0.75rem;
+}
+.tag {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #2563eb;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  margin-right: 0.25rem;
+  padding: 0.15rem 0.7rem;
+}
+.tag-empty {
+  color: #64748b;
+}
+
 </style>
+

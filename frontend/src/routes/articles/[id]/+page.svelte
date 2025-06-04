@@ -1,17 +1,7 @@
-<!-- src/routes/articles/[id]/+page.svelte -->
 <script>
-  // SvelteKit will inject “data” exactly as you returned it above.
-  // So data.article is the full article object, and data.comments is the array.
   export let data;
 
   const { article, comments } = data;
-  // Now `article.username` exists (injected from load())
-  // and `comments` is an array like:
-  // [
-  //   { id: 1, content: "Nice article!", created_at: "...", username: "admin_user", … },
-  //   { id: 2, content: "Very informative.", created_at: "2025-05-02", username: "janedoe", … },
-  //   …
-  // ]
 </script>
 
 <svelte:head>
