@@ -1,9 +1,52 @@
 <script>
   import { page } from "$app/stores";
+  import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+
   $: path = $page.url.pathname;
   
   // default value, future extension.
+  let user = null;
+
+  let showProfileDropdown = false;
+  const PUBLIC_API_BASE_URL = "http://localhost:3000/api"; 
+
+  // Placeholder: set to false or implement logic to check for unread notifications
   let hasUnread = false;
+
+  onMount(async () => {
+    // Fetch user data from the API
+    try {
+      const response = await fetch(`${PUBLIC_API_BASE_URL}/user`, {
+        credentials: 'include' // Include cookies for authentication
+      });
+      if (response.ok) {
+        user = await response.json();
+      } else {
+        user = null; // Clear user data if the request fails
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      user = null; // Clear user data on error
+    }
+  });
+
+  async function handleLogout() {
+    try {
+      const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include' // Include cookies for authentication
+      });
+      if (response.ok) {
+        user = null; // Clear user data on logout
+        goto('/'); 
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  }
 </script>
 
 <nav class="nav-bar">
@@ -28,7 +71,20 @@
           <span class="notif-dot"></span>
         {/if}
       </a>
+
+      {#if !user}
       <a href="/login" class="nav-login">Login</a>
+      {:else}
+      <button type="button" class="avatar-wrapper" on:click={() => showProfileDropdown = !showProfileDropdown}>
+        <img src={`${PUBLIC_API_BASE_URL}/avatars/${user.avatar_id}.png`} alt="Avatar" class="avatar-img-header" />
+        </button>
+    
+        {#if showProfileDropdown}
+          <div class="avatar-dropdown">
+            <button on:click={handleLogout}>Logout</button>
+          </div>
+        {/if}
+      {/if}
     </div>
   </div>
 </nav>
@@ -39,6 +95,7 @@
     background: linear-gradient(90deg, #39c4fa 0%, #4683ea 100%);
     box-shadow: 0 2px 8px rgba(65,100,180,0.06);
     padding: 0;
+
     margin: 0;
   }
   .nav-inner {
@@ -147,5 +204,38 @@
     background: #e14a5e;
     border-radius: 50%;
     border: 2px solid #fff;
+  }
+  .avatar-img-header {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .avatar-wrapper {
+    position: relative;
+  }
+  .avatar-dropdown {
+    position: absolute;
+    top: 60px; /* 让菜单靠近 Header 下方 */
+    right: 10px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+  }
+  .avatar-dropdown button {
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  .avatar-dropdown button:hover {
+    background: #f2f7ff;
   }
 </style>
