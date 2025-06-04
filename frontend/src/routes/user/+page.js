@@ -4,7 +4,7 @@ import { PUBLIC_API_BASE_URL } from "$env/static/public";
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch }) {
   /* ---------- User login ---------- */
-  const meRes = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, { credentials: "include" });
+  const meRes = await fetch("http://localhost:3000/api/auth/me", { credentials: "include" });
 
   if (meRes.status === 401) throw redirect(302, "/login");
   if (!meRes.ok) throw error(meRes.status, await meRes.text());
@@ -13,8 +13,8 @@ export async function load({ fetch }) {
 
   /* ---------- My articles and all articles ---------- */
   const [myArtsRes, allArtsRes] = await Promise.all([
-    fetch(`${PUBLIC_API_BASE_URL}/users/${rawUser.id}/articles`, { credentials: "include" }),
-    fetch(`${PUBLIC_API_BASE_URL}/articles`)
+    fetch("http://localhost:3000/api/users/${rawUser.id}/articles", { credentials: "include" }),
+    fetch("http://localhost:3000/api/articles")
   ]);
 
   if (!allArtsRes.ok) throw error(allArtsRes.status, "cannot find the article");
@@ -24,7 +24,7 @@ export async function load({ fetch }) {
 
 	/* ---------- subscribers ---------- */
 	const subsRes = await fetch(
-   		`${PUBLIC_API_BASE_URL}/users/${rawUser.id}/subscriptions`,
+   		"http://localhost:3000/api/users/${rawUser.id}/subscriptions",
    		{ credentials: 'include' }
  	);
   	let subscriberCount = 0;

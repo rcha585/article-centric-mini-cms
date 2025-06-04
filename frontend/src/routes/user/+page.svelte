@@ -21,7 +21,7 @@
 
   onMount(async () => {
     try {
-      const response = await fetch(`${PUBLIC_API_BASE_URL}/avatars`, {
+      const response = await fetch("http://localhost:3000/api/avatars", {
         credentials: 'include',
       });
       if (response.ok) {
@@ -54,7 +54,7 @@
     }
 
     try {
-      const response = await fetch(`${PUBLIC_API_BASE_URL}/users`, {
+      const response = await fetch("http://localhost:3000/api/users", {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
