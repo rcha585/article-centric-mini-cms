@@ -3,7 +3,7 @@
   import ArticleCard from '$lib/components/ArticleCard.svelte';
 
   let { articles = [] } = data;
-
+  
   import { goto } from '$app/navigation';
   function toDetail(e) {
     goto(`/articles/${e.detail.id}`);

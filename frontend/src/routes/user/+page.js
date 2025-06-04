@@ -107,6 +107,8 @@ export async function load({ fetch }) {
 	const user = {
 		id: rawUser.id,
 		username: rawUser.username,
+		firstName: rawUser.first_name,
+		lastName: rawUser.last_name,
 		avatar: `/api/avatars/${rawUser.avatar_id}.png`,
 		introduction: rawUser.description ?? '',
 		likedPosts: likedArticles.length,
