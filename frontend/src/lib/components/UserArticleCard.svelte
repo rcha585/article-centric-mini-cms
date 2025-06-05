@@ -11,9 +11,9 @@
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
-  function handleEdit()     { dispatch("edit",     { id: article.id }); }
+  function handleEdit() { dispatch("edit",     { id: article.id }); }
   function handleReadMore() { dispatch("readmore", { id: article.id }); }
-  function handleDelete()   { dispatch("delete",   { id: article.id }); }
+  function handleDelete() { dispatch("delete",   { id: article.id }); }
 </script>
 
 <div class="user-article-card">
@@ -45,8 +45,8 @@
       </div>
     {/if}
 
-    <!-- NEW: Move Likes into its own row, slightly below tags/excerpt -->
     <div class="likes-row">
+      <!-- add likes icon -->
       <img src="/icons/like.svg" alt="Likes" class="icon-like" />
       <span class="likes-count">Likes: {article.likes}</span>
     </div>

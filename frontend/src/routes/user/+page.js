@@ -40,8 +40,7 @@ export async function load({ fetch }) {
 	const mapArticle = (a) => ({
 		id: a.id,
 		title: a.title,
-		excerpt:
-			a.content.length > 120 ? a.content.slice(0, 117) + '...' : a.content,
+		excerpt: a.content.replace(/<[^>]+>/g, "").slice(0, 120),
 		createdAt: a.created_at,
 		coverUrl: a.image_path
     		? (a.image_path.startsWith('/') ? a.image_path : `/${a.image_path}`)
@@ -94,7 +93,17 @@ export async function load({ fetch }) {
     	comments.filter((c) => c.username === rawUser.username).forEach((c) =>
      		myComments.push({ ...c, articleTitle: art.title })
       	);
-  		})
+
+		try {
+			const tagRes = await fetch(`${PUBLIC_API_BASE_URL}/articles/${art.id}/tags`);
+			if (tagRes.ok) {
+			const tagJson = await tagRes.json(); 
+			art.tags = tagJson.map((t) => t.content.replace(/^#/, "")); 
+			}
+			} catch (err) {
+				art.tags = [];
+			}
+		})
 	);
 
 	console.log('== user ==', rawUser);
@@ -109,7 +118,9 @@ export async function load({ fetch }) {
 		username: rawUser.username,
 		firstName: rawUser.first_name,
 		lastName: rawUser.last_name,
+		// 抓得住吗？？
 		avatar: `/api/avatars/${rawUser.avatar_id}.png`,
+		avatar_id: rawUser.avatar_id,
 		introduction: rawUser.description ?? '',
 		likedPosts: likedArticles.length,
 		subscribers: subscriberCount 

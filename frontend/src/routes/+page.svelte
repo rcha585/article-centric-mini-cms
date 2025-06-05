@@ -20,6 +20,9 @@
     if (sortType === 'title') {
       return (a.title || '').localeCompare(b.title || '');
     }
+    if (sortType === 'author') {
+      return (a.author.name || '').localeCompare(b.author.name || '');
+    }
     return 0;
   });
 
@@ -55,6 +58,7 @@
 <div class="sort-row">
   <button class:active={sortType === 'date'} on:click={() => setSort('date')}>Sort by Time</button>
   <button class:active={sortType === 'title'} on:click={() => setSort('title')}>Sort by Title</button>
+  <button class:active={sortType === 'author'} on:click={() => setSort('author')}>Sort by Author</button>
 </div>
 
 <!-- Article cards grid with paging -->

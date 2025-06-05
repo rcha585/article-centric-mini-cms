@@ -3,6 +3,7 @@
   export let defaultTitle   = '';
   export let defaultTags    = '';
   export let defaultContent = '';
+  export let defaultCover   = '';
   export let apiKey         = '';
   import { createEventDispatcher } from 'svelte';
   import RichEditor from '$lib/components/RichEditor.svelte';
@@ -13,6 +14,10 @@
   let title   = defaultTitle;
   let tags    = defaultTags;
   let content = defaultContent;
+
+  let existingCoverUrl = defaultCover
+    ? `http://localhost:3000/${defaultCover}`
+    : '/default-image.jpg';
 
   /* cover-upload state (plain JS) */
   let coverFile  = null;      // File | null
