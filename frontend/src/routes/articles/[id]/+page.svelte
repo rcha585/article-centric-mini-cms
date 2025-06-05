@@ -63,8 +63,9 @@
       <!-- if cannot find picture, use defualt picture -->
       <img
         class="article-image"
-        src={"/" + (article.image_path && article.image_path.trim() ? article.image_path : "images/default-image.jpg")}
+        src={article.image_path && article.image_path.trim() ? article.image_path : "/default-image.jpg"}
         alt="cover"
+        on:error={(e) => e.target.src = "/default-image.jpg"}
       />
       <div class="article-content">{@html article.content}</div>
 
