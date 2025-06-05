@@ -9,6 +9,10 @@
   let user = null;
   let search = "";
 
+  // (added) track whether we do an exact or partial match
+  // 'exact' means send the query literally; 'partial' means wrap in %…%
+  let matchType = "exact";
+
   let showProfileDropdown = false;
   const PUBLIC_API_BASE_URL = "http://localhost:3000/api"; 
 
@@ -49,12 +53,24 @@
     }
   }
 
+  // Modified handleSearch to wrap with %…% if matchType==='partial'
   function handleSearch(e) {
     e.preventDefault();
-    if (search.trim()) {
-      goto(`/search?q=${encodeURIComponent(search.trim())}`);
+    const trimmed = search.trim();
+    if (!trimmed) {
+      // If input is empty, just go to /search (no q parameter)
+      goto(`/search`);
+      return;
     }
+
+    // If partial, wrap in %...%
+    const finalQuery = matchType === "partial"
+      ? `%${trimmed}%`
+      : trimmed;
+
+    goto(`/search?q=${encodeURIComponent(finalQuery)}`);
   }
+  
 </script>
 
 <nav class="nav-bar">
@@ -70,6 +86,26 @@
       />
       <button type="submit" aria-label="Search">🔍</button>
     </form>
+
+    <!-- (added) EXACT / PARTIAL TOGGLE BUTTONS -->
+    <div class="match-toggle">
+      <button
+        type="button"
+        class:selected={matchType === "exact"}
+        on:click={() => (matchType = "exact")}
+      >
+        Exact
+      </button>
+      <button
+        type="button"
+        class:selected={matchType === "partial"}
+        on:click={() => (matchType = "partial")}
+      >
+        Partial
+      </button>
+    </div>
+
+
     <!-- main navigation, path need modify -->
     <div class="nav-tabs">
       <a href="/" class:active-tab={path === "/"}>Articles</a>
@@ -77,6 +113,8 @@
       <a href="/user" class:active-tab={path.startsWith("/user")}>Me</a>
     </div>
 
+
+    <!-- ========== RIGHT SIDE (Notifications & Profile) ========== -->
     <div class="nav-right">
       <a href="/notifications" class="notif-bell">
         <span class="icon-bell">🔔</span>
@@ -156,6 +194,34 @@
     padding: 2px 8px;
   }
 
+
+  /* ========== (added) EXACT / PARTIAL TOGGLE ========== */
+  .match-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 16px;
+  }
+  .match-toggle button {
+    all: unset;
+    padding: 4px 8px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  .match-toggle button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  .match-toggle button.selected {
+    background-color: #fff;
+    color: #4683ea;
+    border-color: #fff;
+  }
+
+
+  /* ========== NAV TABS ========== */
   .nav-tabs {
     display: flex;
     gap: 30px;
