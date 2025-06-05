@@ -3,12 +3,13 @@
 
   let liked = false;
   let showComments = false;
+  let newComment = "";
 
   const article = data.article;
   const user = data.user;
   const tags = data.tags || [];
   let likes = data.likes || 0;
-  const comments = data.comments || [];
+  let comments = data.comments ? [...data.comments] : [];
 
   function handleLike() {
     liked = !liked;
@@ -18,10 +19,29 @@
   function toggleComments() {
     showComments = !showComments;
   }
+  
   function formatDate(dateStr) {
     if (!dateStr) return "";
     return new Date(dateStr).toLocaleDateString();
   }
+
+  function postComment() {
+  if (!newComment.trim()) return;
+
+  comments = [
+    ...comments,
+    {
+      id: comments.length ? Math.max(...comments.map(c => c.id)) + 1 : 1,
+      username: "currentuser",  // Replace with actual username if you have authentication
+      content: newComment,
+      created_at: new Date().toISOString()
+    }
+  ];
+  newComment = "";
+}
+
+
+
 </script>
 
 {#if data.error}
@@ -96,9 +116,18 @@
             {/each}
           {/if}
           <div class="comment-input-row">
-            <input type="text" placeholder="Add a comment..." class="comment-input" />
-            <button class="btn btn-toggle" style="margin-left:8px;">Comment</button>
+            <input
+              type="text"
+              placeholder="Add a comment..."
+              class="comment-input"
+              bind:value={newComment}
+              on:keydown={(e) => { if (e.key === 'Enter') postComment(); }}
+            />
+            <button class="btn btn-toggle" style="margin-left:8px;" on:click={postComment}>
+            Comment
+            </button>
           </div>
+
         {/if}
       </div>
     </div>
