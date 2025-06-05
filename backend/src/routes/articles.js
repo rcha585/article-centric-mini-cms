@@ -185,3 +185,15 @@ router.delete("/:aid/tags/:tid", requiresAuthentication, async (req, res) => {
   await db.run("DELETE FROM taggings WHERE article_id = ? AND tag_id = ?", req.params.aid, req.params.tid);
   return res.sendStatus(204);
 });
+
+router.get("/:aid/tags", async (req, res) => {
+  const db = await getDatabase();
+  const tags = await db.all(
+    `SELECT tags.id, tags.content
+     FROM tags
+     INNER JOIN taggings ON taggings.tag_id = tags.id
+     WHERE taggings.article_id = ?`,
+    req.params.aid
+  );
+  return res.status(200).json(tags);
+});

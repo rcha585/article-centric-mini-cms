@@ -13,10 +13,10 @@
       statusbar: true,
       toolbar_sticky: false,
       elementpath: false,
-      plugins: 'wordcount lists link image code table',
+      plugins: 'wordcount lists code table',
       placeholder:'Here starts with your story~~',
       toolbar:'undo redo | bold italic underline | alignleft aligncenter alignright | ' +
-      'bullist numlist outdent indent | link image table | code',
+      'bullist numlist outdent indent | table | code',
       branding: true
   };
 </script>

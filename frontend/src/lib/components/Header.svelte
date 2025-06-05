@@ -6,6 +6,8 @@
 
   $: path = $page.url.pathname;
 
+  /* ------ the below is for the notification bar ------ */
+
   async function handleClickNotification() {
 		// Fetch full list
 		const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications`, { credentials: 'include' });
@@ -23,12 +25,12 @@
   let highlightIds = [];
   $: highlightIds = $newNotificationIds;
 
-  let showDropdown = false;
+  let showNotiDropdown = false;
   let notifWrapper;
 
   async function onClickNotification() {
     await handleClickNotification(); // Mark as viewed or store newNotificationIds
-    showDropdown = !showDropdown;
+    showNotiDropdown = !showNotiDropdown;
   }
 
   function truncateChars(text, charLimit) {
@@ -37,7 +39,7 @@
 
   function handleClickOutside(event) {
     if (notifWrapper && !notifWrapper.contains(event.target)) {
-      showDropdown = false;
+      showNotiDropdown = false;
     }
   }
 
@@ -47,7 +49,46 @@
   });
 
   export let myNotifications = [];
+  
+  /* ------ the below is for the login bar ------ */
 
+  let user = null;
+
+  let showProfileDropdown = false;
+
+  onMount(async () => {
+    // Fetch user data from the API
+    try {
+      const response = await fetch(`${PUBLIC_API_BASE_URL}/user`, {
+        credentials: 'include' // Include cookies for authentication
+      });
+      if (response.ok) {
+        user = await response.json();
+      } else {
+        user = null; // Clear user data if the request fails
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      user = null; // Clear user data on error
+    }
+  });
+
+  async function handleLogout() {
+    try {
+      const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include' // Include cookies for authentication
+      });
+      if (response.ok) {
+        user = null; // Clear user data on logout
+        goto('/'); 
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  }
 </script>
 
 <nav class="nav-bar">
@@ -67,44 +108,58 @@
     
     <div class="nav-right">
       <div class="notif-wrapper" bind:this={notifWrapper}>
-      <button class="notif-bell" on:click={onClickNotification}>
-        <span class="icon-bell">🔔</span>
-        {#if $unviewedCount > 0}
-          <span class="notif-dot">{$unviewedCount}</span>
-        {/if}
-      </button>
-      {#if showDropdown}
-      <div class="notif-box">
-        <!-- loop over notifications -->
-        <p>All notifications (to remove): {myNotifications.length}</p>
-        {#each myNotifications as n,i}
-        <div class="notification-card {highlightIds.includes(n.id) ? 'highlight' : ''}">
-          <img
-            class="notification-cover"
-            src={n.authorUrl || n.userUrl || '/default-cover.png'}
-            alt={n.article_title}
-          />
-          
-          <div class="notification-content">
-            {#if n.comment_id}
-            <p class="notification-sender"><b>"Replace commentername"</b> added a comment to {n.article_title}</p>
-            <p class="notification-preview">{truncateChars(n.comment_content,50)}</p>
-            <p class="notification-date">{n.created_at}</p>
-            {:else}
-            <p class="notification-sender"><b>"Replace authorname"</b> Published a new article: {n.article_title}</p>
-            <p class="notification-preview">{truncateChars(n.article_content, 50)}</p>
-            <p class="notification-date">{n.created_at}</p>
-            {/if}
-          
-          </div>
-          
-        </div>
-        {/each}
-      </div>
-      {/if}
-    </div>
+      
+        <button class="notif-bell" on:click={onClickNotification}>
+          <span class="icon-bell">🔔</span>
+          {#if $unviewedCount > 0}
+            <span class="notif-dot">{$unviewedCount}</span>
+          {/if}
+        </button>
 
+        {#if showNotiDropdown}
+        <div class="notif-box">
+          <!-- loop over notifications -->
+          <p>All notifications (to remove): {myNotifications.length}</p>
+          {#each myNotifications as n,i}
+          <div class="notification-card {highlightIds.includes(n.id) ? 'highlight' : ''}">
+            <img
+              class="notification-cover"
+              src={n.authorUrl || n.userUrl || '/default-cover.png'}
+              alt={n.article_title}
+            />
+            
+            <div class="notification-content">
+              {#if n.comment_id}
+              <p class="notification-sender"><b>"Replace commentername"</b> added a comment to {n.article_title}</p>
+              <p class="notification-preview">{truncateChars(n.comment_content,50)}</p>
+              <p class="notification-date">{n.created_at}</p>
+              {:else}
+              <p class="notification-sender"><b>"Replace authorname"</b> Published a new article: {n.article_title}</p>
+              <p class="notification-preview">{truncateChars(n.article_content, 50)}</p>
+              <p class="notification-date">{n.created_at}</p>
+              {/if}
+            
+            </div>
+            
+          </div>
+          {/each}
+        </div>
+        {/if}
+      </div>
+
+      {#if !user}
       <a href="/login" class="nav-login">Login</a>
+      {:else}
+      <button type="button" class="avatar-wrapper" on:click={() => showProfileDropdown = !showProfileDropdown}>
+        <img src={`${PUBLIC_API_BASE_URL}/avatars/${user.avatar_id}.png`} alt="Avatar" class="avatar-img-header" />
+        </button>
+    
+        {#if showProfileDropdown}
+          <div class="avatar-dropdown">
+            <button on:click={handleLogout}>Logout</button>
+          </div>
+        {/if}
+      {/if}
     </div>
   </div>
 </nav>
@@ -115,6 +170,7 @@
     background: linear-gradient(90deg, #39c4fa 0%, #4683ea 100%);
     box-shadow: 0 2px 8px rgba(65,100,180,0.06);
     padding: 0;
+
     margin: 0;
   }
   .nav-inner {
@@ -232,6 +288,8 @@
     right: -10px;
   }
 
+  /* ------ the below is for the notification box ------ */
+ 
   .notif-box {
   position: absolute;
   top: 100%; /* Just below the bell */
@@ -278,21 +336,41 @@
 
   .notification-card.highlight {
   background-color: #d1e7fd; /* example: light blue background */
-  /* or any other color property you want to change */
   }
 
-  /* .notification-cover {
-    width: 100%;
-    height: 148px;
+/* ------ the below is for the login bar ------ */
+  .avatar-img-header {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     object-fit: cover;
-    object-position: center;
-    background: #f3f3f3;
-    border-bottom: 1px solid #e5e6e8;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
   }
-  .notification-content {
-    padding: 18px 18px 14px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  } */
+  .avatar-wrapper {
+    position: relative;
+  }
+  .avatar-dropdown {
+    position: absolute;
+    top: 60px; /* 让菜单靠近 Header 下方 */
+    right: 10px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+  }
+  .avatar-dropdown button {
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  .avatar-dropdown button:hover {
+    background: #f2f7ff;
+  }
+
 </style>
