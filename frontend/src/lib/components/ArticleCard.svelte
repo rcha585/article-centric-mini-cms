@@ -1,18 +1,22 @@
 <script>
+  // Props: article object and max length of excerpt
   export let article;
   export let maxExcerptLength = 50;
 
+  // Create preview text, clipped if too long
   $: previewText =
     article.excerpt.length > maxExcerptLength
       ? `${article.excerpt.slice(0, maxExcerptLength)}…`
       : article.excerpt;
 
+  // Format created date
   $: createdDate = new Date(article.createdAt).toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric"
   });
 
+  // Event dispatcher for "Read More" button
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
@@ -23,18 +27,20 @@
 </script>
 
 <article class="article-card">
+  <!-- Article Cover Image (fallback to default) -->
   <img
     class="article-cover"
-    src={article.coverUrl || '/default-cover.png'}
+    src={article.coverUrl || '/default-image.jpg'}
     alt={article.title}
+    on:error={(e) => (e.target.src = '/default-image.jpg')}
   />
 
   <div class="article-content">
+    <!-- Title and Excerpt -->
     <h3 class="article-title">{article.title}</h3>
     <p class="article-excerpt">{previewText}</p>
 
-    <!-- cannot fetch tags, future extension -->
-
+    <!-- Article Tags -->
     {#if article.tags?.length}
       <div class="article-tags">
         {#each article.tags as tag}
@@ -43,29 +49,34 @@
       </div>
     {/if}
 
-    <div class="article-meta">
-      <div class="meta-row">
-        <span class="meta-label">Created<br />at</span>
-        <span class="meta-date">{createdDate}</span>
+    <!-- Meta Info Row: Created at / By -->
+    <div class="article-meta-row">
+      <div class="meta-labels">
+        <div class="meta-label">Created at</div>
+        <div class="meta-label">By</div>
       </div>
-      <div class="meta-row">
-        <span class="meta-label">By</span>
-        <img
-          class="author-avatar"
-          src={article.author.avatarUrl || '/default-avatar.png'}
-          alt={article.author.name}
-        />
-        <span class="author-name">{article.author.name}</span>
+      <div class="meta-values">
+        <div class="meta-value">{createdDate}</div>
+        <div class="meta-value author">
+          <img
+            class="author-avatar"
+            src={article.author.avatarUrl || '/default-avatar.png'}
+            alt={article.author.name}
+          />
+          <span class="author-name">{article.author.name}</span>
+        </div>
       </div>
-      <button class="read-more-btn" on:click={handleReadMore}>
-        Read More
-      </button>
     </div>
+
+    <!-- Read More Button -->
+    <button class="read-more-btn" on:click={handleReadMore}>
+      Read More
+    </button>
   </div>
 </article>
 
-
 <style>
+  /* Main Card Style */
   .article-card {
     width: 100%;
     max-width: 340px;
@@ -82,6 +93,8 @@
   .article-card:hover {
     box-shadow: 0 6px 24px rgba(30, 50, 80, 0.16);
   }
+
+  /* Cover Image */
   .article-cover {
     width: 100%;
     height: 148px;
@@ -90,6 +103,8 @@
     background: #f3f3f3;
     border-bottom: 1px solid #e5e6e8;
   }
+
+  /* Content */
   .article-content {
     padding: 18px 18px 14px 18px;
     display: flex;
@@ -123,52 +138,57 @@
     letter-spacing: 0.01em;
     font-weight: 500;
   }
-  .article-meta {
-    margin-top: 10px;
+
+  /* Meta Row: Two Columns, Clean Layout */
+  .article-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 8px;
+    margin-bottom: 10px;
+    background: #eef1f5;
+    padding: 9px 12px;
+    border-radius: 11px;
+  }
+  .meta-labels {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    background: #eef1f5;
-    padding: 10px 0 0 0;
-    border-radius: 0 0 16px 16px;
+    gap: 16px;
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 1em;
+    min-width: 80px;
   }
-
-
-  .meta-row {
+  .meta-values {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+  }
+  .meta-value {
+    color: #475569;
+    font-size: 0.99em;
+  }
+  .meta-value.author {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 2px;
+    gap: 7px;
   }
-  .meta-label {
-    font-weight: bold;
-    color: #384860;
-    font-size: 1rem;
-    min-width: 54px;
-  }
-  .meta-date {
-    color: #858ea1;
-    font-size: 0.97rem;
-  }
-
-
   .author-avatar {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     object-fit: cover;
-    margin-left: 8px;
-    border: 1.5px solid #e2e5ea;
+    border: 1.2px solid #e2e8f0;
     background: #fff;
   }
   .author-name {
-    margin-left: 6px;
-    font-size: 0.97rem;
-    color: #35405a;
     font-weight: 500;
+    color: #1e293b;
+    font-size: 1em;
   }
 
-  
+  /* Read More Button */
   .read-more-btn {
     align-self: flex-end;
     margin-top: 4px;
@@ -176,7 +196,7 @@
     color: #fff;
     border: none;
     border-radius: 16px;
-    padding: 6px 24px;            
+    padding: 6px 24px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
