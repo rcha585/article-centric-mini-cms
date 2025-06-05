@@ -48,15 +48,27 @@
       console.error('Error during logout:', error);
     }
   }
+
+  function handleSearch(e) {
+    e.preventDefault();
+    if (search.trim()) {
+      goto(`/search?q=${encodeURIComponent(search.trim())}`);
+    }
+  }
 </script>
 
 <nav class="nav-bar">
   <div class="nav-inner">
     <div class="nav-logo">Blog Article</div>
-    <!-- search feature, future extension -->
-    <form class="nav-search">
-      <input type="text" placeholder="Search here..." />
-      <button type="submit">🔍</button>
+    <!-- search feature -->
+    <form class="nav-search" on:submit|preventDefault={handleSearch}>
+      <input
+        type="text"
+        placeholder="Search here..."
+        bind:value={search}
+        aria-label="Search"
+      />
+      <button type="submit" aria-label="Search">🔍</button>
     </form>
     <!-- main navigation, path need modify -->
     <div class="nav-tabs">
@@ -89,6 +101,7 @@
     </div>
   </div>
 </nav>
+
 
 <style>
   .nav-bar {

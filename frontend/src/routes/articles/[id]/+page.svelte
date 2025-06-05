@@ -1,9 +1,15 @@
 <script>
+  import { onMount } from 'svelte';
+
   export let data;
 
   let liked = false;
   let showComments = false;
   let newComment = "";
+  let users = [];
+  let filteredUsers = [];
+  let showSuggestions = false;
+  let mentionQuery = "";
 
   const article = data.article;
   const user = data.user;
@@ -14,7 +20,6 @@
   function handleLike() {
     liked = !liked;
     likes += liked ? 1 : -1;
-    // In real world: call like API here
   }
   function toggleComments() {
     showComments = !showComments;
@@ -40,7 +45,66 @@
   newComment = "";
 }
 
+  // Fetch all users on mount
+  onMount(async () => {
+    const res = await fetch("/api/users"); // Adjust this URL to your backend!
+    if (res.ok) {
+      users = await res.json();
+    }
+  });
+  
 
+  function handleInput(e) {
+  const cursorPos = e.target.selectionStart;
+  const value = newComment.slice(0, cursorPos);
+
+  // Find last @ and word after it
+  const atMatch = value.match(/@([a-zA-Z0-9_]*)$/);
+
+  if (atMatch) {
+    mentionQuery = atMatch[1];
+    if (mentionQuery.length > 0) {
+      filteredUsers = users.filter(u =>
+        u.username.toLowerCase().startsWith(mentionQuery.toLowerCase())
+      );
+      showSuggestions = filteredUsers.length > 0;
+    } else {
+      showSuggestions = false;
+    }
+  } else {
+    showSuggestions = false;
+  }
+}
+
+function selectUsername(username) {
+  // Replace the @mentionQuery with @username in the input
+  newComment = newComment.replace(/@([a-zA-Z0-9_]*)$/, `@${username} `);
+  showSuggestions = false;
+  mentionQuery = "";
+}
+
+ // --- ADD THESE FOR SAFE HIGHLIGHTING ---
+
+function escapeHtml(text) {
+    // Prevent XSS by escaping HTML except our mentions
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+  }
+
+function highlightMentions(text) {
+    // 1. Escape HTML
+    // 2. Replace @username with <span class="mention">@username</span>
+    return escapeHtml(text).replace(
+      /@([a-zA-Z0-9_]+)/g,
+      '<span class="mention">@$1</span>'
+    );
+  }
 
 </script>
 
@@ -109,25 +173,44 @@
                 <img class="comment-avatar" src={"/avatars/avatar" + ((c.id % 10) + 1) + ".png"} alt="avatar"/>
                 <div>
                   <div class="comment-username">{c.username}</div>
-                  <div class="comment-content">{c.content}</div>
+                  <div class="comment-content">
+                    {@html c.content.replace(/@([a-zA-Z0-9_]+)/g, '<span class="mention">@$1</span>')}
+                  </div>
                   <div class="comment-date">{formatDate(c.created_at)}</div>
                 </div>
               </div>
             {/each}
           {/if}
-          <div class="comment-input-row">
+          
+        <div class="comment-input-row">
             <input
               type="text"
               placeholder="Add a comment..."
               class="comment-input"
               bind:value={newComment}
-              on:keydown={(e) => { if (e.key === 'Enter') postComment(); }}
+              on:input={handleInput}
+              on:keydown={(e) => {
+                // Support Enter for submitting, ArrowDown for suggestions
+                if (showSuggestions && e.key === "ArrowDown") {
+                  // Focus first suggestion (optional, for advanced UX)
+                  const first = document.querySelector('.mention-suggestions li');
+                  if (first) first.focus();
+                } else if (e.key === 'Enter' && !showSuggestions) {
+                  postComment();
+                }
+              }}
             />
             <button class="btn btn-toggle" style="margin-left:8px;" on:click={postComment}>
-            Comment
+              Comment
             </button>
+            {#if showSuggestions}
+              <ul class="mention-suggestions">
+                {#each filteredUsers as u}
+                  <li tabindex="0" on:click={() => selectUsername(u.username)}>{u.username}</li>
+                {/each}
+              </ul>
+            {/if}
           </div>
-
         {/if}
       </div>
     </div>
@@ -368,4 +451,39 @@
         border-color: #60a5fa;
         outline: none;
     }
+
+    .mention-suggestions {
+        position: absolute;
+        background: #fff;
+        border: 1px solid #e0e7ef;
+        border-radius: 6px;
+        max-height: 130px;
+        overflow-y: auto;
+        box-shadow: 0 4px 24px #aaa7;
+        margin-top: 5px;
+        width: 210px;
+        z-index: 10;
+        list-style: none;
+        padding: 0;
+    }
+      .mention-suggestions li {
+        padding: 6px 12px;
+        cursor: pointer;
+        transition: background 0.12s;
+    }
+      .mention-suggestions li:hover {
+        background: #c7ebff;
+    }
+      .comment-input-row {
+        position: relative; /* So .mention-suggestions is positioned absolutely inside */
+    }
+
+      .mention {
+        color: #2563eb;
+        font-weight: 600;
+        background: #e0f2fe;
+        border-radius: 5px;
+        padding: 1px 4px;
+    }
+
 </style>
