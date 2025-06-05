@@ -1,13 +1,7 @@
 // use SvelteKkit throw error and redirect
 import { redirect, error } from '@sveltejs/kit';
 
-<<<<<<< HEAD
-//   return {
-//     article
-//   };
-// }
-=======
-const BASE_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
+const BASE_URL = import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ params, fetch }) {
@@ -37,4 +31,3 @@ export async function load({ params, fetch }) {
 
   return { article, tagStr };
 }
->>>>>>> origin/main

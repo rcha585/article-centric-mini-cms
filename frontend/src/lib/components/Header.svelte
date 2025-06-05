@@ -7,6 +7,7 @@
 
   // default value, future extension.
   let user = null;
+  let search = "";
 
   let showProfileDropdown = false;
   const PUBLIC_API_BASE_URL = "http://localhost:3000/api"; 
@@ -17,7 +18,7 @@
   onMount(async () => {
     // Fetch user data from the API
     try {
-      const response = await fetch(`${PUBLIC_API_BASE_URL}/user`, {
+      const response = await fetch("http://localhost:3000/user", {
         credentials: 'include' // Include cookies for authentication
       });
       if (response.ok) {
@@ -33,7 +34,7 @@
 
   async function handleLogout() {
     try {
-      const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/logout`, {
+      const response = await fetch("http://localhost:3000/auth/logout", {
         method: 'POST',
         credentials: 'include' // Include cookies for authentication
       });
@@ -76,7 +77,7 @@
       <a href="/login" class="nav-login">Login</a>
       {:else}
       <button type="button" class="avatar-wrapper" on:click={() => showProfileDropdown = !showProfileDropdown}>
-        <img src={`${PUBLIC_API_BASE_URL}/avatars/${user.avatar_id}.png`} alt="Avatar" class="avatar-img-header" />
+        <img src={`/avatars/${user.avatar_id}.png`} alt="Avatar" class="avatar-img-header" />
         </button>
     
         {#if showProfileDropdown}
