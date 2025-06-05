@@ -59,7 +59,7 @@
   onMount(async () => {
     // Fetch user data from the API
     try {
-      const response = await fetch(`${PUBLIC_API_BASE_URL}/user`, {
+      const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, {
         credentials: 'include' // Include cookies for authentication
       });
       if (response.ok) {
