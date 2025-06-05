@@ -1,97 +1,150 @@
 <script>
-  // Receive data prop from parent or +page.js load function.
-  // Data shape: { articles, totalCount, page, perPage, search }
   export let data;
 
-  // Destructure with default values to avoid runtime errors if any field is missing.
   const {
-    articles = [],        // List of article objects to display
-    totalCount = 0,       // Total number of articles matching the query
-    page = 1,             // Current page number (1-based)
-    perPage = 6,          // How many articles per page
-    search = ""           // Current search query (string)
+    articles = [],
+    totalCount = 0,
+    page = 1,
+    perPage = 6,
+    search = ""
   } = data;
 
-  // Calculate the total number of pages needed for pagination.
   const totalPages = Math.ceil(totalCount / perPage);
 
-  /**
-   * Navigate to a specific page number while retaining the current search query.
-   * Uses window.location for a full reload; in SvelteKit, you could use goto from $app/navigation for SPA navigation.
-   * @param {number} p - The page number to go to.
-   */
+  // Track which tab is active.
+  let selectedTab = "all";
+
   function goToPage(p) {
-    // Encode the search query for safe URL usage
     window.location.href = `/search?query=${encodeURIComponent(search)}&page=${p}`;
   }
 </script>
 
-<!-- =================== PAGE LAYOUT =================== -->
-
-<!-- GRADIENT BACKGROUND & WRAPPER -->
 <div class="search-background">
-  <!-- Content container to center and style the articles list -->
   <div class="content-wrapper">
     <h2 class="all-articles-title">All Articles</h2>
 
-    <!-- If no articles, show friendly message -->
     {#if articles.length === 0}
-      <p style="color: #223; font-size: 1.1em; margin-top: 1.5em;">
-        No articles found{search ? ` for "${search}"` : ""}. Try adjusting your search or check back later.
+      <p class="no-results">
+        No articles found{search ? ` for "${search}"` : ""}.<br/>
+        Try adjusting your search or check back later.
       </p>
     {:else}
+
+      <!-- TAB BAR -->
+      <div class="tab-bar">
+        <button
+          class:selected={selectedTab === "all"}
+          on:click={() => (selectedTab = "all")}
+        >
+          All
+        </button>
+        <button
+          class:selected={selectedTab === "title"}
+          on:click={() => (selectedTab = "title")}
+        >
+          Title
+        </button>
+        <button
+          class:selected={selectedTab === "content"}
+          on:click={() => (selectedTab = "content")}
+        >
+          Content
+        </button>
+        <button
+          class:selected={selectedTab === "author"}
+          on:click={() => (selectedTab = "author")}
+        >
+          Author
+        </button>
+      </div>
+
+      <!-- ARTICLE LIST -->
       <ul class="article-list">
         {#each articles as article (article.id)}
           <li class="article-card">
-            <!-- Article thumbnail image, fallback background if missing -->
-            <img
-              class="thumbnail"
-              src={article.image_path}
-              alt={"Thumbnail for " + article.title}
-              on:error="{(e) => e.target.style.background='#e0e0e0'}"
-            />
+            {#if selectedTab === "all"}
+              <!-- FULL CARD: Thumbnail + Title + Snippet + Author -->
+              <img
+                class="thumbnail"
+                src={article.image_path}
+                alt={"Thumbnail for " + article.title}
+                on:error="{(e) => (e.target.style.background = '#e0e0e0')}"
+              />
 
-            <div class="info">
-              <!-- Article title, links to full article page -->
-              <h3>
-                <a href={`/articles/${article.id}`} class="article-link">
-                  {article.title}
-                </a>
-              </h3>
-              <!-- Article preview: show only the first 110 chars -->
-              <p class="desc">
-                {article.content.slice(0, 110)}{article.content.length > 110 ? "..." : ""}
-              </p>
-              <!-- Author info (you can link author page if needed) -->
-              <div class="meta">
-                By <span class="author">{article.username}</span>
+              <div class="info">
+                <h3>
+                  <a href={`/articles/${article.id}`} class="article-link">
+                    {article.title}
+                  </a>
+                </h3>
+                <p class="desc">
+                  {article.content.slice(0, 110)}
+                  {article.content.length > 110 ? "..." : ""}
+                </p>
+                <div class="meta">
+                  By <span class="author">{article.username}</span>
+                </div>
               </div>
-            </div>
+
+            {:else if selectedTab === "title"}
+              <!-- TITLE ONLY (no image, no snippet, no author) -->
+              <div class="info-only">
+                <h3>
+                  <a href={`/articles/${article.id}`} class="article-link">
+                    {article.title}
+                  </a>
+                </h3>
+              </div>
+
+            {:else if selectedTab === "content"}
+              <!-- CONTENT ONLY (no image, no title link, no author) -->
+              <div class="info-only">
+                <p class="desc-only">{article.content}</p>
+              </div>
+
+            {:else if selectedTab === "author"}
+              <!-- AUTHOR ONLY (no image, no title, no snippet) -->
+              <div class="info-only">
+                <p class="author-only">{article.username}</p>
+              </div>
+            {/if}
           </li>
         {/each}
       </ul>
     {/if}
 
-    <!-- PAGINATION CONTROLS: Show only if there are more than one page -->
+    <!-- PAGINATION (unchanged) -->
     {#if totalPages > 1}
       <div class="pagination">
-        <span>
-          Showing {(page - 1) * perPage + 1}
-          –
-          {Math.min(page * perPage, totalCount)}
-          of {totalCount} results
+        <span class="pagination-info">
+          Showing {(page - 1) * perPage + 1} – 
+          {Math.min(page * perPage, totalCount)} of {totalCount} results
         </span>
-        <!-- Previous page button -->
-        <button disabled={page === 1} on:click={() => goToPage(page - 1)} title="Previous Page">&lt;</button>
-        <!-- Next page button -->
-        <button disabled={page === totalPages} on:click={() => goToPage(page + 1)} title="Next Page">&gt;</button>
+        <button
+          class="page-button"
+          disabled={page === 1}
+          on:click={() => goToPage(page - 1)}
+          title="Previous Page"
+        >
+          &lt;
+        </button>
+        <button
+          class="page-button"
+          disabled={page === totalPages}
+          on:click={() => goToPage(page + 1)}
+          title="Next Page"
+        >
+          &gt;
+        </button>
       </div>
     {/if}
   </div>
 </div>
 
 <style>
-  /* GRADIENT BACKGROUND: Full-page soft blue gradient */
+  /* ============================================ */
+  /*  BACKGROUND + CONTENT WRAPPER (unchanged)     */
+  /* ============================================ */
   .search-background {
     min-height: 100vh;
     background: linear-gradient(110deg, #214a80 0%, #97a1b8 100%);
@@ -99,7 +152,6 @@
     font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   }
 
-  /* MAIN CONTENT AREA: Light glassmorphism box with rounded corners */
   .content-wrapper {
     background: linear-gradient(90deg, #fff6 60%, #fff5 100%);
     margin: 0 auto;
@@ -107,19 +159,54 @@
     width: 70vw;
     min-width: 340px;
     max-width: 820px;
-    padding: 30px 36px 30px 36px;
+    padding: 30px 36px;
     box-shadow: 0 4px 24px #0002;
   }
 
   .all-articles-title {
     font-size: 2rem;
     font-weight: 700;
-    color: #fff;
-    letter-spacing: 1.2px;
+    color: #214a80;
+    letter-spacing: 1px;
     margin-bottom: 16px;
   }
 
-  /* ARTICLE LISTING */
+  .no-results {
+    color: #223;
+    font-size: 1.1em;
+    margin-top: 1.5em;
+  }
+
+  /* ============================================ */
+  /*  TAB BAR STYLES                              */
+  /* ============================================ */
+  .tab-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .tab-bar button {
+    background: transparent;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #466bb8;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: border-bottom-color 0.2s, color 0.2s;
+  }
+  .tab-bar button:hover {
+    color: #204488;
+  }
+  .tab-bar button.selected {
+    color: #204488;
+    border-bottom-color: #204488;
+  }
+
+  /* ============================================ */
+  /*   ARTICLE LIST & “FULL CARD” (existing)       */
+  /* ============================================ */
   .article-list {
     list-style: none;
     margin: 0;
@@ -158,6 +245,7 @@
     font-weight: 500;
     color: #122341;
   }
+
   .desc {
     margin: 0 0 4px 0;
     color: #33416d;
@@ -165,38 +253,87 @@
     line-height: 1.4;
     max-width: 520px;
   }
+
   .meta {
     font-size: 0.93rem;
     color: #466bb8;
     margin-top: 2px;
   }
+
   .author {
     font-weight: 600;
   }
 
-  /* PAGINATION BUTTONS */
+  /* ============================================ */
+  /*   “INFO‐ONLY” STYLES FOR TITLE/CONTENT/AUTHOR */
+  /* ============================================ */
+  .info-only {
+    /* When we’re not in “all,” we don’t show the thumbnail */
+    flex: 1;
+    margin-left: 0;
+  }
+  .info-only h3 {
+    margin: 0;
+    font-size: 1.17rem;
+    font-weight: 500;
+    color: #122341;
+  }
+  .info-only h3 a {
+    text-decoration: none;
+    color: #204488;
+  }
+  .info-only h3 a:hover {
+    text-decoration: underline;
+  }
+
+  .desc-only {
+    margin: 0;
+    color: #33416d;
+    font-size: 0.98rem;
+    line-height: 1.4;
+  }
+
+  .author-only {
+    margin: 0;
+    color: #466bb8;
+    font-size: 0.98rem;
+    font-weight: 600;
+  }
+
+  /* Hide the <img> whenever selectedTab !== "all" */
+  /* We can accomplish this by “inlining” a style on the <img> itself inside the template, */
+  /* but if you prefer pure CSS, you could also do something like: */
+  /* li.article-card img[hidden] { display: none; } */
+  /* We already only render <img> in the “all” branch, so no extra CSS is strictly needed. */
+
+  /* ============================================ */
+  /*  PAGINATION (unchanged)                       */
+  /* ============================================ */
   .pagination {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 14px;
     margin-top: 22px;
-    color: #fff;
+    color: #214a80;
     font-size: 1.13rem;
   }
-  .pagination button {
+  .pagination-info {
+    flex: 1;
+    font-weight: 500;
+  }
+  .page-button {
     background: #e5eaff;
     color: #204488;
     border: none;
-    padding: 0.15em 0.9em;
+    padding: 0.3em 0.9em;
     border-radius: 999px;
     font-size: 1.1em;
-    margin: 0 2px;
     cursor: pointer;
     box-shadow: 0 1px 4px #0002;
     transition: background 0.17s;
   }
-  .pagination button:disabled {
+  .page-button:disabled {
     background: #bcc9dd;
     color: #6675a6;
     cursor: not-allowed;

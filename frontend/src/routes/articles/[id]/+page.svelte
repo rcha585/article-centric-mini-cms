@@ -56,22 +56,25 @@
 
   function handleInput(e) {
   const cursorPos = e.target.selectionStart;
+  const upToCursor = newComment.slice(0, cursorPos);
   const value = newComment.slice(0, cursorPos);
 
-  // Find last @ and word after it
-  const atMatch = value.match(/@([a-zA-Z0-9_]*)$/);
+  // Try to find “@” plus any trailing letters (if any)
+  const atMatch = upToCursor.match(/@([a-zA-Z0-9_]*)$/);
 
   if (atMatch) {
+    // atMatch[1] is the part after the “@”
     mentionQuery = atMatch[1];
     if (mentionQuery.length > 0) {
       filteredUsers = users.filter(u =>
         u.username.toLowerCase().startsWith(mentionQuery.toLowerCase())
       );
+    } else {
+      // If they’ve only typed “@” (no characters after), show ALL users
+      filteredUsers = users;
+    }
       showSuggestions = filteredUsers.length > 0;
     } else {
-      showSuggestions = false;
-    }
-  } else {
     showSuggestions = false;
   }
 }
@@ -105,6 +108,32 @@ function highlightMentions(text) {
       '<span class="mention">@$1</span>'
     );
   }
+
+  function splitByMentions(text) {
+    const parts = [];
+    let lastIndex = 0;
+    const regex = /@([a-zA-Z0-9_]+)/g;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      // If there was plain text before this mention, push it first
+      if (match.index > lastIndex) {
+        parts.push({ text: text.slice(lastIndex, match.index), isMention: false });
+      }
+      // Push the mention itself
+      parts.push({ text: match[0], isMention: true });
+      lastIndex = match.index + match[0].length;
+    }
+
+    // If anything remains after the last mention, push it as plain text
+    if (lastIndex < text.length) {
+      parts.push({ text: text.slice(lastIndex), isMention: false });
+    }
+
+    return parts;
+  }
+
+
 
 </script>
 
@@ -174,7 +203,13 @@ function highlightMentions(text) {
                 <div>
                   <div class="comment-username">{c.username}</div>
                   <div class="comment-content">
-                    {@html c.content.replace(/@([a-zA-Z0-9_]+)/g, '<span class="mention">@$1</span>')}
+                   {#each splitByMentions(c.content) as part}
+                      {#if part.isMention}
+                        <span class="mention">{part.text}</span>
+                      {:else}
+                        {part.text}
+                      {/if}
+                    {/each}
                   </div>
                   <div class="comment-date">{formatDate(c.created_at)}</div>
                 </div>
@@ -193,6 +228,7 @@ function highlightMentions(text) {
                 // Support Enter for submitting, ArrowDown for suggestions
                 if (showSuggestions && e.key === "ArrowDown") {
                   // Focus first suggestion (optional, for advanced UX)
+                  // (optional) move focus to the first suggestion
                   const first = document.querySelector('.mention-suggestions li');
                   if (first) first.focus();
                 } else if (e.key === 'Enter' && !showSuggestions) {
@@ -479,7 +515,7 @@ function highlightMentions(text) {
     }
 
       .mention {
-        color: #2563eb;
+        color: rgb(235, 37, 37);
         font-weight: 600;
         background: #e0f2fe;
         border-radius: 5px;
