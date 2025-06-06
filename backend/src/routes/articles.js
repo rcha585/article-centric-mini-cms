@@ -43,6 +43,9 @@ router.get("/", async (req, res) => {
     const key = req.query.match && req.query.match == "exact" ? req.query.key : `%${req.query.key}%`;
     articles = await db.all("SELECT a.*, u.username FROM articles AS a INNER JOIN users AS u On a.author_id = u.id WHERE a.title LIKE ? COLLATE NOCASE OR a.content LIKE ? COLLATE NOCASE OR u.username LIKE ? COLLATE NOCASE", [key, key, key]);
   }
+  if (articles.length == 0) {
+    return res.status(200).json(articles);
+  }
   const articleIds = articles.map(a => a.id);
   const placeHolders = articleIds.map(a => "?").join(",");
   const comments = await db.all(`SELECT * FROM comments WHERE article_id IN (${placeHolders})`, articleIds);
