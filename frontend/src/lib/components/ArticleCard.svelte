@@ -43,7 +43,7 @@
     <!-- Article Tags -->
     {#if article.tags?.length}
       <div class="article-tags">
-        {#each article.tags as tag}
+        {#each article.tags.slice(0, 4) as tag}
           <span class="article-tag">#{tag}</span>
         {/each}
       </div>

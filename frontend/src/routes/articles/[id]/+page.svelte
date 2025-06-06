@@ -372,8 +372,10 @@ function highlightMentions(text) {
         margin-bottom: 18px;
         font-size: 1.16em;
         line-height: 1.7;
-        color: #2e3a4c;
-        background: rgba(255,255,255,0.3);
+        color: #212736;
+        background: rgba(255,255,255,0.85);
+        word-break: break-word;
+        overflow-wrap: anywhere; 
         border-radius: 8px;
         padding: 1.1rem 1.2rem .5rem 1.2rem;
         min-height: 84px;

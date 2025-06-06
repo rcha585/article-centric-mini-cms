@@ -14,7 +14,7 @@ export async function load({ fetch }) {
         const tagRes = await fetch(`${PUBLIC_API_BASE_URL}/articles/${a.id}/tags`);
         if (tagRes.ok) {
           tags = await tagRes.json();
-          tags = tagJson.map((t) => t.content.replace(/^#/, ""));
+          tags = tags.map((t) => t.content.replace(/^#/, ""));
           // tags array is now ["tag"] instead of ["#tag"].
         }
       } catch (e) {
