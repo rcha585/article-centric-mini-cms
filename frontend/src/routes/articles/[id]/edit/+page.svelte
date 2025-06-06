@@ -20,25 +20,24 @@
     return arr.every(t => rule.test(t));
   }
 
-  // 当用户在编辑器里点击“保存”时，会派发一个 { detail: { title, tags, content, image_path } }
-  // 我们在这里收下，先做标签校验、再依次调用 PATCH 文章接口、然后更新 Taggings
+  // Called when ArticleEditor dispatches “publish”: { title, tags, content, image_path }
+  // take it first and then do validation, PATCH, taggings.
   async function handlePublish(e) {
     const { title, tags, content, image_path } = e.detail;
     const tagArr = parseTags(tags);
 
-    // 1. 标签格式校验
+    // Tag format validation.
     if (!validateTags(tagArr)) {
       alert('All tags must start with # and contain only letters/numbers.');
       return;
     }
 
-    // 2. PATCH /articles/:id 主表(标题/正文/图片路径)
+    // PATCH /articles/:id
     const patchBody = {
       title,
       content,
       image_path: image_path || 'images/default-image.jpg' 
-      // 如果 user 连已有封面都没改，那么传回后端的就保留他原来的 image_path
-      // load() 里拿到的 article.image_path，本质上是一个相对“images/…”的路径。
+      // if user not change cover, keep image_path.
     };
 
     const res = await fetch(`${BASE_URL}/articles/${article.id}`, {
@@ -52,16 +51,16 @@
       return;
     }
 
-    // 3. 保证每个 #tag 都已经存在 tags 表里：先逐条 POST /tags {content:"#xxx"} （如果冲突后端会忽略）
+    // Ensure each tag exists in the tags table (POST tags).
     for (const tag of tagArr) {
       await fetch(`${BASE_URL}/tags`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: tag })
-      }).catch(() => {}); // 冲突也无所谓
+      }).catch(() => {});
     }
 
-    // 4. 拿最新的 tags 表里的所有记录，找到对应的 id 数组
+    // Fetch all existing tags, map to IDs.
     const allTags = await (await fetch(`${BASE_URL}/tags`)).json();
     const tagIds  = tagArr
       .map(t => {
@@ -70,9 +69,8 @@
       })
       .filter(id => id != null);
 
-    // 5. 先把这个文章下所有旧的 taggings 全部删掉
-    //    “DELETE /articles/:id/tags” 后端目前不支持一次删完，必须删每个 tag。
-    //    先查一遍已有 taggings
+    // Delete old taggings
+    //“DELETE /articles/:id/tags
     const existingTaggings = await (await fetch(`${BASE_URL}/articles/${article.id}/tags`)).json();
     for (const { id: tid } of existingTaggings) {
       await fetch(`${BASE_URL}/articles/${article.id}/tags/${tid}`, {
@@ -81,7 +79,7 @@
       });
     }
 
-    // 6. 然后把新的 tagIds 全部 POST /articles/:id/tags/:tid
+    // POST /articles/:id/tags/:tid
     for (const tid of tagIds) {
       await fetch(`${BASE_URL}/articles/${article.id}/tags/${tid}`, {
         method: 'POST',
@@ -90,7 +88,6 @@
     }
 
     alert('Article updated successfully!');
-    // 最后跳转回详情页
     window.location.href = `/articles/${article.id}`;
   }
 </script>
@@ -101,5 +98,5 @@
   defaultTags    ={tagStr}
   defaultContent ={article.content}
   defaultCover   ={article.image_path}
-  onPublish      ={handlePublish}
+  on:publish      ={handlePublish}
 />
