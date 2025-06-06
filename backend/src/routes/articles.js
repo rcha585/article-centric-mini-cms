@@ -35,24 +35,17 @@ router.post("/", requiresAuthentication, async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
-  const db = await getDatabase();  
+  const db = await getDatabase();
+  let articles;
   if (!req.query.key) {
-    const articles = await db.all("SELECT a.*, u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id");
-    return res.status(200).json(articles);
-  }
-  let key;
-  if (req.query.match == "exact") {
-    key = req.query.key;
-  } else if (req.query.match == "partial") {
-    key = `%${req.query.key}%`
-  }
-  const articles = await db.all("SELECT DISTINCT a.*, u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id LEFT JOIN comments AS c ON a.id = c.article_id WHERE a.title LIKE ? COLLATE NOCASE OR a.content LIKE ? COLLATE NOCASE OR c.content LIKE ? COLLATE NOCASE OR u.username LIKE ? COLLATE NOCASE", key, key, key, key);
-  if (articles.length == 0) {
-    return res.status(200).json(articles);
+    articles = await db.all("SELECT a.*, u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id");
+  } else {
+    const key = req.query.match && req.query.match == "exact" ? req.query.key : `%${req.query.key}%`;
+    articles = await db.all("SELECT a.*, u.username FROM articles AS a INNER JOIN users AS u On a.author_id = u.id WHERE a.title LIKE ? COLLATE NOCASE OR a.content LIKE ? COLLATE NOCASE OR u.username LIKE ? COLLATE NOCASE", [key, key, key]);
   }
   const articleIds = articles.map(a => a.id);
-  const placeHolders = articles.map(a => "?").join(",");
-  const comments = await db.all(`SELECT c.*, u.username FROM comments AS c INNER JOIN users AS u ON c.user_id = u.id WHERE c.article_id IN (${placeHolders})`, articleIds);
+  const placeHolders = articleIds.map(a => "?").join(",");
+  const comments = await db.all(`SELECT * FROM comments WHERE article_id IN (${placeHolders})`, articleIds);
   const groupedComments = {};
   for (let i = 0; i < comments.length; i++) {
     if (!groupedComments[comments[i].article_id]) {
