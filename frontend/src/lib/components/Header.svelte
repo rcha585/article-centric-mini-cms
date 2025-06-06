@@ -1,11 +1,57 @@
 <script>
   import { page } from "$app/stores";
-  import { onMount } from "svelte";
-  import { goto } from "$app/navigation";
+  import { PUBLIC_API_BASE_URL } from "$env/static/public";
+  import { unviewedCount, newNotificationIds } from "../js/notifications.js";
+  import { onMount } from 'svelte';
 
   $: path = $page.url.pathname;
 
-  // default value, future extension.
+  /* ------ the below is for the notification bar ------ */
+
+  async function handleClickNotification() {
+		// Fetch full list
+		const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications`, { credentials: 'include' });
+		const all = await res.json();
+
+		// Extract IDs of unread
+		const unviewed = all.filter(n => n.is_viewed === 0);
+		const ids = unviewed.map(n => n.id);
+
+		newNotificationIds.set(ids); // Used to store notification_id
+		unviewedCount.set(0);     // Clear unviewed
+    
+	}
+
+  let highlightIds = [];
+  $: highlightIds = $newNotificationIds;
+
+  let showNotiDropdown = false;
+  let notifWrapper;
+
+  async function onClickNotification() {
+    await handleClickNotification(); // Mark as viewed or store newNotificationIds
+    showNotiDropdown = !showNotiDropdown;
+  }
+
+  function truncateChars(text, charLimit) {
+  return text.length > charLimit ? text.slice(0, charLimit) + '...' : text;
+  }
+
+  function handleClickOutside(event) {
+    if (notifWrapper && !notifWrapper.contains(event.target)) {
+      showNotiDropdown = false;
+    }
+  }
+
+  onMount(() => {
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  });
+
+  export let myNotifications = [];
+  
+  /* ------ the below is for the login bar ------ */
+
   let user = null;
   let search = "";
 
@@ -14,15 +60,11 @@
   let matchType = "exact";
 
   let showProfileDropdown = false;
-  const PUBLIC_API_BASE_URL = "http://localhost:3000/api"; 
-
-  // Placeholder: set to false or implement logic to check for unread notifications
-  let hasUnread = false;
 
   onMount(async () => {
     // Fetch user data from the API
     try {
-      const response = await fetch("http://localhost:3000/user", {
+      const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, {
         credentials: 'include' // Include cookies for authentication
       });
       if (response.ok) {
@@ -123,12 +165,45 @@
 
     <!-- ========== RIGHT SIDE (Notifications & Profile) ========== -->
     <div class="nav-right">
-      <a href="/notifications" class="notif-bell">
-        <span class="icon-bell">🔔</span>
-        {#if hasUnread}
-          <span class="notif-dot"></span>
+      <div class="notif-wrapper" bind:this={notifWrapper}>
+      
+        <button class="notif-bell" on:click={onClickNotification}>
+          <span class="icon-bell">🔔</span>
+          {#if $unviewedCount > 0}
+            <span class="notif-dot">{$unviewedCount}</span>
+          {/if}
+        </button>
+
+        {#if showNotiDropdown}
+        <div class="notif-box">
+          <!-- loop over notifications -->
+          <p>All notifications (to remove): {myNotifications.length}</p>
+          {#each myNotifications as n,i}
+          <div class="notification-card {highlightIds.includes(n.id) ? 'highlight' : ''}">
+            <img
+              class="notification-cover"
+              src={n.authorUrl || n.userUrl || '/default-cover.png'}
+              alt={n.article_title}
+            />
+            
+            <div class="notification-content">
+              {#if n.comment_id}
+              <p class="notification-sender"><b>"Replace commentername"</b> added a comment to {n.article_title}</p>
+              <p class="notification-preview">{truncateChars(n.comment_content,50)}</p>
+              <p class="notification-date">{n.created_at}</p>
+              {:else}
+              <p class="notification-sender"><b>"Replace authorname"</b> Published a new article: {n.article_title}</p>
+              <p class="notification-preview">{truncateChars(n.article_content, 50)}</p>
+              <p class="notification-date">{n.created_at}</p>
+              {/if}
+            
+            </div>
+            
+          </div>
+          {/each}
+        </div>
         {/if}
-      </a>
+      </div>
 
       {#if !user}
       <a href="/login" class="nav-login">Login</a>
@@ -279,6 +354,8 @@
   }
 
   .notif-bell {
+    all: unset;
+    cursor: pointer;
     position: relative;
     color: #fff;
     font-size: 1.26em;
@@ -288,13 +365,70 @@
   .notif-dot {
     position: absolute;
     top: 1px;
-    right: 1px;
+    /* right: 1px; */
     width: 9px;
     height: 9px;
     background: #e14a5e;
     border-radius: 50%;
     border: 2px solid #fff;
+    /* Paige edits to make the dot slightly on the right of the bell with Text */
+    font-size: 8px;
+    text-align: center;
+    padding: 2px 2px;
+    right: -10px;
   }
+
+  /* ------ the below is for the notification box ------ */
+ 
+  .notif-box {
+  position: absolute;
+  top: 100%; /* Just below the bell */
+  right: 0;
+  background: white;
+  color: black;
+  min-width: 350px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-top: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  z-index: 1000;
+  padding: 12px;
+
+  max-height: 600px;       /* <-- add this */
+  overflow-y: auto; 
+  }
+  .notif-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.notification-card {
+    width: 100%;
+    max-width: 340px;
+    display: grid;
+    grid-template-columns: 50px 1fr; 
+    /* flex-direction: column; */
+    border-radius: 18px;
+    overflow: hidden;
+    font-size: 0.8rem;
+    padding: 5px;
+    margin: 5px;
+    gap: 12px; /* space between columns */
+    align-items: start; /* align items at the top */
+  }
+  .notification-card p {
+  margin: 0px;
+  padding: 5px;
+  line-height: 1.2;
+  }
+  .notification-card:hover {
+    box-shadow: 0 6px 24px rgba(30, 50, 80, 0.16);
+  }
+
+  .notification-card.highlight {
+  background-color: #d1e7fd; /* example: light blue background */
+  }
+
+/* ------ the below is for the login bar ------ */
   .avatar-img-header {
     width: 36px;
     height: 36px;
@@ -328,4 +462,5 @@
   .avatar-dropdown button:hover {
     background: #f2f7ff;
   }
+
 </style>

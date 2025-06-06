@@ -56,33 +56,24 @@ router.post("/", requiresAuthentication, async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
-  const db = await getDatabase();
-  if (req.query.date) {
-    const articles = await db.all(
-      "SELECT a.id, a.title, a.content, a.created_at, a.image_path, a.author_id , u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id WHERE created_at LIKE ?",
-      `${req.query.date}%`
-    );
-    return res.status(200).json(articles);
-  } else if (req.query.title) {
-    const key = req.query.match == "exact" ? req.query.title : `%${req.query.title}%`;
-    const articles = await db.all(
-      "SELECT a.id, a.title, a.content, a.created_at, a.image_path, a.author_id , u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id WHERE title LIKE ? COLLATE NOCASE",
-      key
-    );
-    return res.status(200).json(articles);
-  } else if (req.query.username) {
-    const key = req.query.match == "exact" ? req.query.username : `%${req.query.username}%`;
-    const articles = await db.all(
-      "SELECT a.id, a.title, a.content, a.created_at, a.image_path, a.author_id , u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id WHERE u.username LIKE ? COLLATE NOCASE",
-      key
-    );
-    return res.status(200).json(articles);
-  } else {
-    const articles = await db.all(
-      "SELECT a.id, a.title, a.content, a.created_at, a.image_path, a.author_id , u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id"
-    );
-    return res.status(200).json(articles);
+  if (!req.query.match || !req.query.key) {
+    return res.sendStatus(400);
   }
+  const db = await getDatabase();
+  let key;
+  if (req.query.match == "exact") {
+    key = req.query.key;
+  } else if (req.query.match == "partial") {
+    key = `%${req.query.key}%`
+  } else {
+    return res.sendStatus(400);
+  }
+  const articles = await db.all("SELECT DISTINCT a.*, u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id LEFT JOIN comments AS c ON a.id = c.article_id WHERE a.title LIKE ? COLLATE NOCASE OR a.content LIKE ? COLLATE NOCASE OR c.content LIKE ? COLLATE NOCASE OR u.username LIKE ? COLLATE NOCASE", key, key, key, key);
+  for(let i = 0; i < articles.length; i++) {
+    articles[i].comments = [];
+    articles[i].comments = await db.all("SELECT c.*, u.username FROM comments AS c INNER JOIN users AS u ON c.user_id = u.id WHERE c.article_id = ?", articles[i].id);
+  }
+  return res.status(200).json(articles);
 });
 
 router.get("/:aid", async (req, res) => {

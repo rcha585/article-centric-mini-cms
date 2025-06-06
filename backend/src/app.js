@@ -60,6 +60,10 @@ app.use("/api/users", usersRoutes);
 import { getDatabase } from "./data/database.js";
 await getDatabase();
 
+// upload image
+import uploadRoutes from "./routes/upload.js";
+app.use("/api/upload", uploadRoutes);
+
 // Start the server running.
 app.listen(PORT, () => {
   console.log(`PGCIT Final Project server listening on port ${PORT}`);

@@ -1,14 +1,8 @@
 <script>
-  export let article = {
-    id: 1,
-    title: "The Future of AI",
-    excerpt: "Artificial intelligence is transforming the world...",
-    createdAt: "2025-06-01",
-    likes: 102,
-    favorites: 57,
-    tags: ["AI", "Technology", "Future", "Innovation", "Trending", "Research"],
-    coverUrl: "/default-article-cover.png"
-  };
+
+  export let article;
+
+  // Format article.createdAt as "DD/MM/YYYY" (locale default may vary).
   $: createdDate = new Date(article.createdAt).toLocaleDateString(undefined, {
     year: "numeric",
     month: "2-digit",
@@ -17,25 +11,29 @@
 
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
-
-  function handleEdit() {
-    dispatch("edit", { id: article.id });
-  }
-  function handleReadMore() {
-    dispatch("readmore", { id: article.id });
-  }
-  function handleDelete() {
-    dispatch("delete", { id: article.id });
-  }
+  function handleEdit()     { dispatch("edit",     { id: article.id }); }
+  function handleReadMore() { dispatch("readmore", { id: article.id }); }
+  function handleDelete()   { dispatch("delete",   { id: article.id }); }
 </script>
 
 <div class="user-article-card">
   <div class="card-cover">
-    <img src={article.coverUrl} alt={article.title} />
+    <img
+      src={
+        // If article.coverUrl exists and is non‐empty, use backend‐hosted path.
+        article.coverUrl && article.coverUrl.trim()
+          ? `http://localhost:3000/${article.coverUrl}`
+          : "http://localhost:5173/default-image.jpg"
+      }
+      alt={article.title}
+      on:error={(e) => (e.target.src = "http://localhost:5173/default-image.jpg")}
+    />
   </div>
+
   <div class="card-main">
     <div class="card-title">{article.title}</div>
     <div class="card-excerpt">{article.excerpt}</div>
+
     {#if article.tags?.length}
       <div class="tags">
         {#each article.tags.slice(0, 4) as tag}
@@ -46,25 +44,19 @@
         {/if}
       </div>
     {/if}
-    <div class="card-bottom">
-      <div class="card-icons">
-        <span title="Likes">
-          <img src="/icons/like.svg" alt="Likes" class="icon" />
-          <!-- WebSocket, many users login and likes will update -->
-          {article.likes}
-        </span>
-        <span title="Favorites">
-          <img src="/icons/favorite.svg" alt="Favorites" class="icon" />
-          {article.favorites}
-        </span>
-      </div>
-      <div class="card-actions">
-        <button class="delete-btn" on:click={handleDelete}>Delete</button>
-        <button class="edit-btn" on:click={handleEdit}>Edit</button>
-        <button class="loadmore-btn" on:click={handleReadMore}>Load More</button>
-      </div>
+    <!-- NEW: Move Likes into its own row, slightly below tags/excerpt -->
+    <div class="likes-row">
+      <img src="/icons/like.svg" alt="Likes" class="icon-like" />
+      <span class="likes-count">Likes: {article.likes}</span>
     </div>
-    <div class="card-createdat">Created by {createdDate}</div>
+
+    <div class="actions-row">
+      <button class="delete-btn" on:click={handleDelete}>Delete</button>
+      <button class="edit-btn"   on:click={handleEdit}>Edit</button>
+      <button class="loadmore-btn" on:click={handleReadMore}>Load More</button>
+    </div>
+
+    <div class="card-createdat">Created at {createdDate}</div>
   </div>
 </div>
 
@@ -80,7 +72,6 @@
     min-height: 150px;
     transition: box-shadow 0.2s;
   }
-
   .user-article-card:hover {
     box-shadow: 0 8px 32px 0 #b5cbe4cc;
   }
@@ -119,7 +110,6 @@
     max-width: 97%;
     overflow: hidden;
     display: -webkit-box;
-    line-clamp: 2;
     -webkit-box-orient: vertical;
   }
 
@@ -144,33 +134,29 @@
     color: #225;
   }
 
-  .card-bottom {
+  /* New “Likes” row styling */
+  .likes-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 7px;
-    flex-wrap: wrap;
-    gap: 10px 0;
+    margin-bottom: 12px; /* space after tags/excerpt */
+    gap: 6px;
   }
-
-  .card-icons {
-    display: flex;
-    gap: 20px;
-    color: #215c99;
-    font-size: 1.01rem;
-    align-items: center;
-  }
-  .card-icons .icon {
+  .icon-like {
     width: 19px;
     height: 19px;
-    margin-right: 5px;
-    vertical-align: middle;
     filter: drop-shadow(0 0 1px #ffffff90);
   }
+  .likes-count {
+    color: #215c99;
+    font-size: 1.01rem;
+    font-weight: 500;
+  }
 
-  .card-actions {
+  /* Action buttons row (Delete/Edit/Load More) */
+  .actions-row {
     display: flex;
     gap: 10px;
+    margin-bottom: 8px;
   }
   .edit-btn,
   .loadmore-btn,
