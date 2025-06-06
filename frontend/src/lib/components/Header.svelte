@@ -4,8 +4,14 @@
   import { unviewedCount, newNotificationIds } from "../js/notifications.js";
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { currentUser } from '$lib/stores/currentUser.js';
+  import { onDestroy } from "svelte";
 
   $: path = $page.url.pathname;
+
+  let user;
+  const unsubscribe = currentUser.subscribe(u => user = u);
+  onDestroy(() => unsubscribe()); // Clean up subscription when component is destroyed{
 
   /* ------ the below is for the notification bar ------ */
 
@@ -79,7 +85,6 @@
   
   /* ------ the below is for the login bar ------ */
 
-  let user = null;
   let search = "";
 
   // (added) track whether we do an exact or partial match
@@ -107,12 +112,12 @@
 
   async function handleLogout() {
     try {
-      const response = await fetch("http://localhost:3000/auth/logout", {
+      const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include' // Include cookies for authentication
       });
       if (response.ok) {
-        user = null; // Clear user data on logout
+        currentUser.set(null); // Clear user data on logout
         goto('/'); 
       } else {
         console.error('Logout failed');
