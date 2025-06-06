@@ -7,14 +7,19 @@ import yup from "yup";
 const router = express.Router();
 export default router;
 
-const editCommentSchema = yup.object({
+const editCommentSchema = yup
+  .object({
     content: yup.string(),
     mentioned_user_ids: yup.array().of(yup.number().integer().positive())
-}).required();
+  })
+  .required();
 
 router.patch("/:cid", requiresAuthentication, async (req, res) => {
-  const {content, mentioned_user_ids} = req.body;
-  const validatedInput = editCommentSchema.validateSync({content, mentioned_user_ids}, {abortEarly: false, stripUnknown: true});
+  const { content, mentioned_user_ids } = req.body;
+  const validatedInput = editCommentSchema.validateSync(
+    { content, mentioned_user_ids },
+    { abortEarly: false, stripUnknown: true }
+  );
   const db = await getDatabase();
   const comment = await db.get("SELECT * FROM comments WHERE id = ?", req.params.cid);
   if (!comment) {
@@ -28,7 +33,13 @@ router.patch("/:cid", requiresAuthentication, async (req, res) => {
   await db.run("DELETE FROM notifications WHERE comment_id = ?", req.params.cid);
   if (validatedInput.mentioned_user_ids && validatedInput.mentioned_user_ids.length > 0) {
     for (let i = 0; i < validatedInput.mentioned_user_ids.length; i++) {
-      await db.run("INSERT INTO notifications (created_at, user_id, article_id, comment_id) VALUES (?, ?, ?, ?)", dayjs().format("YYYY-MM-DD HH:mm:ss"), validatedInput.mentioned_user_ids[i], null, req.params.cid);
+      await db.run(
+        "INSERT INTO notifications (created_at, user_id, article_id, comment_id) VALUES (?, ?, ?, ?)",
+        dayjs().format("YYYY-MM-DD HH:mm:ss"),
+        validatedInput.mentioned_user_ids[i],
+        null,
+        req.params.cid
+      );
     }
   }
   return res.sendStatus(200);

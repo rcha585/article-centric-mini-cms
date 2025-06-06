@@ -52,13 +52,17 @@ router.get("/", requiresAuthentication, async (req, res) => {
 });
 
 router.patch("/", requiresAuthentication, async (req, res) => {
-    const db = await getDatabase();
-    await db.run("UPDATE notifications SET is_viewed = 1 WHERE user_id = ?", req.user.id);
-    return res.sendStatus(200);
+  const db = await getDatabase();
+  await db.run("UPDATE notifications SET is_viewed = 1 WHERE user_id = ?", req.user.id);
+  return res.sendStatus(200);
 });
 
 router.patch("/:nid", requiresAuthentication, async (req, res) => {
-    const db = await getDatabase();
-    await db.run("UPDATE notifications SET is_viewed = 1 WHERE id = ? AND user_id = ?", req.params.nid, req.user.id);
-    return res.sendStatus(200);
+  const db = await getDatabase();
+  await db.run(
+    "UPDATE notifications SET is_viewed = 1 WHERE id = ? AND user_id = ?",
+    req.params.nid,
+    req.user.id
+  );
+  return res.sendStatus(200);
 });
