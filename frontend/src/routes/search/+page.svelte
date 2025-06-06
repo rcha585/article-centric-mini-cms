@@ -143,47 +143,58 @@
 
 <style>
   /* ============================================ */
-  /*  BACKGROUND + CONTENT WRAPPER (unchanged)     */
+  /*  BACKGROUND + CONTENT WRAPPER (card style)    */
   /* ============================================ */
   .search-background {
     min-height: 100vh;
-    background: linear-gradient(110deg, #214a80 0%, #97a1b8 100%);
-    padding-bottom: 48px;
+    /* Reuse your blue gradient background */
+    /* background: linear-gradient(110deg, #214a80 0%, #ffffff 100%); */
+    padding: 0;               /* we'll push the card down with margin */
     font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   }
 
   .content-wrapper {
-    background: linear-gradient(90deg, #fff6 60%, #fff5 100%);
-    margin: 0 auto;
-    border-radius: 20px;
-    width: 70vw;
-    min-width: 340px;
-    max-width: 820px;
-    padding: 30px 36px;
-    box-shadow: 0 4px 24px #0002;
+    /* Make it a frosted‐glass card */
+    /* background: #214a80; */
+    background: linear-gradient(110deg, #214a80 0%, #ffffff 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    /* Rounded corners, subtle drop‐shadow */
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+    /* Center on the page */
+    max-width: 840px;
+    margin: 40px auto 80px auto;
+    padding: 32px 48px;
   }
 
+  /* ============================================ */
+  /*  PAGE TITLE (“All Articles”) in LIGHT COLOR  */
+  /* ============================================ */
   .all-articles-title {
-    font-size: 2rem;
+    font-size: 2.4rem;
     font-weight: 700;
-    color: #214a80;
-    letter-spacing: 1px;
-    margin-bottom: 16px;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    margin-bottom: 24px;
   }
 
   .no-results {
-    color: #223;
-    font-size: 1.1em;
-    margin-top: 1.5em;
+    color: #f0f0f5;
+    font-size: 1.1rem;
+    margin-top: 2rem;
   }
 
   /* ============================================ */
-  /*  TAB BAR STYLES                              */
+  /*  TAB BAR (white text, underline on selected) */
   /* ============================================ */
   .tab-bar {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 1.5rem;
+    margin-bottom: 24px;
   }
   .tab-bar button {
     background: transparent;
@@ -191,21 +202,21 @@
     padding: 0.5rem 1rem;
     font-size: 1rem;
     font-weight: 500;
-    color: #466bb8;
+    color: rgba(255, 255, 255, 0.75);
     cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: border-bottom-color 0.2s, color 0.2s;
   }
   .tab-bar button:hover {
-    color: #204488;
+    color: #ffffff;
   }
   .tab-bar button.selected {
-    color: #204488;
-    border-bottom-color: #204488;
+    color: #ffffff;
+    border-bottom-color: #ffffff;
   }
 
   /* ============================================ */
-  /*   ARTICLE LIST & “FULL CARD” (existing)       */
+  /*   ARTICLE LIST & “FULL CARD” (transparent)   */
   /* ============================================ */
   .article-list {
     list-style: none;
@@ -216,23 +227,25 @@
   .article-card {
     display: flex;
     align-items: flex-start;
-    padding: 14px 0;
-    border-bottom: 1px solid #dde1e9;
-    min-height: 88px;
-    gap: 22px;
+    padding: 16px 0;
+    /* Instead of a white border, use a semi‐transparent white line */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    min-height: 96px;
+    gap: 20px;
   }
   .article-card:last-child {
     border-bottom: none;
   }
 
   .thumbnail {
-    width: 64px;
-    height: 64px;
+    width: 72px;
+    height: 72px;
     object-fit: cover;
-    border-radius: 16px;
-    margin-top: 3px;
-    box-shadow: 0 2px 8px #0001;
-    background: #ccc;
+    border-radius: 12px;
+    margin-top: 4px;
+    /* If image is missing, fallback to a darker gray */
+    background: #555;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
 
   .info {
@@ -240,23 +253,33 @@
   }
 
   .info h3 {
-    margin: 0 0 2px 0;
-    font-size: 1.17rem;
-    font-weight: 500;
-    color: #122341;
+    margin: 0 0 4px 0;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #ffffff;
+  }
+
+  /* Style the link so it’s bright */
+  .article-link {
+    text-decoration: none;
+    color: #ffffff;
+    transition: color 0.2s;
+  }
+  .article-link:hover {
+    color: #ffeb3b; /* e.g. a bright accent on hover */
   }
 
   .desc {
-    margin: 0 0 4px 0;
-    color: #33416d;
-    font-size: 0.98rem;
+    margin: 0 0 6px 0;
+    color: #f0f0f5;
+    font-size: 1rem;
     line-height: 1.4;
-    max-width: 520px;
+    max-width: 620px;
   }
 
   .meta {
-    font-size: 0.93rem;
-    color: #466bb8;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
     margin-top: 2px;
   }
 
@@ -268,74 +291,74 @@
   /*   “INFO‐ONLY” STYLES FOR TITLE/CONTENT/AUTHOR */
   /* ============================================ */
   .info-only {
-    /* When we’re not in “all,” we don’t show the thumbnail */
     flex: 1;
     margin-left: 0;
   }
   .info-only h3 {
     margin: 0;
-    font-size: 1.17rem;
-    font-weight: 500;
-    color: #122341;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #ffffff;
   }
   .info-only h3 a {
     text-decoration: none;
-    color: #204488;
+    color: #ffffff;
   }
   .info-only h3 a:hover {
     text-decoration: underline;
+    color: #ffeb3b;
   }
 
   .desc-only {
     margin: 0;
-    color: #33416d;
-    font-size: 0.98rem;
-    line-height: 1.4;
+    color: #f0f0f5;
+    font-size: 1rem;
+    line-height: 1.5;
   }
 
   .author-only {
     margin: 0;
-    color: #466bb8;
-    font-size: 0.98rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1rem;
     font-weight: 600;
   }
 
-  /* Hide the <img> whenever selectedTab !== "all" */
-  /* We can accomplish this by “inlining” a style on the <img> itself inside the template, */
-  /* but if you prefer pure CSS, you could also do something like: */
-  /* li.article-card img[hidden] { display: none; } */
-  /* We already only render <img> in the “all” branch, so no extra CSS is strictly needed. */
-
   /* ============================================ */
-  /*  PAGINATION (unchanged)                       */
+  /*  PAGINATION (light on dark card)             */
   /* ============================================ */
   .pagination {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 14px;
-    margin-top: 22px;
-    color: #214a80;
+    margin-top: 32px;
+    color: #ffffff;
     font-size: 1.13rem;
   }
   .pagination-info {
     flex: 1;
     font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
   }
   .page-button {
-    background: #e5eaff;
-    color: #204488;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
     border: none;
-    padding: 0.3em 0.9em;
+    padding: 0.4em 1em;
     border-radius: 999px;
     font-size: 1.1em;
     cursor: pointer;
-    box-shadow: 0 1px 4px #0002;
-    transition: background 0.17s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: background 0.2s;
+  }
+  .page-button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
   }
   .page-button:disabled {
-    background: #bcc9dd;
-    color: #6675a6;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
     cursor: not-allowed;
   }
+
+  
 </style>
