@@ -49,22 +49,24 @@
       </div>
     {/if}
 
-    <!-- Meta Info Row: Created at / By -->
-    <div class="article-meta-row">
-      <div class="meta-labels">
-        <div class="meta-label">Created at</div>
-        <div class="meta-label">By</div>
+    <!-- Meta Info (Two-row Table Layout) -->
+    <div class="article-meta-table">
+      <div class="meta-row">
+        <span class="meta-label">Created at</span>
+        <span class="meta-empty"></span>
+        <span class="meta-date">{createdDate}</span>
       </div>
-      <div class="meta-values">
-        <div class="meta-value">{createdDate}</div>
-        <div class="meta-value author">
+      <div class="meta-row">
+        <span class="meta-label">By</span>
+        <span class="meta-empty"></span>
+        <span class="meta-author">
           <img
             class="author-avatar"
             src={article.author.avatarUrl || '/default-avatar.png'}
             alt={article.author.name}
           />
           <span class="author-name">{article.author.name}</span>
-        </div>
+        </span>
       </div>
     </div>
 
@@ -79,7 +81,7 @@
   /* Main Card Style */
   .article-card {
     width: 100%;
-    max-width: 340px;
+    max-width: 420px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -106,6 +108,7 @@
 
   /* Content */
   .article-content {
+    flex: 1 1 auto;
     padding: 18px 18px 14px 18px;
     display: flex;
     flex-direction: column;
@@ -118,10 +121,18 @@
     margin-bottom: 4px;
   }
   .article-excerpt {
-    font-size: 1.01rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4em;
+    max-height: calc(1.4em * 4);
+    min-height: calc(1.4em * 4);
+    font-size: 1rem;
     color: #555d65;
     margin-bottom: 10px;
-    min-height: 48px;
+    white-space: normal;
   }
   .article-tags {
     display: flex;
@@ -140,46 +151,47 @@
   }
 
   /* Meta Row: Two Columns, Clean Layout */
-  .article-meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-top: 8px;
-    margin-bottom: 10px;
-    background: #eef1f5;
-    padding: 9px 12px;
+  .article-meta-table {
+    margin-top: 16px;
+    margin-bottom: 6px;
     border-radius: 11px;
-  }
-  .meta-labels {
+    padding: 12px 14px 10px 14px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    color: #1e293b;
+    gap: 7px;
+    font-size: 0.97em;
+  }
+  .meta-row {
+    display: grid;
+    grid-template-columns: 78px 1fr auto;
+    align-items: center;
+    gap: 0 6px;
+  }
+  .meta-label {
+    color: #334155;
     font-weight: 600;
-    font-size: 1em;
-    min-width: 80px;
-  }
-  .meta-values {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 16px;
-  }
-  .meta-value {
-    color: #475569;
+    text-align: left;
     font-size: 0.99em;
   }
-  .meta-value.author {
+   .meta-author {
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 8px;
+    justify-content: flex-end;
+    min-width: 90px;
+  }
+  .meta-label {
+  color: #1e293b;
+  font-weight: 600;
+  margin-right: 2px;
   }
   .author-avatar {
-    width: 26px;
-    height: 26px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     object-fit: cover;
-    border: 1.2px solid #e2e8f0;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     background: #fff;
   }
   .author-name {
@@ -191,7 +203,7 @@
   /* Read More Button */
   .read-more-btn {
     align-self: flex-end;
-    margin-top: 4px;
+    margin-top: 8px;
     background: #1874d0;
     color: #fff;
     border: none;

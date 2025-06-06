@@ -37,7 +37,7 @@ export async function load({ fetch }) {
           const userJson = await userRes.json();
           authorName = `${userJson.first_name} ${userJson.last_name}`; // prefer full name
           if (userJson.avatar_id) {
-            avatarUrl = `/${userJson.avatar_path|| "avatars/avatar1.png"}`;
+            avatarUrl = `/avatars/avatar${userJson.avatar_id}.png`;
           }
         }
       } catch {

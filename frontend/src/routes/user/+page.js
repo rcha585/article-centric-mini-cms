@@ -40,7 +40,6 @@ export async function load({ fetch }) {
       ? (a.image_path.startsWith('/') ? a.image_path : `/${a.image_path}`)
       : '/placeholder-cover.png',
     likes: 0,
-    favorites: 0,
     tags: []
   });
   const articleById = new Map();
@@ -50,6 +49,16 @@ export async function load({ fetch }) {
   }
   const allArticles = Array.from(articleById.values());
   const myArticles = myArticlesRaw.map((raw) => articleById.get(raw.id)).filter(Boolean);
+
+  // If rawUser.avatar_id is null/0, use your fallback avatar “avatar-1.png”.
+  let avatarFilename;
+  if (rawUser.avatar_id) {
+    // e.g. if avatar_id === 3, we want “avatar3.png”
+    avatarFilename = `avatar${rawUser.avatar_id}.png`;
+  } else {
+    // fallback if no avatar_id in DB
+    avatarFilename = `avatar-1.png`;
+  }
 
   //  likes and comments
   const likedArticles = [];
@@ -91,7 +100,7 @@ export async function load({ fetch }) {
     username: rawUser.username,
     firstName: rawUser.first_name,
     lastName: rawUser.last_name,
-    avatar: `/api/avatars/${rawUser.avatar_id}.png`,
+    avatar: `/avatars/${avatarFilename}`,
     avatar_id: rawUser.avatar_id,
     introduction: rawUser.description ?? '',
     likedPosts: likedArticles.length,
