@@ -35,22 +35,33 @@ router.post("/", requiresAuthentication, async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
-  if (!req.query.match || !req.query.key) {
-    return res.sendStatus(400);
+  const db = await getDatabase();  
+  if (!req.query.key) {
+    const articles = await db.all("SELECT a.*, u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id");
+    return res.status(200).json(articles);
   }
-  const db = await getDatabase();
   let key;
   if (req.query.match == "exact") {
     key = req.query.key;
   } else if (req.query.match == "partial") {
     key = `%${req.query.key}%`
-  } else {
-    return res.sendStatus(400);
   }
   const articles = await db.all("SELECT DISTINCT a.*, u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id LEFT JOIN comments AS c ON a.id = c.article_id WHERE a.title LIKE ? COLLATE NOCASE OR a.content LIKE ? COLLATE NOCASE OR c.content LIKE ? COLLATE NOCASE OR u.username LIKE ? COLLATE NOCASE", key, key, key, key);
-  for(let i = 0; i < articles.length; i++) {
-    articles[i].comments = [];
-    articles[i].comments = await db.all("SELECT c.*, u.username FROM comments AS c INNER JOIN users AS u ON c.user_id = u.id WHERE c.article_id = ?", articles[i].id);
+  if (articles.length == 0) {
+    return res.status(200).json(articles);
+  }
+  const articleIds = articles.map(a => a.id);
+  const placeHolders = articles.map(a => "?").join(",");
+  const comments = await db.all(`SELECT c.*, u.username FROM comments AS c INNER JOIN users AS u ON c.user_id = u.id WHERE c.article_id IN (${placeHolders})`, articleIds);
+  const groupedComments = {};
+  for (let i = 0; i < comments.length; i++) {
+    if (!groupedComments[comments[i].article_id]) {
+      groupedComments[comments[i].article_id] = [];
+    }
+    groupedComments[comments[i].article_id].push(comments[i]);
+  }
+  for (let i = 0; i < articles.length; i++) {
+    articles[i].comments = groupedComments[articles[i].id] ?? [];
   }
   return res.status(200).json(articles);
 });
