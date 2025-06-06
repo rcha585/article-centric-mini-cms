@@ -460,7 +460,7 @@ function highlightMentions(text) {
         margin-bottom: 2px;
     }
     .comment-content {
-        background: #f6f8fb;
+        background: #f8f8f8;
         border-radius: 7px;
         padding: 4px 13px;
         font-size: .97em;
@@ -479,15 +479,15 @@ function highlightMentions(text) {
     .comment-input {
         padding: 8px 12px;
         border-radius: 6px;
-        border: 1.3px solid #dde6f5;
+        border: 1.3px solid #ffffff;
         width: 210px;
-        background: #fff;
+        background: #ffffff;
         font-size: 1em;
         color: #1e293b;
         transition: border-color 0.22s;
     }
     .comment-input:focus {
-        border-color: #60a5fa;
+        border-color: #ffffff;
         outline: none;
     }
 
@@ -520,7 +520,7 @@ function highlightMentions(text) {
       .mention {
         color: rgb(235, 37, 37);
         font-weight: 600;
-        background: #e0f2fe;
+        background: #ffffff;
         border-radius: 5px;
         padding: 1px 4px;
     }
