@@ -44,7 +44,7 @@ router.post("/", async (req, res) => {
 router.get("/", requiresAuthentication, async (req, res) => {
   if (req.user.is_admin) {
     const db = await getDatabase();
-    const users = await db.all("SELECT id, username, first_name, last_name, date_of_birth, description, avatar_id FROM users");
+    const users = await db.all("SELECT u.id, u.username, u.first_name, u.last_name, u.date_of_birth, u.description, a.avatar_path FROM users AS u LEFT JOIN avatars AS a ON u.avatar_id = a.id");
     return res.status(200).json(users);
   }
   if (!req.query.username) {
@@ -117,4 +117,23 @@ router.delete("/:uid", requiresAuthentication, async (req, res) => {
   }
   await db.run("DELETE FROM users WHERE id = ?", req.params.uid);
   return res.sendStatus(204);
+});
+
+router.get("/:uid/subscriptions", async (req, res) => {
+  const db = await getDatabase();
+  const subscribed_user = await db.get("SELECT * FROM users WHERE id = ?", req.params.uid);
+  if (!subscribed_user) {
+    return res.sendStatus(404);
+  }
+  const subscribers = await db.all("SELECT u.username FROM subscriptions AS s INNER JOIN users AS u ON s.subscriber_user_id = u.id WHERE s.subscribed_user_id = ?", req.params.uid);
+  return res.status(200).json(subscribers); 
+});
+
+router.get("/:uid", async (req, res) => {
+  const db = await getDatabase();
+  const user = await db.get(
+    "SELECT id, username, first_name, last_name, avatar_id FROM users WHERE id = ?", req.params.uid
+  );
+  if (!user) return res.sendStatus(404);
+  res.status(200).json(user);
 });
