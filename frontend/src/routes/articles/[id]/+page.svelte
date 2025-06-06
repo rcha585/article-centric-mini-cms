@@ -1,27 +1,140 @@
 <script>
+  import { onMount } from 'svelte';
+
   export let data;
 
   let liked = false;
   let showComments = false;
+  let newComment = "";
+  let users = [];
+  let filteredUsers = [];
+  let showSuggestions = false;
+  let mentionQuery = "";
 
   const article = data.article;
   const user = data.user;
   const tags = data.tags || [];
   let likes = data.likes || 0;
-  const comments = data.comments || [];
+  let comments = data.comments ? [...data.comments] : [];
 
   function handleLike() {
     liked = !liked;
     likes += liked ? 1 : -1;
-    // In real world: call like API here
   }
   function toggleComments() {
     showComments = !showComments;
   }
+  
   function formatDate(dateStr) {
     if (!dateStr) return "";
     return new Date(dateStr).toLocaleDateString();
   }
+
+  function postComment() {
+  if (!newComment.trim()) return;
+
+  comments = [
+    ...comments,
+    {
+      id: comments.length ? Math.max(...comments.map(c => c.id)) + 1 : 1,
+      username: "currentuser",  // Replace with actual username if you have authentication
+      content: newComment,
+      created_at: new Date().toISOString()
+    }
+  ];
+  newComment = "";
+}
+
+  // Fetch all users on mount
+  onMount(async () => {
+    const res = await fetch("/api/users"); // Adjust this URL to your backend!
+    if (res.ok) {
+      users = await res.json();
+    }
+  });
+  
+
+  function handleInput(e) {
+  const cursorPos = e.target.selectionStart;
+  const upToCursor = newComment.slice(0, cursorPos);
+  const value = newComment.slice(0, cursorPos);
+
+  // Try to find “@” plus any trailing letters (if any)
+  const atMatch = upToCursor.match(/@([a-zA-Z0-9_]*)$/);
+
+  if (atMatch) {
+    // atMatch[1] is the part after the “@”
+    mentionQuery = atMatch[1];
+    if (mentionQuery.length > 0) {
+      filteredUsers = users.filter(u =>
+        u.username.toLowerCase().startsWith(mentionQuery.toLowerCase())
+      );
+    } else {
+      // If they’ve only typed “@” (no characters after), show ALL users
+      filteredUsers = users;
+    }
+      showSuggestions = filteredUsers.length > 0;
+    } else {
+    showSuggestions = false;
+  }
+}
+
+function selectUsername(username) {
+  // Replace the @mentionQuery with @username in the input
+  newComment = newComment.replace(/@([a-zA-Z0-9_]*)$/, `@${username} `);
+  showSuggestions = false;
+  mentionQuery = "";
+}
+
+ // --- ADD THESE FOR SAFE HIGHLIGHTING ---
+
+function escapeHtml(text) {
+    // Prevent XSS by escaping HTML except our mentions
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+  }
+
+function highlightMentions(text) {
+    // 1. Escape HTML
+    // 2. Replace @username with <span class="mention">@username</span>
+    return escapeHtml(text).replace(
+      /@([a-zA-Z0-9_]+)/g,
+      '<span class="mention">@$1</span>'
+    );
+  }
+
+  function splitByMentions(text) {
+    const parts = [];
+    let lastIndex = 0;
+    const regex = /@([a-zA-Z0-9_]+)/g;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      // If there was plain text before this mention, push it first
+      if (match.index > lastIndex) {
+        parts.push({ text: text.slice(lastIndex, match.index), isMention: false });
+      }
+      // Push the mention itself
+      parts.push({ text: match[0], isMention: true });
+      lastIndex = match.index + match[0].length;
+    }
+
+    // If anything remains after the last mention, push it as plain text
+    if (lastIndex < text.length) {
+      parts.push({ text: text.slice(lastIndex), isMention: false });
+    }
+
+    return parts;
+  }
+
+
+
 </script>
 
 {#if data.error}
@@ -92,15 +205,50 @@
                 <img class="comment-avatar" src={"/avatars/avatar" + ((c.id % 10) + 1) + ".png"} alt="avatar"/>
                 <div>
                   <div class="comment-username">{c.username}</div>
-                  <div class="comment-content">{c.content}</div>
+                  <div class="comment-content">
+                   {#each splitByMentions(c.content) as part}
+                      {#if part.isMention}
+                        <span class="mention">{part.text}</span>
+                      {:else}
+                        {part.text}
+                      {/if}
+                    {/each}
+                  </div>
                   <div class="comment-date">{formatDate(c.created_at)}</div>
                 </div>
               </div>
             {/each}
           {/if}
-          <div class="comment-input-row">
-            <input type="text" placeholder="Add a comment..." class="comment-input" />
-            <button class="btn btn-toggle" style="margin-left:8px;">Comment</button>
+          
+        <div class="comment-input-row">
+            <input
+              type="text"
+              placeholder="Add a comment..."
+              class="comment-input"
+              bind:value={newComment}
+              on:input={handleInput}
+              on:keydown={(e) => {
+                // Support Enter for submitting, ArrowDown for suggestions
+                if (showSuggestions && e.key === "ArrowDown") {
+                  // Focus first suggestion (optional, for advanced UX)
+                  // (optional) move focus to the first suggestion
+                  const first = document.querySelector('.mention-suggestions li');
+                  if (first) first.focus();
+                } else if (e.key === 'Enter' && !showSuggestions) {
+                  postComment();
+                }
+              }}
+            />
+            <button class="btn btn-toggle" style="margin-left:8px;" on:click={postComment}>
+              Comment
+            </button>
+            {#if showSuggestions}
+              <ul class="mention-suggestions">
+                {#each filteredUsers as u}
+                  <li tabindex="0" on:click={() => selectUsername(u.username)}>{u.username}</li>
+                {/each}
+              </ul>
+            {/if}
           </div>
         {/if}
       </div>
@@ -342,4 +490,39 @@
         border-color: #60a5fa;
         outline: none;
     }
+
+    .mention-suggestions {
+        position: absolute;
+        background: #fff;
+        border: 1px solid #e0e7ef;
+        border-radius: 6px;
+        max-height: 130px;
+        overflow-y: auto;
+        box-shadow: 0 4px 24px #aaa7;
+        margin-top: 5px;
+        width: 210px;
+        z-index: 10;
+        list-style: none;
+        padding: 0;
+    }
+      .mention-suggestions li {
+        padding: 6px 12px;
+        cursor: pointer;
+        transition: background 0.12s;
+    }
+      .mention-suggestions li:hover {
+        background: #c7ebff;
+    }
+      .comment-input-row {
+        position: relative; /* So .mention-suggestions is positioned absolutely inside */
+    }
+
+      .mention {
+        color: rgb(235, 37, 37);
+        font-weight: 600;
+        background: #e0f2fe;
+        border-radius: 5px;
+        padding: 1px 4px;
+    }
+
 </style>

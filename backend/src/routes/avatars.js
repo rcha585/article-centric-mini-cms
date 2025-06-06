@@ -5,7 +5,7 @@ const router = express.Router();
 export default router;
 
 router.get("/", async (req, res) => {
-    const db = await getDatabase();
-    const avatars = await db.all("SELECT * FROM avatars");
-    return res.status(200).json(avatars);
-})
+  const db = await getDatabase();
+  const avatars = await db.all("SELECT * FROM avatars");
+  return res.status(200).json(avatars);
+});

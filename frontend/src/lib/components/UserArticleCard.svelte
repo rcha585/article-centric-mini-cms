@@ -1,4 +1,5 @@
 <script>
+
   export let article;
 
   // Format article.createdAt as "DD/MM/YYYY" (locale default may vary).
@@ -44,7 +45,6 @@
         {/if}
       </div>
     {/if}
-
     <div class="likes-row">
       <!-- add likes icon -->
       <img src="/icons/like.svg" alt="Likes" class="icon-like" />
@@ -168,7 +168,9 @@
     border-radius: 8px;
     cursor: pointer;
     font-weight: 500;
-    transition: background-color 0.18s, color 0.16s;
+    transition:
+      background-color 0.18s,
+      color 0.16s;
     box-shadow: 0 1px 2px rgba(25, 118, 210, 0.07);
   }
   .edit-btn {
