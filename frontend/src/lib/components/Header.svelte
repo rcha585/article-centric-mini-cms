@@ -56,6 +56,7 @@
   // Modified handleSearch to wrap with %…% if matchType==='partial'
   function handleSearch(e) {
     e.preventDefault();
+    
     const trimmed = search.trim();
     if (!trimmed) {
       // If input is empty, just go to /search (no q parameter)
@@ -69,8 +70,14 @@
       : trimmed;
 
     goto(`/search?q=${encodeURIComponent(finalQuery)}`);
-  }
   
+    // Build the final URL based on matchType:
+    //   If matchType==="partial", we do ?key=<term>&match=partial
+    //   If matchType==="exact", we do ?key=<term>&match=exact
+    const finalURL = `${PUBLIC_API_BASE_URL}/articles/?key=${encodeURIComponent(
+      trimmed
+    )}&match=${matchType}`;
+  }
 </script>
 
 <nav class="nav-bar">
