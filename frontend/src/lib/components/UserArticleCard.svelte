@@ -1,4 +1,5 @@
 <script>
+
   export let article;
 
   // Format article.createdAt as "DD/MM/YYYY" (locale default may vary).
@@ -10,7 +11,6 @@
 
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
-
   function handleEdit()     { dispatch("edit",     { id: article.id }); }
   function handleReadMore() { dispatch("readmore", { id: article.id }); }
   function handleDelete()   { dispatch("delete",   { id: article.id }); }
@@ -44,7 +44,6 @@
         {/if}
       </div>
     {/if}
-
     <!-- NEW: Move Likes into its own row, slightly below tags/excerpt -->
     <div class="likes-row">
       <img src="/icons/like.svg" alt="Likes" class="icon-like" />
@@ -168,7 +167,9 @@
     border-radius: 8px;
     cursor: pointer;
     font-weight: 500;
-    transition: background-color 0.18s, color 0.16s;
+    transition:
+      background-color 0.18s,
+      color 0.16s;
     box-shadow: 0 1px 2px rgba(25, 118, 210, 0.07);
   }
   .edit-btn {

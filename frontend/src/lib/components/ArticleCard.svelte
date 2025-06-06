@@ -200,7 +200,7 @@
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 1px 2px rgba(24,116,208,0.07);
+    box-shadow: 0 1px 2px rgba(24, 116, 208, 0.07);
     display: flex;
     align-items: center;
     gap: 6px;

@@ -37,4 +37,4 @@ export async function load({ params, fetch }) {
     comments,
     error: false
   };
-}
+};

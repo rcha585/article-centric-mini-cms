@@ -2,8 +2,8 @@ import { getDatabase } from "../data/database.js";
 import jsonwebtoken from "jsonwebtoken";
 
 function getUsernameFromToken(token) {
-    const payload = jsonwebtoken.verify(token, process.env.TOKEN_SECRET_KEY);
-    return payload.username;
+  const payload = jsonwebtoken.verify(token, process.env.TOKEN_SECRET_KEY);
+  return payload.username;
 }
 
 export async function requiresAuthentication(req, res, next) {

@@ -33,7 +33,7 @@
     goto(`/articles/${e.detail.id}`);
   }
   function goToLogin() {
-    goto('/login');
+    goto("/login");
   }
   function goPage(p) {
     if (p > 0 && p <= totalPages) currentPage = p;

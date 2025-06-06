@@ -1,10 +1,10 @@
 <script>
-    // import a TinyMCE Rich Text Editor.
-    import Editor from '@tinymce/tinymce-svelte';
+  // import a TinyMCE Rich Text Editor.
+  import Editor from "@tinymce/tinymce-svelte";
 
-    // "value" is the content of the edit area.
-    export let value = '';
-    export let apiKey;
+  // "value" is the content of the edit area.
+  export let value = "";
+  export let apiKey;
 
     // default config.
     const editorInit = {
@@ -21,10 +21,5 @@
   };
 </script>
 
-
 <!-- initial config of TinyMCE editor -->
-<Editor
-    bind:value
-    {apiKey}
-    conf={editorInit}
-/>
+<Editor bind:value {apiKey} conf={editorInit} />

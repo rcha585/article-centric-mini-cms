@@ -1,276 +1,323 @@
 <script>
-const PUBLIC_API_BASE_URL = "http://localhost:3000/api"; 
-const PUBLIC_IMAGES_URL = "http://localhost:3000/images";
+  const PUBLIC_API_BASE_URL = "http://localhost:3000/api";
+  const PUBLIC_IMAGES_URL = "http://localhost:3000/images";
 
-import { writable } from "svelte/store";
-import { goto } from "$app/navigation";
-import { onMount } from 'svelte';
+  import { writable } from "svelte/store";
+  import { goto } from "$app/navigation";
+  import { onMount } from "svelte";
 
-let avatarList = [];
-let selectedAvatarId = null;
+  let avatarList = [];
+  let selectedAvatarId = null;
 
-let username = '';
-let lastName = '';
-let firstName = '';
-let password = '';
-let confirmPassword = '';
-let dateOfBirth = '';
-let description = '';
+  let username = "";
+  let lastName = "";
+  let firstName = "";
+  let password = "";
+  let confirmPassword = "";
+  let dateOfBirth = "";
+  let description = "";
 
-let isPasswordVisible = false;
-let isConfirmPasswordVisible = false;
-let passwordInput;
-let confirmPasswordInput;
+  let isPasswordVisible = false;
+  let isConfirmPasswordVisible = false;
+  let passwordInput;
+  let confirmPasswordInput;
 
-
-function togglePasswordVisibility() {
-  isPasswordVisible = !isPasswordVisible;
-  if (passwordInput) {
-    passwordInput.type = isPasswordVisible ? 'text' : 'password';
-  }
-}
-
-function toggleConfirmPasswordVisibility() {
-  isConfirmPasswordVisible = !isConfirmPasswordVisible;
-  if (confirmPasswordInput) {
-    confirmPasswordInput.type = isConfirmPasswordVisible ? 'text' : 'password';
-  }
-}
-
-const usernameTaken = writable(false);
-const passwordMismatch = writable(false);
-const isSubmitting = writable(false);
-const formError = writable(null);
-
-let showSuccess = false;
-
-onMount(async () => {
-    try {
-        const response = await fetch(`${PUBLIC_API_BASE_URL}/avatars`);
-        if (response.ok) {
-            avatarList = await response.json();
-            if (avatarList.length > 0) {
-                selectedAvatarId = avatarList[0].id; 
-            }
-        } else {
-            console.error('Failed to load avatars:', response.statusText);
-        }
-    } catch (error) {
-        console.error('Network error while fetching avatars:', error);
+  function togglePasswordVisibility() {
+    isPasswordVisible = !isPasswordVisible;
+    if (passwordInput) {
+      passwordInput.type = isPasswordVisible ? "text" : "password";
     }
-});
+  }
 
-function selectAvatar(id) {
+  function toggleConfirmPasswordVisibility() {
+    isConfirmPasswordVisible = !isConfirmPasswordVisible;
+    if (confirmPasswordInput) {
+      confirmPasswordInput.type = isConfirmPasswordVisible ? "text" : "password";
+    }
+  }
+
+  const usernameTaken = writable(false);
+  const passwordMismatch = writable(false);
+  const isSubmitting = writable(false);
+  const formError = writable(null);
+
+  let showSuccess = false;
+
+  onMount(async () => {
+    try {
+      const response = await fetch(`${PUBLIC_API_BASE_URL}/avatars`);
+      if (response.ok) {
+        avatarList = await response.json();
+        if (avatarList.length > 0) {
+          selectedAvatarId = avatarList[0].id;
+        }
+      } else {
+        console.error("Failed to load avatars:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Network error while fetching avatars:", error);
+    }
+  });
+
+  function selectAvatar(id) {
     selectedAvatarId = id;
-}
+  }
 
-
-let _lastChecked = '';
-$: if (username.trim().length) {
+  let _lastChecked = "";
+  $: if (username.trim().length) {
     checkUsernameAvailability(username.trim());
-} else {
+  } else {
     usernameTaken.set(false);
-}
+  }
 
-async function checkUsernameAvailability(name) {
+  async function checkUsernameAvailability(name) {
     if (_lastChecked === name) return;
     _lastChecked = name;
 
     try {
-        const response = await fetch(`${PUBLIC_API_BASE_URL}/users?username=${encodeURIComponent(name)}`, {
-        });
-        
-        if (response.ok) {
-            usernameTaken.set(true);
-        } else if (response.status === 404 || response.status === 401) {
-            usernameTaken.set(false);
-        } else {
-            usernameTaken.set(false);
-        }
-    } catch (error) {
-        console.error('Error checkinh username', error);
+      const response = await fetch(
+        `${PUBLIC_API_BASE_URL}/users?username=${encodeURIComponent(name)}`,
+        {}
+      );
+
+      if (response.ok) {
+        usernameTaken.set(true);
+      } else if (response.status === 404 || response.status === 401) {
         usernameTaken.set(false);
+      } else {
+        usernameTaken.set(false);
+      }
+    } catch (error) {
+      console.error("Error checkinh username", error);
+      usernameTaken.set(false);
     }
   }
 
-$: passwordMismatch.set(
-    password !== '' && confirmPassword !== '' && password !== confirmPassword);
+  $: passwordMismatch.set(
+    password !== "" && confirmPassword !== "" && password !== confirmPassword
+  );
 
-    async function handleRegister(event) {
+  async function handleRegister(event) {
     event.preventDefault();
     formError.set(null);
-    
+
     if ($usernameTaken) {
-        formError.set('Username is already taken');
-        return;
+      formError.set("Username is already taken");
+      return;
     }
 
     if ($passwordMismatch) {
-        formError.set('Passwords do not match');
-        return;
+      formError.set("Passwords do not match");
+      return;
     }
 
-
     if (!dateOfBirth) {
-        formError.set('Please select your date of birth');
-        return;
+      formError.set("Please select your date of birth");
+      return;
     }
 
     isSubmitting.set(true);
 
     try {
-        const payload = {
-            username: username.trim(),
-            first_name: firstName.trim(),
-            last_name: lastName.trim(),
-            password: password,
-            date_of_birth: dateOfBirth,
-            description: description.trim(),
-            avatar_id: selectedAvatarId
-        };
+      const payload = {
+        username: username.trim(),
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        password: password,
+        date_of_birth: dateOfBirth,
+        description: description.trim(),
+        avatar_id: selectedAvatarId
+      };
 
-        const response = await fetch(`${PUBLIC_API_BASE_URL}/users`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload),
-        });
+      const response = await fetch(`${PUBLIC_API_BASE_URL}/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
 
-        if (response.ok) {
-            showSuccess = true;
-        } else if (response.status === 400) {
-            const json = await response.json();
-            formError.set(json.errors ? json.errors.join(', ') : 'Invalid input data');  
-        } else if (response.status === 409) {
-            formError.set('Username is already taken, please choose another one.');
-        } else {
-            formError.set('An unexpected error occurred. Please try again later.');
-        }
+      if (response.ok) {
+        showSuccess = true;
+      } else if (response.status === 400) {
+        const json = await response.json();
+        formError.set(json.errors ? json.errors.join(", ") : "Invalid input data");
+      } else if (response.status === 409) {
+        formError.set("Username is already taken, please choose another one.");
+      } else {
+        formError.set("An unexpected error occurred. Please try again later.");
+      }
     } catch (error) {
-        console.error('Registration error:', error);
-        formError.set('Could not connect to the server. Please check your network.');
+      console.error("Registration error:", error);
+      formError.set("Could not connect to the server. Please check your network.");
     } finally {
-        isSubmitting.set(false);
+      isSubmitting.set(false);
     }
   }
 
   function backToLogin() {
-    goto('/login');
+    goto("/login");
   }
 </script>
-  
+
 <svelte:head>
-    <title>Sign up</title>
+  <title>Sign up</title>
 </svelte:head>
 
 <div class="register-container">
-    <div class="register-box">
-        <h1>SIGN UP</h1>
-        <p>Let's get you all set up so you can access your personal account.</p>
+  <div class="register-box">
+    <h1>SIGN UP</h1>
+    <p>Let's get you all set up so you can access your personal account.</p>
+  </div>
+
+  {#if $formError}
+    <div class="error-message">
+      <p>{$formError}</p>
     </div>
+  {/if}
 
-    {#if $formError}
-        <div class="error-message">
-            <p>{$formError}</p>
+  <form on:submit|preventDefault={handleRegister}>
+    <div class="two-columns">
+      <div class="column">
+        <div class="field">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            bind:value={username}
+            placeholder="Please choose a username"
+            required
+          />
+          {#if $usernameTaken && username.trim().length}
+            <div class="field-error">Username is already taken.</div>
+          {/if}
         </div>
-    {/if}
-
-    <form on:submit|preventDefault={handleRegister}>
-        <div class="two-columns">
-            <div class ="column">
-                <div class="field">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" bind:value={username} placeholder="Please choose a username" required />
-                    {#if $usernameTaken && username.trim().length}
-                    <div class ="field-error">Username is already taken.</div>
-                    {/if}
-                </div>
-
-                <div class = "field">
-                    <label for="lastName">Last Name</label>
-                    <input type="text" id="lastName" bind:value={lastName} placeholder="Please enter your last name" required />
-                </div>
-
-                <div class="field">
-                    <label for="password">Password</label>
-                    <div class="input-wrapper">
-                      <input bind:this={passwordInput} type="password" id="password" bind:value={password} placeholder="Please enter your password" required />
-                      <button type="button" class="toggle-password" on:click={togglePasswordVisibility}> 
-                        {#if isPasswordVisible}👁️{:else}🙈{/if}
-                      </button>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label for="confirmPassword">Confirm Password</label>
-                    <div class="input-wrapper">
-                    <input bind:this={confirmPasswordInput} type="password" id="confirmPassword" bind:value={confirmPassword} placeholder="Please confirm your password" required />
-                    <button type="button" class="toggle-password" on:click={toggleConfirmPasswordVisibility}>
-                        {#if isConfirmPasswordVisible}👁️{:else}🙈{/if}
-                    </button>
-                    </div>
-        
-                    {#if $passwordMismatch}
-                        <div class="field-error">Passwords do not match</div>
-                    {/if}
-                    </div>
-                </div>
-
-                <div class="column">
-                  <div class="field">
-                    <label for="firstName">First Name</label>
-                    <input type="text" id="firstName" bind:value={firstName} placeholder="Please enter your first name" required />
-                </div>
-
-                <div class="field">
-                    <label for="dateOfBirth">Date of Birth</label>
-                    <input type="date" id="dateOfBirth" bind:value={dateOfBirth} required />
-                </div>
-
-                <div class="field">
-                    <label for="description">Description</label>
-                    <textarea id="description" bind:value={description} placeholder="A short bio" required></textarea>
-                </div>
-  
 
         <div class="field">
-            <label for="avatarSelect">Choose an avatar</label>
-            <div class="avatar-preview">
-              {#if avatarList.length > 0}
-              {#each avatarList as a (a.id)}
-              {#if a.id === selectedAvatarId}
-                <img src={`${PUBLIC_IMAGES_URL}/${a.avatar_path}`} alt="Avatar preview" width="64" height="64" />
-              {/if}
-              {/each}
-              {:else}
-                <p>Loading avatars...</p>
-              {/if}
-              </div>
-                          
-            <select id="avatarSelect" bind:value={selectedAvatarId} class="field">
-                {#each avatarList as a (a.id)}
-                    <option value={a.id}>
-                      {a.avatar_path.split('/').pop()}
-                    </option>
-                {/each}
-            </select>
-            </div>
+          <label for="lastName">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            bind:value={lastName}
+            placeholder="Please enter your last name"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <input
+              bind:this={passwordInput}
+              type="password"
+              id="password"
+              bind:value={password}
+              placeholder="Please enter your password"
+              required
+            />
+            <button type="button" class="toggle-password" on:click={togglePasswordVisibility}>
+              {#if isPasswordVisible}👁️{:else}🙈{/if}
+            </button>
           </div>
         </div>
 
-        <button type="submit" class="btn" disabled={$isSubmitting || $usernameTaken || $passwordMismatch || !dateOfBirth}>
-            {#if $isSubmitting} Creating account...{:else}Create account {/if}
-        </button>
-    </form>
+        <div class="field">
+          <label for="confirmPassword">Confirm Password</label>
+          <div class="input-wrapper">
+            <input
+              bind:this={confirmPasswordInput}
+              type="password"
+              id="confirmPassword"
+              bind:value={confirmPassword}
+              placeholder="Please confirm your password"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              on:click={toggleConfirmPasswordVisibility}
+            >
+              {#if isConfirmPasswordVisible}👁️{:else}🙈{/if}
+            </button>
+          </div>
+
+          {#if $passwordMismatch}
+            <div class="field-error">Passwords do not match</div>
+          {/if}
+        </div>
+      </div>
+
+      <div class="column">
+        <div class="field">
+          <label for="firstName">First Name</label>
+          <input
+            type="text"
+            id="firstName"
+            bind:value={firstName}
+            placeholder="Please enter your first name"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="dateOfBirth">Date of Birth</label>
+          <input type="date" id="dateOfBirth" bind:value={dateOfBirth} required />
+        </div>
+
+        <div class="field">
+          <label for="description">Description</label>
+          <textarea id="description" bind:value={description} placeholder="A short bio" required
+          ></textarea>
+        </div>
+
+        <div class="field">
+          <label for="avatarSelect">Choose an avatar</label>
+          <div class="avatar-preview">
+            {#if avatarList.length > 0}
+              {#each avatarList as a (a.id)}
+                {#if a.id === selectedAvatarId}
+                  <img
+                    src={`${PUBLIC_IMAGES_URL}/${a.avatar_path}`}
+                    alt="Avatar preview"
+                    width="64"
+                    height="64"
+                  />
+                {/if}
+              {/each}
+            {:else}
+              <p>Loading avatars...</p>
+            {/if}
+          </div>
+
+          <select id="avatarSelect" bind:value={selectedAvatarId} class="field">
+            {#each avatarList as a (a.id)}
+              <option value={a.id}>
+                {a.avatar_path.split("/").pop()}
+              </option>
+            {/each}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="submit"
+      class="btn"
+      disabled={$isSubmitting || $usernameTaken || $passwordMismatch || !dateOfBirth}
+    >
+      {#if $isSubmitting}
+        Creating account...{:else}Create account
+      {/if}
+    </button>
+  </form>
 </div>
 
 {#if showSuccess}
-    <div class="modal-overlay">
-      <div class="modal">
-        <h1>Registration Successful!</h1>
-        <p>Your account has been created successfully.</p>
-        <button class="modal-btn" on:click={backToLogin}>Back to Login</button>
+  <div class="modal-overlay">
+    <div class="modal">
+      <h1>Registration Successful!</h1>
+      <p>Your account has been created successfully.</p>
+      <button class="modal-btn" on:click={backToLogin}>Back to Login</button>
     </div>
   </div>
 {/if}
@@ -432,7 +479,7 @@ $: passwordMismatch.set(
     background-color: #3498db;
   }
 
- .input-wrapper {
+  .input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
@@ -440,7 +487,7 @@ $: passwordMismatch.set(
 
   .input-wrapper input {
     flex: 1;
-    padding-right: 2rem; 
+    padding-right: 2rem;
   }
 
   .toggle-password {
@@ -452,7 +499,4 @@ $: passwordMismatch.set(
     cursor: pointer;
     color: #34495e;
   }
-  </style>
-
-
-
+</style>
