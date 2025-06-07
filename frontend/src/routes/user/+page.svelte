@@ -19,10 +19,20 @@
   let selectedAvatarId = user.avatar_id || 1;
   let avatars = [];
 
-  let displayCount = 2;
+  // all display 2 card in each tab
+  let displayOverview = 2;
+  let displayLiked = 2;
+  let displayComments = 2;
 
-  function loadMore() {
-    displayCount = Math.min(myArticles.length, displayCount + 2);
+  // public loadMore function 
+  function loadMore(tab) {
+    if (tab === 'overview') {
+      displayOverview = Math.min(myArticles.length, displayOverview + 2);
+    } else if (tab === 'liked') {
+      displayLiked = Math.min(likedArticles.length, displayLiked + 2);
+    } else if (tab === 'comments') {
+      displayComments = Math.min(myComments.length, displayComments + 2);
+    }
   }
 
   onMount(async () => {
@@ -87,7 +97,7 @@
     }
 
     try {
-      // 报错，需修改。
+      //
       const response = await fetch(`${PUBLIC_API_BASE_URL}/users`, {
         method: 'PATCH',
         headers: {
@@ -185,7 +195,7 @@
           <div class="empty-feed">No articles at the moment, write a new ~~</div>
 
         {:else}
-          {#each myArticles.slice(0, displayCount) as article (article.id)}
+          {#each myArticles.slice(0, displayOverview) as article (article.id)}
             <UserArticleCard {article}
               on:edit={handleArticleEdit}
               on:readmore={handleReadMore}
@@ -193,30 +203,37 @@
             />
           {/each}
 
-          {#if displayCount < myArticles.length}
-            <button type="button" class="load-more-text" on:click={loadMore}>
+          {#if displayOverview < myArticles.length}
+            <button type="button" class="load-more-text" on:click={() => loadMore('overview')}>
               Load more...
             </button>
           {/if}
 
         {/if}
       </div>
+
     {:else if currentTab === "liked"}
       <div class="articles-feed">
         {#if likedArticles.length === 0}
           <div class="empty-feed">Have no liked</div>
         {:else}
-          {#each likedArticles as article (article.id)}
+          {#each likedArticles.slice(0, displayLiked) as article (article.id)}
             <UserArticleCard {article} on:readmore={handleReadMore} />
           {/each}
+          {#if displayLiked < likedArticles.length}
+            <button type="button" class="load-more-text" on:click={() => loadMore('liked')}>
+              Load more...
+            </button>
+          {/if}
         {/if}
       </div>
+
     {:else if currentTab === "comments"}
       <div class="comments-feed">
         {#if myComments.length === 0}
           <div class="empty-feed">No comment yet</div>
         {:else}
-          {#each myComments as c}
+          {#each myComments.slice(0, displayComments) as c}
             <div class="comment-block">
               <div class="comment-content">{c.content}</div>
               <div class="comment-meta">
@@ -225,6 +242,11 @@
               </div>
             </div>
           {/each}
+          {#if displayComments < myComments.length}
+            <button type="button" class="load-more-text" on:click={() => loadMore('comments')}>
+              Load more...
+            </button>
+          {/if}
         {/if}
       </div>
     {/if}
