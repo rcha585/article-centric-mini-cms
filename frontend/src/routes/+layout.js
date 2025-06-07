@@ -5,7 +5,13 @@ import { PUBLIC_API_BASE_URL } from "$env/static/public";
 import { unviewedCount, newNotificationIds } from "../lib/js/notifications.js";
 // import { unviewedCount, newNotificationIds } from "../js/notifications.js";
 
-export async function load({ fetch }) {
+export async function load({ fetch, url }) {
+    const path = url.pathname;
+    if (path.startsWith('/login') || path.startsWith('/register')) {
+        unviewedCount.set(0);
+        newNotificationIds.set([]);
+        return { myNotifications: [] };
+    }
     
     let myNotifications = [];
 
@@ -57,5 +63,5 @@ export async function load({ fetch }) {
         myNotifications = [];
         unviewedCount.set(0);
     }
-        return {myNotifications}
+        return { myNotifications }
 }
