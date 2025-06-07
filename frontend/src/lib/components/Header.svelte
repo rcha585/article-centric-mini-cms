@@ -3,22 +3,55 @@
   import { PUBLIC_API_BASE_URL } from "$env/static/public";
   import { unviewedCount, newNotificationIds } from "../js/notifications.js";
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { currentUser } from '$lib/stores/currentUser.js';
+  import { onDestroy } from "svelte";
 
   $: path = $page.url.pathname;
 
+  let user;
+  const unsubscribe = currentUser.subscribe(u => user = u);
+  onDestroy(() => unsubscribe()); // Clean up subscription when component is destroyed{
+
   /* ------ the below is for the notification bar ------ */
+
+  function handleReadNoti(target_url) {
+    window.location.href = target_url;
+  }
 
   async function handleClickNotification() {
 		// Fetch full list
-		const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications`, { credentials: 'include' });
-		const all = await res.json();
+		// const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications/`, { credentials: 'include' });
+    const [notiResArticles, notiResComments] = await Promise.all([
+                fetch(`${PUBLIC_API_BASE_URL}/notifications/articles`, {credentials: 'include'}),
+                fetch(`${PUBLIC_API_BASE_URL}/notifications/comments`, {credentials: 'include'}),
+            ]);
+		// const all = await res.json();
+    const [myArticlesNotifications, myCommentsNotifications] = await Promise.all([
+                    notiResArticles.json(),
+                    notiResComments.json()
+                ]);
+    
+    const all = [...myArticlesNotifications, ...myCommentsNotifications];
 
 		// Extract IDs of unread
 		const unviewed = all.filter(n => n.is_viewed === 0);
 		const ids = unviewed.map(n => n.id);
 
 		newNotificationIds.set(ids); // Used to store notification_id
+    console.log("all notifications:",all);
+    console.log("new notifications:",unviewed);
 		unviewedCount.set(0);     // Clear unviewed
+
+    // Update all unviewed to viewed
+    const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications`, {
+      method: 'PATCH',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      alert('Failed to update unviewed: ' + (await res.text()));
+      return;
+    }
     
 	}
 
@@ -52,7 +85,6 @@
   
   /* ------ the below is for the login bar ------ */
 
-  let user = null;
   let search = "";
 
   // (added) track whether we do an exact or partial match
@@ -80,12 +112,12 @@
 
   async function handleLogout() {
     try {
-      const response = await fetch("http://localhost:3000/auth/logout", {
+      const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include' // Include cookies for authentication
       });
       if (response.ok) {
-        user = null; // Clear user data on logout
+        currentUser.set(null); // Clear user data on logout
         goto('/'); 
       } else {
         console.error('Logout failed');
@@ -178,23 +210,28 @@
         <div class="notif-box">
           <!-- loop over notifications -->
           <p>All notifications (to remove): {myNotifications.length}</p>
-          {#each myNotifications as n,i}
+          {#each myNotifications as n}
           <div class="notification-card {highlightIds.includes(n.id) ? 'highlight' : ''}">
             <img
               class="notification-cover"
-              src={n.authorUrl || n.userUrl || '/default-cover.png'}
+              src={n.author_avatar_path || n.commenter_avatar_path || '/default-cover.png'}
               alt={n.article_title}
             />
             
             <div class="notification-content">
               {#if n.comment_id}
-              <p class="notification-sender"><b>"Replace commentername"</b> added a comment to {n.article_title}</p>
+              <a href="/" class="notif-childbox">
+              <p class="notification-sender"><b>{n.commenter_name}</b> added a comment to {n.article_title}</p>
               <p class="notification-preview">{truncateChars(n.comment_content,50)}</p>
               <p class="notification-date">{n.created_at}</p>
+              </a>
               {:else}
-              <p class="notification-sender"><b>"Replace authorname"</b> Published a new article: {n.article_title}</p>
+              <a href={`/articles/${n.article_id}`} class="notif-childbox" on:click={() => handleReadNoti(`/articles/${n.article_id}`)}>
+              <p class="notification-sender"><b>{n.author_name}</b> published a new article: {n.article_title}</p>
               <p class="notification-preview">{truncateChars(n.article_content, 50)}</p>
               <p class="notification-date">{n.created_at}</p>
+              </a>
+              <!-- </div> -->
               {/if}
             
             </div>
@@ -426,6 +463,23 @@
 
   .notification-card.highlight {
   background-color: #d1e7fd; /* example: light blue background */
+  }
+
+  .notification-cover {
+    width: 100%;
+    height: 50px;
+    object-fit: cover;
+    object-position: center;
+    background: #f3f3f3;
+    border-bottom: 1px solid #e5e6e8;
+    border-radius: 50px;
+  }
+
+  .notif-childbox {
+    all: unset;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
   }
 
 /* ------ the below is for the login bar ------ */

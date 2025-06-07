@@ -1,34 +1,40 @@
+export const ssr = false; // Disable server-side rendering
 import { redirect, error } from "@sveltejs/kit";
 import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch }) {
-  // User login
-  const meRes = await fetch("http://localhost:3000/api/auth/me", { credentials: "include" });
+  /* ---------- User login ---------- */
+  const meRes = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, {
+    credentials: "include"
+  });
+
   if (meRes.status === 401) throw redirect(302, "/login");
   if (!meRes.ok) throw error(meRes.status, await meRes.text());
   const rawUser = await meRes.json();
 
   // My articles and all articles
   const [myArtsRes, allArtsRes] = await Promise.all([
-    fetch(`http://localhost:3000/api/users/${rawUser.id}/articles`, { credentials: "include" }),
-    fetch("http://localhost:3000/api/articles")
+    fetch(`${PUBLIC_API_BASE_URL}/users/${rawUser.id}/articles`, {
+      credentials: "include"
+    }),
+    fetch(`${PUBLIC_API_BASE_URL}/articles`)
   ]);
   if (!allArtsRes.ok) throw error(allArtsRes.status, "cannot find the article");
 
   const myArticlesRaw = myArtsRes.ok ? await myArtsRes.json() : [];
   const allArticlesRaw = await allArtsRes.json();
 
-  // subscribers
-  const subsRes = await fetch(
-    `http://localhost:3000/api/users/${rawUser.id}/subscriptions`,
-    { credentials: 'include' }
+	/* ---------- subscribers ---------- */
+	const subsRes = await fetch(
+    `${PUBLIC_API_BASE_URL}/users/${rawUser.id}/subscriptions`,
+    { credentials: "include" }
   );
-  let subscriberCount = 0;
-  if (subsRes.ok && subsRes.status !== 204) {
-    const subs = await subsRes.json();
-    subscriberCount = Array.isArray(subs) ? subs.length : (subs.count ?? 0);
-  }
+  	let subscriberCount = 0;
+  	if (subsRes.ok && subsRes.status !== 204) {
+    	const subs = await subsRes.json();
+    	subscriberCount = Array.isArray(subs) ? subs.length : (subs.count ?? 0);
+  	}
 
   // modify article list
   const mapArticle = (a) => ({
@@ -42,6 +48,8 @@ export async function load({ fetch }) {
     likes: 0,
     tags: []
   });
+
+
   const articleById = new Map();
   for (const raw of allArticlesRaw) {
     const obj = mapArticle(raw);
@@ -100,12 +108,13 @@ export async function load({ fetch }) {
     username: rawUser.username,
     firstName: rawUser.first_name,
     lastName: rawUser.last_name,
-    avatar: `/avatars/${avatarFilename}`,
-    avatar_id: rawUser.avatar_id,
     introduction: rawUser.description ?? '',
+    avatar_id: rawUser.avatar_id,
+    // avatar: `${PUBLIC_API_BASE_URL}/avatars/${rawUser.avatar_id}.png`,
     likedPosts: likedArticles.length,
-    subscribers: subscriberCount 
-  };
+    subscribers: subscriberCount
+  }
 
-  return { user, myArticles, likedArticles, myComments };
+
+	return { user, myArticles, likedArticles, myComments };
 }

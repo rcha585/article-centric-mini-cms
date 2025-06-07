@@ -1,12 +1,13 @@
 <script>
-  const PUBLIC_API_BASE_URL = "http://localhost:3000/api";
   import { writable } from "svelte/store";
   import { goto } from "$app/navigation";
+  import { currentUser } from "$lib/stores/currentUser";
+
+  const PUBLIC_API_BASE_URL = "http://localhost:3000/api";
 
   let username = "";
   let password = "";
   let showPassword = false;
-
   const errorMessage = writable(null);
 
   async function handleLogin() {
@@ -15,29 +16,41 @@
     try {
       const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ username, password })
       });
 
-      if (response.ok) {
-        goto("/");
-      } else if (response.status === 400) {
-        const text = await response.text();
-        errorMessage.set(text || "Wrong username or password");
-      } else if (response.status === 401) {
-        errorMessage.set("Authentication failed. Please check your credentials.");
-      } else {
-        errorMessage.set("An unexpected error occurred. Please try again later.");
+      if (!response.ok) {
+        if (response.status === 400) {
+          const txt = await response.text();
+          errorMessage.set(txt || "Wrong username or password");
+        } else if (response.status === 401) {
+          errorMessage.set("Authentication failed. Please check your credentials.");
+        } else {
+          errorMessage.set("An unexpected error occurred. Please try again later.");
+        }
+        return;
       }
+
+      const meResponse = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, {
+        credentials: "include"
+      });
+      if (meResponse.ok) {
+        const userData = await meResponse.json();
+        currentUser.set(userData);
+      } else {
+        currentUser.set(null);
+      }
+
+      goto("/");
     } catch (error) {
       console.error("Login error:", error);
       errorMessage.set("Could not connect to the server. Please check your network.");
     }
   }
 </script>
+
 
 <div class="page-wrapper">
   <section class="left-panel">
