@@ -146,8 +146,9 @@
       ? `%${trimmed}%`
       : trimmed;
 
-    goto(`/search?q=${encodeURIComponent(finalQuery)}&match=${matchType}`);
-  
+    const searchUrl = `/search?q=${encodeURIComponent(finalQuery)}&match=${matchType}`;
+    goto(searchUrl);
+    window.location.href = searchUrl;
     // Build the final URL based on matchType:
     //   If matchType==="partial", we do ?key=<term>&match=partial
     //   If matchType==="exact", we do ?key=<term>&match=exact

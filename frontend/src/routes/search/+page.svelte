@@ -14,26 +14,21 @@
 
   // const totalPages = Math.ceil(totalCount / perPage);
 
-  // Track which tab is active.
-  let selectedTab = "all";
-
-  // function goToPage(p) {
-  //   window.location.href = `/search?query=${encodeURIComponent(search)}&page=${p}`;
-  // }
-  
   let articles = [];
 
   console.log("checkingeddd", tag_id);
   
   async function returnSearchResults() {
 
-    try {
-    let articlesRes;
+    // let articlesRes;
     if (tag_id) {
-      articlesRes = await fetch(`${PUBLIC_API_BASE_URL}/tags/${tag_id}/articles`, { credentials: 'include' });
+      const articlesRes = await fetch(`${PUBLIC_API_BASE_URL}/tags/${tag_id}/articles`, { credentials: 'include' });
       console.log(`${PUBLIC_API_BASE_URL}/tags/${tag_id}/articles`);
+
+      articles = await articlesRes.json();
+      
     } else if (query) {
-      articlesRes = await fetch(`${PUBLIC_API_BASE_URL}/articles/?key=${encodeURIComponent(query)}&match=${encodeURIComponent(query_matchtype)}`, { credentials: 'include' });
+      const articlesRes = await fetch(`${PUBLIC_API_BASE_URL}/articles/?key=${encodeURIComponent(query)}&match=${encodeURIComponent(query_matchtype)}`, { credentials: 'include' });
 
       const rawArticles = await articlesRes.json();
       articles = rawArticles.map(article => ({
@@ -42,26 +37,8 @@
         article_content: article.content,
         article_created_at: article.created_at,      
       }));
-
-    } else {
-      articles = [];
-      return;
-    }
-
-    if (!articlesRes.ok) {
-      throw new Error(`Failed to fetch articles: ${articlesRes.status} ${articlesRes.statusText}`);
-    }
-
-    articles = await articlesRes.json();
-    console.log("Fetched articles:", articles);
-
-  } catch(e) {
-    console.error("Error fetching articles:", e);
-    // Optionally reset articles or set an error state here
-    articles = [];
+    } 
   }
-  }
-
 
   onMount(() => {
     returnSearchResults(); // call the async function
@@ -98,7 +75,7 @@
 
               <div class="info">
                 <h3>
-                  <a href={`/articles/${article.id}`} class="article-link">
+                  <a href={`/articles/${article.article_id}`} class="article-link">
                     {article.article_title}
                   </a>
                 </h3>
@@ -114,29 +91,6 @@
 
               </div>
         </li>
-          <!-- <li class="article-card">
-              <img
-                class="thumbnail"
-                src={article.image_path}
-                alt={"Thumbnail for " + article.title}
-                on:error="{(e) => (e.target.style.background = '#e0e0e0')}"
-              />
-
-              <div class="info">
-                <h3>
-                  <a href={`/articles/${article.id}`} class="article-link">
-                    {article.title}
-                  </a>
-                </h3>
-                <p class="desc">
-                  {article.content.slice(0, 110)}
-                  {article.content.length > 110 ? "..." : ""}
-                </p>
-                <div class="meta">
-                  By <span class="author">{article.username}</span>
-                </div>
-              </div>
-          </li> -->
         {/each}
       </ul>
     {/if}
@@ -215,33 +169,6 @@
     font-size: 1.1rem;
     margin-top: 2rem;
   }
-
-  /* ============================================ */
-  /*  TAB BAR (white text, underline on selected) */
-  /* ============================================ */
-  /* .tab-bar {
-    display: flex;
-    gap: 1.5rem;
-    margin-bottom: 24px;
-  }
-  .tab-bar button {
-    background: transparent;
-    border: none;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.75);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: border-bottom-color 0.2s, color 0.2s;
-  }
-  .tab-bar button:hover {
-    color: #ffffff;
-  }
-  .tab-bar button.selected {
-    color: #ffffff;
-    border-bottom-color: #ffffff;
-  } */
 
   /* ============================================ */
   /*   ARTICLE LIST & “FULL CARD” (transparent)   */
