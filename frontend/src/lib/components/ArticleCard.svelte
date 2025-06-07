@@ -1,7 +1,7 @@
 <script>
   // Props: article object and max length of excerpt
   export let article;
-  export let maxExcerptLength = 50;
+  export let maxExcerptLength = 300;
 
   // Create preview text, clipped if too long
   $: previewText =
@@ -44,7 +44,12 @@
     {#if article.tags?.length}
       <div class="article-tags">
         {#each article.tags.slice(0, 4) as tag}
-          <span class="article-tag">#{tag}</span>
+          <a
+            class="article-tag"
+            href={`/search?tag=${encodeURIComponent(tag)}`}
+          >
+            #{tag}
+          </a>
         {/each}
       </div>
     {/if}
@@ -138,21 +143,29 @@
     display: flex;
     flex-wrap: wrap;
     gap: 7px 10px;
-    margin-bottom: 8px;
+    margin-bottom: 1px;
   }
   .article-tag {
-    font-size: 0.88rem;
-    color: #395d74;
-    background: #f0f2f7;
-    padding: 3px 12px;
-    border-radius: 12px;
-    letter-spacing: 0.01em;
-    font-weight: 500;
+  display: inline-block;
+  text-decoration: none;
+  font-size: 0.88rem;
+  color: #395d74;
+  background: #f0f2f7;
+  padding: 4px 12px;
+  border-radius: 12px;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+  cursor: pointer;
+  }
+  .article-tag:hover {
+  background: #2563eb;
+  color: #fff;
   }
 
   /* Meta Row: Two Columns, Clean Layout */
   .article-meta-table {
-    margin-top: 16px;
+    margin-top: 1px;
     margin-bottom: 6px;
     border-radius: 11px;
     padding: 12px 14px 10px 14px;

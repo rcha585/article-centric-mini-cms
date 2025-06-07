@@ -4,10 +4,20 @@
 
   import { writable } from "svelte/store";
   import { goto } from "$app/navigation";
-  import { onMount } from "svelte";
 
-  let avatarList = [];
-  let selectedAvatarId = null;
+  let avatarList = [
+    { id: 1, path: '/avatars/avatar1.png' },
+    { id: 2, path: '/avatars/avatar2.png' },
+    { id: 3, path: '/avatars/avatar3.png' },
+    { id: 4, path: '/avatars/avatar4.png' },
+    { id: 5, path: '/avatars/avatar5.png' },
+    { id: 6, path: '/avatars/avatar6.png' },
+    { id: 7, path: '/avatars/avatar7.png' },
+    { id: 8, path: '/avatars/avatar8.png' },
+    { id: 9, path: '/avatars/avatar9.png' },
+    { id: 10, path: '/avatars/avatar10.png' }
+  ];
+  let selectedAvatarId = 1;
 
   let username = "";
   let lastName = "";
@@ -42,22 +52,6 @@
   const formError = writable(null);
 
   let showSuccess = false;
-
-  onMount(async () => {
-    try {
-      const response = await fetch(`${PUBLIC_API_BASE_URL}/avatars`);
-      if (response.ok) {
-        avatarList = await response.json();
-        if (avatarList.length > 0) {
-          selectedAvatarId = avatarList[0].id;
-        }
-      } else {
-        console.error("Failed to load avatars:", response.statusText);
-      }
-    } catch (error) {
-      console.error("Network error while fetching avatars:", error);
-    }
-  });
 
   function selectAvatar(id) {
     selectedAvatarId = id;
@@ -273,27 +267,16 @@
         <div class="field">
           <label for="avatarSelect">Choose an avatar</label>
           <div class="avatar-preview">
-            {#if avatarList.length > 0}
               {#each avatarList as a (a.id)}
                 {#if a.id === selectedAvatarId}
-                  <img
-                    src={`${PUBLIC_IMAGES_URL}/${a.avatar_path}`}
-                    alt="Avatar preview"
-                    width="64"
-                    height="64"
-                  />
+                  <img src={a.path} alt="Avatar preview" width="64" height="64"/>
                 {/if}
               {/each}
-            {:else}
-              <p>Loading avatars...</p>
-            {/if}
           </div>
-
+          
           <select id="avatarSelect" bind:value={selectedAvatarId} class="field">
             {#each avatarList as a (a.id)}
-              <option value={a.id}>
-                {a.avatar_path.split("/").pop()}
-              </option>
+              <option value={a.id}>Avatar {a.id}</option>
             {/each}
           </select>
         </div>

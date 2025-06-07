@@ -19,6 +19,12 @@
   let selectedAvatarId = user.avatar_id || 1;
   let avatars = [];
 
+  let displayCount = 2;
+
+  function loadMore() {
+    displayCount = Math.min(myArticles.length, displayCount + 2);
+  }
+
   onMount(async () => {
     try {
       const response = await fetch("http://localhost:3000/api/avatars", {
@@ -177,16 +183,22 @@
       <div class="articles-feed">
         {#if myArticles.length === 0}
           <div class="empty-feed">No articles at the moment, write a new ~~</div>
+
         {:else}
-          {#each myArticles as article (article.id)}
+          {#each myArticles.slice(0, displayCount) as article (article.id)}
             <UserArticleCard {article}
               on:edit={handleArticleEdit}
               on:readmore={handleReadMore}
               on:delete={handleDeleteArticle}
             />
           {/each}
-          <!-- Load More, future extension -->
-          <button class="load-more-btn">Load More</button>
+
+          {#if displayCount < myArticles.length}
+            <button type="button" class="load-more-text" on:click={loadMore}>
+              Load more...
+            </button>
+          {/if}
+
         {/if}
       </div>
     {:else if currentTab === "liked"}
@@ -332,7 +344,7 @@
     border-bottom: 2.5px solid #3788e7;
   }
 
-  /* Feed区样式 */
+  /* Feed style */
   .articles-feed {
     display: flex;
     flex-direction: column;
@@ -345,25 +357,23 @@
     font-size: 1.06rem;
   }
 
-  .load-more-btn {
-    margin: 24px auto 0 auto;
-    display: block;
-    background: #2567c5;
-    color: #fff;
-    padding: 9px 36px;
-    border-radius: 99px;
-    font-size: 1.04rem;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 2px 8px #b3cdf240;
-    transition: background-color 0.16s;
-  }
-  .load-more-btn:hover {
-    background-color: #14437b;
-  }
+  .load-more-text {
+  background: none;
+  border: none;
+  padding: 0;
+  color: rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  font-size: 1rem;
+  text-decoration: underline;
+  margin: 16px auto;
+  display: block;
+}
 
-/* 评论区样式 */
+.load-more-text:hover {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+/* comment style */
 .comments-feed {
   display: flex;
   flex-direction: column;

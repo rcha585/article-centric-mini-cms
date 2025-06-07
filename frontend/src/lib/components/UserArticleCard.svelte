@@ -46,8 +46,6 @@
       </div>
     {/if}
     <div class="likes-row">
-      <!-- add likes icon -->
-      <img src="/icons/like.svg" alt="Likes" class="icon-like" />
       <span class="likes-count">Likes: {article.likes}</span>
     </div>
 
