@@ -44,7 +44,12 @@
     {#if article.tags?.length}
       <div class="article-tags">
         {#each article.tags.slice(0, 4) as tag}
-          <span class="article-tag">#{tag}</span>
+          <a
+            class="article-tag"
+            href={`/search?tag=${encodeURIComponent(tag)}`}
+          >
+            #{tag}
+          </a>
         {/each}
       </div>
     {/if}
@@ -141,13 +146,21 @@
     margin-bottom: 8px;
   }
   .article-tag {
-    font-size: 0.88rem;
-    color: #395d74;
-    background: #f0f2f7;
-    padding: 3px 12px;
-    border-radius: 12px;
-    letter-spacing: 0.01em;
-    font-weight: 500;
+  display: inline-block;
+  text-decoration: none;
+  font-size: 0.88rem;
+  color: #395d74;
+  background: #f0f2f7;
+  padding: 4px 12px;
+  border-radius: 12px;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+  cursor: pointer;
+  }
+  .article-tag:hover {
+  background: #2563eb;
+  color: #fff;
   }
 
   /* Meta Row: Two Columns, Clean Layout */
