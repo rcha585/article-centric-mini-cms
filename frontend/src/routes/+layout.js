@@ -4,9 +4,22 @@ export const ssr = false;
 import { PUBLIC_API_BASE_URL } from "$env/static/public";
 import { unviewedCount, newNotificationIds } from "../lib/js/notifications.js";
 // import { unviewedCount, newNotificationIds } from "../js/notifications.js";
+import { currentUser } from '$lib/stores/currentUser.js';   
 
 export async function load({ fetch, url }) {
     const path = url.pathname;
+
+    let user = null; // Initialize user as null
+    if (!path.startsWith('/login') && !path.startsWith('/register')) {
+        const meRes = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, {
+            credentials: 'include'
+        });
+        if (meRes.ok) {
+            user = await meRes.json();
+        }
+    }
+    currentUser.set(user); // Set the current user in the store
+
     if (path.startsWith('/login') || path.startsWith('/register')) {
         unviewedCount.set(0);
         newNotificationIds.set([]);

@@ -103,7 +103,7 @@
       const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, {
         credentials: 'include' // Include cookies for authentication
       });
-      user = response.ok ? await response.json() : null;
+      const me = response.ok ? await response.json() : null;
       user = me;
       currentUser.set(me); // Update the store
     } catch (error) {
