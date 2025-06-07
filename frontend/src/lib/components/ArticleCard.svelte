@@ -1,7 +1,7 @@
 <script>
   // Props: article object and max length of excerpt
   export let article;
-  export let maxExcerptLength = 50;
+  export let maxExcerptLength = 300;
 
   // Create preview text, clipped if too long
   $: previewText =
@@ -143,7 +143,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 7px 10px;
-    margin-bottom: 8px;
+    margin-bottom: 1px;
   }
   .article-tag {
   display: inline-block;
@@ -165,7 +165,7 @@
 
   /* Meta Row: Two Columns, Clean Layout */
   .article-meta-table {
-    margin-top: 16px;
+    margin-top: 1px;
     margin-bottom: 6px;
     border-radius: 11px;
     padding: 12px 14px 10px 14px;
