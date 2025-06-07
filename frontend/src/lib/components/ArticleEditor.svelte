@@ -1,139 +1,289 @@
 <script>
-  /********************  PROPS  ********************/
+  // PROPS
+  // These props are passed in from the parent page:
   export let defaultTitle   = '';
   export let defaultTags    = '';
   export let defaultContent = '';
+  export let defaultCover   = '';
   export let apiKey         = '';
+
   import { createEventDispatcher } from 'svelte';
   import RichEditor from '$lib/components/RichEditor.svelte';
 
   const dispatch = createEventDispatcher();
 
-  /********************  STATE  ********************/
+  // Populate initial fields from props
   let title   = defaultTitle;
   let tags    = defaultTags;
   let content = defaultContent;
 
-  /* cover-upload state (plain JS) */
+  // If a cover image already exists, show it (fallback to default image)
+  let existingCoverUrl = defaultCover
+    ? `http://localhost:3000/${defaultCover}`
+    : '/default-image.jpg';
+
+  // When the user selects a new file, store it here
   let coverFile  = null;      // File | null
-  let coverPath  = '';        // backend path like  images/xxxx.jpg
+  let coverPath  = '';        // path returned by backend (e.g. "images/abc.jpg")
   let uploading  = false;
 
-  /* live word counter */
-  $: wordCount = content.replace(/<[^>]+>/g,'').trim().length;
+  // Live word‐count of the rich text (strip HTML tags)
+  $: wordCount = content.replace(/<[^>]+>/g, '').trim().length;
 
-  /*****************  CHOOSE FILE  *****************/
+  // Track whether user has focused/touched the tags input, for validation
+  let tagInputTouched = false;
+  $: tagArr   = parseTags(tags);
+  $: tagValid = validateTags(tagArr);
+
+  // -------------------- TAG PARSING & VALIDATION --------------------
+  function parseTags(str = '') {
+    // Split on whitespace (including full‐width), trim, and filter out empty
+    return str.split(/[\s\u3000]+/).map(x => x.trim()).filter(Boolean);
+  }
+
+  function validateTags(arr) {
+    // Each tag must start with "#" followed by alphanumeric characters
+    const rule = /^#[a-zA-Z0-9]+$/;
+    return arr.length > 0 && arr.every(t => rule.test(t));
+  }
+
+  // -------------------- FILE SELECTION --------------------
   function onFileChange(event) {
+    // Fired when the user picks a file.
     const input = event.target;
     const f = input.files && input.files[0];
     if (!f) return;
     coverFile = f;
   }
 
-  /*****************  UPLOAD FILE  *****************/
+  // -------------------- FILE UPLOAD --------------------
+  // Upload the selected file to the backend and return its new path
   async function uploadCover() {
-    if (!coverFile) return 'images/placeholder.png';
+    if (!coverFile) {
+      // No new file selected, then send placeholder string.
+      return 'images/placeholder.png';
+    }
 
     uploading = true;
-    const fd  = new FormData();
+    const fd = new FormData();
     fd.append('file', coverFile);
 
     try {
-      const res  = await fetch('http://localhost:3000/api/upload', { method:'POST', body:fd });
+      const res = await fetch('http://localhost:3000/api/upload', {
+        method: 'POST',
+        body: fd
+      });
       const json = await res.json();
-      uploading  = false;
+      uploading = false;
+
+      // If upload succeeded, return the returned path; otherwise fallback
       return res.ok ? json.path : 'images/placeholder.png';
     } catch {
       uploading = false;
-      alert('Upload failed, using placeholder');
+      alert('Upload failed; using placeholder image.');
       return 'images/placeholder.png';
     }
   }
 
-  /*****************  PUBLISH CLICK  ***************/
+  // -------------------- PUBLISH BUTTON CLICK --------------------
   async function handlePublish() {
-    const imgPath = await uploadCover();
+    // If tags are invalid, prevent publishing
+    if (!tagValid) {
+      alert('Each tag must start with “#” and contain only letters or numbers.');
+      return;
+    }
+
+    let imgPath = '';
+    // only upload new picture, or use default.
+    if (coverFile) {
+      imgPath = await uploadCover();
+    } else if (existingCoverUrl && !existingCoverUrl.includes('/default-image.jpg')) {
+      // existingCoverUrl: "http://localhost:3000/images/xxx.jpg"
+      imgPath = existingCoverUrl.replace('http://localhost:3000/', '');
+    } else {
+      imgPath = 'images/placeholder.png';
+    }
     coverPath = imgPath;
 
+    // Dispatch a "publish" event so the parent page can handle saving to DB
     dispatch('publish', {
       title,
       tags,
       content,
-      image_path: imgPath           // ⇢ will be saved into DB
+      image_path: imgPath
     });
   }
 </script>
 
 <div class="article-editor">
-  <!-- Title -->
+
+  <!-- TITLE INPUT -->
   <input
     class="editor-title"
     type="text"
-    placeholder="Title is here~~"
+    placeholder="Enter article title..."
     maxlength="100"
     bind:value={title}
   />
 
-  <!-- Tags -->
-  <input
-    class="editor-tags"
-    placeholder="#tags you want to place"
-    bind:value={tags}
-  />
+  <!-- TAGS INPUT & VALIDATION MESSAGE -->
+  <div class="tags-section">
+    <input
+      class="editor-tags"
+      type="text"
+      placeholder="#tag1 #tag2 #anotherTag"
+      bind:value={tags}
+      on:input={() => tagInputTouched = true}
+      aria-invalid={!tagValid}
+      aria-describedby="tag-error-msg"
+    />
+    <span id="tag-error-msg" class="tag-error" aria-live="polite">
+      {#if tagInputTouched && !tagValid}
+        Invalid tag format. Each tag must start with “#” and be alphanumeric,
+        separated by spaces (e.g. “#travel #food #hello”).
+      {/if}
+    </span>
+  </div>
 
-  <!-- Upload-cover row -->
+  <!-- EXISTING COVER PREVIEW OR SELECT NEW FILE -->
   <div class="cover-row">
     <label class="upload-btn">
       📷 Upload Cover
       <input type="file" accept="image/*" on:change={onFileChange} hidden />
     </label>
     {#if coverFile}
+      <!-- Show the local preview of the newly selected file -->
       <span class="file-name">{coverFile.name}</span>
+      <button class="remove-cover-btn" type="button" on:click={() => coverFile = null}>Change Picture</button>
     {/if}
   </div>
 
-  <!-- Preview -->
-  {#if coverFile}
-    <img class="cover-preview" src={URL.createObjectURL(coverFile)} alt="preview"/>
-  {:else if coverPath}
-    <img class="cover-preview" src={'/' + coverPath} alt="preview"/>
-  {/if}
+  <!-- COVER PREVIEW: show the newly selected file OR the existing cover -->
+  <div class="preview-container">
+    {#if coverFile}
+      <img class="cover-preview" src={URL.createObjectURL(coverFile)} alt="Cover preview" />
+    {:else}
+      <img class="cover-preview" src={existingCoverUrl} alt="Existing cover" on:error={(e) => e.target.src = '/default-image.jpg'} />
+    {/if}
+  </div>
 
-  <!-- Toolbar -->
+  <!-- TOOLBAR: Publish button + word count -->
   <div class="editor-toolbar">
-    <button class="btn-publish" on:click={handlePublish} disabled={uploading}>
+    <button
+      class="btn-publish"
+      on:click={handlePublish}
+      disabled={uploading || !tagValid}
+    >
       {uploading ? 'Uploading…' : 'Publish'}
     </button>
     <span class="word-count">Word Count: {wordCount}</span>
   </div>
 
-  <!-- Rich-text editor -->
+  <!-- RICH TEXT EDITOR -->
   <RichEditor bind:value={content} {apiKey} />
 </div>
 
 <style>
-/* container */
-.article-editor  { max-width:820px; margin:32px auto; display:flex; flex-direction:column; gap:24px; }
+  /* Container for the entire editor */
+  .article-editor {
+    max-width: 820px;
+    margin: 32px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
 
-/* title */
-.editor-title    { font-size:2rem; font-weight:700; border:none; outline:none; background:transparent; color:#222; padding:8px 0; }
-.editor-title::placeholder{ color:#bbb; }
+  /* TITLE INPUT */
+  .editor-title {
+    font-size: 2rem;
+    font-weight: 700;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #222;
+    padding: 8px 0;
+  }
+  .editor-title::placeholder {
+    color: #bbb;
+  }
 
-/* tags input */
-.editor-tags     { border:1px solid #ddd; border-radius:6px; padding:8px 12px; font-size:1rem; background:#fafafa; }
+  /* TAGS SECTION */
+  .tags-section {
+    position: relative;
+  }
+  .editor-tags {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    background: #fafafa;
+  }
+  .tag-error {
+    color: #e11d48;
+    font-size: ninerem;
+    margin-left: 8px;
+  }
 
-/* upload row */
-.cover-row       { display:flex; align-items:center; gap:12px; }
-.upload-btn      { background:#2563eb; color:#fff; padding:6px 20px; border-radius:6px; font-size:.95rem; font-weight:600; cursor:pointer; user-select:none; }
-.file-name       { font-size:.9rem; color:#334155; }
+  /* COVER UPLOAD ROW */
+  .cover-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .upload-btn {
+    background: #2563eb;
+    color: #fff;
+    padding: 6px 20px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  }
+  .file-name {
+    font-size: ninerem;
+    color: #334155;
+  }
 
-/* preview */
-.cover-preview   { max-width:260px; margin-top:8px; border-radius:8px; border:1px solid #e5e7eb; object-fit:cover; }
+  /* COVER PREVIEW IMAGE */
+  .preview-container {
+    margin-top: 8px;
+  }
+  .cover-preview {
+    max-width: 260px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    object-fit: cover;
+  }
 
-/* toolbar */
-.editor-toolbar  { display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
-.btn-publish     { background:#2563eb; color:#fff; padding:8px 34px; border-radius:6px; font-size:1rem; font-weight:600; border:none; cursor:pointer; transition:background .18s; }
-.btn-publish:hover:enabled { background:#1e4fb7; }
-.btn-publish:disabled      { background:#9db5e3; cursor:progress; }
-.word-count      { font-size:.92rem; color:#6b7280; }
+  /* TOOLBAR AT BOTTOM */
+  .editor-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+  .btn-publish {
+    background: #2563eb;
+    color: #fff;
+    padding: 8px 34px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.18s;
+  }
+  .btn-publish:hover:enabled {
+    background: #1e4fb7;
+  }
+  .btn-publish:disabled {
+    background: #9db5e3;
+    cursor: not-allowed;
+  }
+  .word-count {
+    font-size: 0.92rem;
+    color: #6b7280;
+  }
 </style>

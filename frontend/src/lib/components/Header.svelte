@@ -94,19 +94,19 @@
   let showProfileDropdown = false;
 
   onMount(async () => {
-    // Fetch user data from the API
+    if (path.startsWith("/login") || path.startsWith("/register")) {
+      user = null; // Reset user on login/register pages
+      return;
+    }
+    // Fetch current user data
     try {
       const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, {
         credentials: 'include' // Include cookies for authentication
       });
-      if (response.ok) {
-        user = await response.json();
-      } else {
-        user = null; // Clear user data if the request fails
-      }
+      user = response.ok ? await response.json() : null;
     } catch (error) {
       console.error('Error fetching user data:', error);
-      user = null; // Clear user data on error
+      user = null; // Reset user on error
     }
   });
 
@@ -249,7 +249,7 @@
       <a href="/login" class="nav-login">Login</a>
       {:else}
       <button type="button" class="avatar-wrapper" on:click={() => showProfileDropdown = !showProfileDropdown}>
-        <img src={`/avatars/${user.avatar_id}.png`} alt="Avatar" class="avatar-img-header" />
+        <img src={`/avatars/avatar${user.avatar_id}.png`} alt="Avatar" class="avatar-img-header" />
         </button>
     
         {#if showProfileDropdown}
@@ -500,7 +500,7 @@
   }
   .avatar-dropdown {
     position: absolute;
-    top: 60px; /* 让菜单靠近 Header 下方 */
+    top: 60px;
     right: 10px;
     background: #fff;
     border-radius: 6px;
