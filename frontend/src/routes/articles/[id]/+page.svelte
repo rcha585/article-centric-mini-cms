@@ -144,7 +144,14 @@
 
       <div class="tags-row">
         <span>Tags:</span>
-        {#each tags as tag}<span class="tag">{tag.content}</span>{/each}
+        {#each tags as tag}
+          <a 
+            href={`/search?tag=${encodeURIComponent(tag.content)}`}
+            class="tag"
+          >
+            {`${tag.content}`}
+          </a>
+        {/each}
       </div>
 
       <img
@@ -270,11 +277,11 @@
     border: 1px solid #e6ecf5;
   }
 
-  .avatar { width: 56px; height: 56px; border: 2px solid #bfdbfe; }
+  .avatar { width: 100px; height: 100px; border: 2px solid #bfdbfe; }
   .avatar-sm { width: 30px; height: 30px; }
 
-  .name { font-weight: 600; color: #1e3a8a; }
-  .followers { font-size: 0.85rem; color: #7898ba; }
+  .name { font-weight: 600; color: #101c3e; }
+  .followers { font-size: 1rem; color: #ffffff; }
 
   .btn-subscribe {
     background: #e0edfa;
@@ -294,6 +301,9 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 1rem;
+  }
+  .tags-row a {
+    text-decoration: none;
   }
   .tag { background: #e0edfa; color: #225ca3; padding: 3px 13px; border-radius: 15px; border: 1px solid #b6cbec; }
 
@@ -327,6 +337,7 @@
     transition: background-color .22s;
     background: #fee2e2;
     color: #e11d48;
+    margin-bottom: 20px;
   }
   .btn-like.liked,
   .btn-like:hover { background: #fca5a5; color: #fff; }
