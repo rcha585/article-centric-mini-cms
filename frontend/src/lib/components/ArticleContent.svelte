@@ -3,4 +3,3 @@
 </script>
 
 <p>{message.message}</p>
-

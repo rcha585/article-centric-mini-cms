@@ -3,22 +3,55 @@
   import { PUBLIC_API_BASE_URL } from "$env/static/public";
   import { unviewedCount, newNotificationIds } from "../js/notifications.js";
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { currentUser } from '$lib/stores/currentUser.js';
+  import { onDestroy } from "svelte";
 
   $: path = $page.url.pathname;
 
+  let user;
+  const unsubscribe = currentUser.subscribe(u => user = u);
+  onDestroy(() => unsubscribe()); // Clean up subscription when component is destroyed{
+
   /* ------ the below is for the notification bar ------ */
+
+  function handleReadNoti(target_url) {
+    window.location.href = target_url;
+  }
 
   async function handleClickNotification() {
 		// Fetch full list
-		const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications`, { credentials: 'include' });
-		const all = await res.json();
+		// const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications/`, { credentials: 'include' });
+    const [notiResArticles, notiResComments] = await Promise.all([
+                fetch(`${PUBLIC_API_BASE_URL}/notifications/articles`, {credentials: 'include'}),
+                fetch(`${PUBLIC_API_BASE_URL}/notifications/comments`, {credentials: 'include'}),
+            ]);
+		// const all = await res.json();
+    const [myArticlesNotifications, myCommentsNotifications] = await Promise.all([
+                    notiResArticles.json(),
+                    notiResComments.json()
+                ]);
+    
+    const all = [...myArticlesNotifications, ...myCommentsNotifications];
 
 		// Extract IDs of unread
 		const unviewed = all.filter(n => n.is_viewed === 0);
 		const ids = unviewed.map(n => n.id);
 
 		newNotificationIds.set(ids); // Used to store notification_id
+    console.log("all notifications:",all);
+    console.log("new notifications:",unviewed);
 		unviewedCount.set(0);     // Clear unviewed
+
+    // Update all unviewed to viewed
+    const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications`, {
+      method: 'PATCH',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      alert('Failed to update unviewed: ' + (await res.text()));
+      return;
+    }
     
 	}
 
@@ -52,24 +85,28 @@
   
   /* ------ the below is for the login bar ------ */
 
-  let user = null;
+  let search = "";
+
+  // (added) track whether we do an exact or partial match
+  // 'exact' means send the query literally; 'partial' means wrap in %…%
+  let matchType = "exact";
 
   let showProfileDropdown = false;
 
   onMount(async () => {
-    // Fetch user data from the API
+    if (path.startsWith("/login") || path.startsWith("/register")) {
+      user = null; // Reset user on login/register pages
+      return;
+    }
+    // Fetch current user data
     try {
       const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, {
         credentials: 'include' // Include cookies for authentication
       });
-      if (response.ok) {
-        user = await response.json();
-      } else {
-        user = null; // Clear user data if the request fails
-      }
+      user = response.ok ? await response.json() : null;
     } catch (error) {
       console.error('Error fetching user data:', error);
-      user = null; // Clear user data on error
+      user = null; // Reset user on error
     }
   });
 
@@ -80,7 +117,7 @@
         credentials: 'include' // Include cookies for authentication
       });
       if (response.ok) {
-        user = null; // Clear user data on logout
+        currentUser.set(null); // Clear user data on logout
         goto('/'); 
       } else {
         console.error('Logout failed');
@@ -89,23 +126,80 @@
       console.error('Error during logout:', error);
     }
   }
+
+  // Modified handleSearch to wrap with %…% if matchType==='partial'
+  function handleSearch(e) {
+    e.preventDefault();
+    
+    const trimmed = search.trim();
+    if (!trimmed) {
+      // If input is empty, just go to /search (no q parameter)
+      goto(`/search`);
+      return;
+    }
+
+    // http://localhost:5173/search?tag=Technology&id=1
+    // http://localhost:5173/search?query=hihelo
+
+    // If partial, wrap in %...%
+    const finalQuery = matchType === "partial"
+      ? `%${trimmed}%`
+      : trimmed;
+
+    const searchUrl = `/search?q=${encodeURIComponent(finalQuery)}&match=${matchType}`;
+    goto(searchUrl);
+    window.location.href = searchUrl;
+    // Build the final URL based on matchType:
+    //   If matchType==="partial", we do ?key=<term>&match=partial
+    //   If matchType==="exact", we do ?key=<term>&match=exact
+    const finalURL = `${PUBLIC_API_BASE_URL}/articles/?key=${encodeURIComponent(
+      trimmed
+    )}&match=${matchType}`;
+  }
 </script>
 
 <nav class="nav-bar">
   <div class="nav-inner">
     <div class="nav-logo">Blog Article</div>
-    <!-- search feature, future extension -->
-    <form class="nav-search">
-      <input type="text" placeholder="Search here..." />
-      <button type="submit">🔍</button>
+    <!-- search feature -->
+    <form class="nav-search" on:submit|preventDefault={handleSearch}>
+      <input
+        type="text"
+        placeholder="Search here..."
+        bind:value={search}
+        aria-label="Search"
+      />
+      <button type="submit" aria-label="Search">🔍</button>
     </form>
+
+    <!-- (added) EXACT / PARTIAL TOGGLE BUTTONS -->
+    <div class="match-toggle">
+      <button
+        type="button"
+        class:selected={matchType === "exact"}
+        on:click={() => (matchType = "exact")}
+      >
+        Exact
+      </button>
+      <button
+        type="button"
+        class:selected={matchType === "partial"}
+        on:click={() => (matchType = "partial")}
+      >
+        Partial
+      </button>
+    </div>
+
+
     <!-- main navigation, path need modify -->
     <div class="nav-tabs">
-      <a href="/"      class:active-tab={path === '/'}>Articles</a>
-      <a href="/tags"  class:active-tab={path.startsWith('/tags')}>Tags</a>
-      <a href="/user"  class:active-tab={path.startsWith('/user')}>Me</a>
+      <a href="/" class:active-tab={path === "/"}>Articles</a>
+      <a href="/tags" class:active-tab={path.startsWith("/tags")}>Tags</a>
+      <a href="/user" class:active-tab={path.startsWith("/user")}>Me</a>
     </div>
-    
+
+
+    <!-- ========== RIGHT SIDE (Notifications & Profile) ========== -->
     <div class="nav-right">
       <div class="notif-wrapper" bind:this={notifWrapper}>
       
@@ -120,23 +214,28 @@
         <div class="notif-box">
           <!-- loop over notifications -->
           <p>All notifications (to remove): {myNotifications.length}</p>
-          {#each myNotifications as n,i}
+          {#each myNotifications as n}
           <div class="notification-card {highlightIds.includes(n.id) ? 'highlight' : ''}">
             <img
               class="notification-cover"
-              src={n.authorUrl || n.userUrl || '/default-cover.png'}
+              src={n.author_avatar_path || n.commenter_avatar_path || '/default-cover.png'}
               alt={n.article_title}
             />
             
             <div class="notification-content">
               {#if n.comment_id}
-              <p class="notification-sender"><b>"Replace commentername"</b> added a comment to {n.article_title}</p>
+              <a href="/" class="notif-childbox">
+              <p class="notification-sender"><b>{n.commenter_name}</b> mentioned you in a comment to {n.article_title}</p>
               <p class="notification-preview">{truncateChars(n.comment_content,50)}</p>
               <p class="notification-date">{n.created_at}</p>
+              </a>
               {:else}
-              <p class="notification-sender"><b>"Replace authorname"</b> Published a new article: {n.article_title}</p>
+              <a href={`/articles/${n.article_id}`} class="notif-childbox" on:click={() => handleReadNoti(`/articles/${n.article_id}`)}>
+              <p class="notification-sender"><b>{n.author_name}</b> published a new article: {n.article_title}</p>
               <p class="notification-preview">{truncateChars(n.article_content, 50)}</p>
               <p class="notification-date">{n.created_at}</p>
+              </a>
+              <!-- </div> -->
               {/if}
             
             </div>
@@ -151,7 +250,7 @@
       <a href="/login" class="nav-login">Login</a>
       {:else}
       <button type="button" class="avatar-wrapper" on:click={() => showProfileDropdown = !showProfileDropdown}>
-        <img src={`${PUBLIC_API_BASE_URL}/avatars/${user.avatar_id}.png`} alt="Avatar" class="avatar-img-header" />
+        <img src={`/avatars/avatar${user.avatar_id}.png`} alt="Avatar" class="avatar-img-header" />
         </button>
     
         {#if showProfileDropdown}
@@ -164,11 +263,12 @@
   </div>
 </nav>
 
+
 <style>
   .nav-bar {
     width: 100vw;
     background: linear-gradient(90deg, #39c4fa 0%, #4683ea 100%);
-    box-shadow: 0 2px 8px rgba(65,100,180,0.06);
+    box-shadow: 0 2px 8px rgba(65, 100, 180, 0.06);
     padding: 0;
 
     margin: 0;
@@ -202,7 +302,7 @@
     width: 190px;
     background: #fff;
     color: #2b2b3c;
-    box-shadow: 0 1px 4px rgba(70,131,234,0.08);
+    box-shadow: 0 1px 4px rgba(70, 131, 234, 0.08);
   }
   .nav-search button {
     position: absolute;
@@ -217,6 +317,34 @@
     padding: 2px 8px;
   }
 
+
+  /* ========== (added) EXACT / PARTIAL TOGGLE ========== */
+  .match-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 16px;
+  }
+  .match-toggle button {
+    all: unset;
+    padding: 4px 8px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  .match-toggle button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  .match-toggle button.selected {
+    background-color: #fff;
+    color: #4683ea;
+    border-color: #fff;
+  }
+
+
+  /* ========== NAV TABS ========== */
   .nav-tabs {
     display: flex;
     gap: 30px;
@@ -229,19 +357,20 @@
     text-decoration: none;
     padding: 6px 16px;
     border-radius: 9px;
-    transition: background-color 0.15s, color 0.15s;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
   }
   .nav-tabs a:hover {
-    background: rgba(255,255,255,0.18);
+    background: rgba(255, 255, 255, 0.18);
     color: #f3f6fa;
   }
   .active-tab {
-    background: rgba(255,255,255,0.23);
+    background: rgba(255, 255, 255, 0.23);
     color: #22315c;
     font-weight: 700;
   }
 
-  
   .nav-right {
     display: flex;
     align-items: center;
@@ -255,8 +384,10 @@
     border-radius: 999px;
     margin-left: 10px;
     text-decoration: none;
-    box-shadow: 0 2px 10px rgba(65,100,180,0.07);
-    transition: background-color 0.16s, color 0.16s;
+    box-shadow: 0 2px 10px rgba(65, 100, 180, 0.07);
+    transition:
+      background-color 0.16s,
+      color 0.16s;
   }
   .nav-login:hover {
     background: #f2f7fe;
@@ -338,6 +469,23 @@
   background-color: #d1e7fd; /* example: light blue background */
   }
 
+  .notification-cover {
+    width: 100%;
+    height: 50px;
+    object-fit: cover;
+    object-position: center;
+    background: #f3f3f3;
+    border-bottom: 1px solid #e5e6e8;
+    border-radius: 50px;
+  }
+
+  .notif-childbox {
+    all: unset;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+  }
+
 /* ------ the below is for the login bar ------ */
   .avatar-img-header {
     width: 36px;
@@ -353,7 +501,7 @@
   }
   .avatar-dropdown {
     position: absolute;
-    top: 60px; /* 让菜单靠近 Header 下方 */
+    top: 60px;
     right: 10px;
     background: #fff;
     border-radius: 6px;

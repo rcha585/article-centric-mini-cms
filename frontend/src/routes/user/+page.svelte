@@ -16,12 +16,18 @@
   let firstName = user.firstName || "";
   let lastName = user.lastName || "";
   let description = user.introduction || "";
-  let selectedAvatarId = user.avatar_id || null;
+  let selectedAvatarId = user.avatar_id || 1;
   let avatars = [];
+
+  let displayCount = 2;
+
+  function loadMore() {
+    displayCount = Math.min(myArticles.length, displayCount + 2);
+  }
 
   onMount(async () => {
     try {
-      const response = await fetch(`${PUBLIC_API_BASE_URL}/avatars`, {
+      const response = await fetch("http://localhost:3000/api/avatars", {
         credentials: 'include',
       });
       if (response.ok) {
@@ -35,6 +41,33 @@
   let newPassword = '';
   let showPassword = false;
 
+  // delete article
+  async function handleDeleteArticle(e) {
+    const artId = e.detail.id;
+    if (!confirm("Are you sure you want to delete this article?")) return;
+
+    try {
+      const res = await fetch(`${PUBLIC_API_BASE_URL}/articles/${artId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (res.status === 204) {
+        // delete backend article. remove from array.
+        myArticles = myArticles.filter((a) => a.id !== artId);
+        alert("Article deleted successfully!");
+      } else if (res.status === 403) {
+        alert("You are not allowed to delete this article.");
+      } else if (res.status === 404) {
+        alert("Article not found.");
+      } else {
+        alert("Failed to delete article. Please try again later.");
+      }
+    } catch (err) {
+      console.error("Error deleting article:", err);
+      alert("An error occurred while deleting. Please try again later.");
+    }
+  }
+
   // Handle edit profile button click
   function toggleEditProfile() {
     showEditProfile.update(value => !value);
@@ -45,7 +78,7 @@
       username: username.trim(),
       first_name: firstName.trim(),
       last_name: lastName.trim(),
-      description: description.trim(),
+      description: description.trim(),  
       avatar_id: selectedAvatarId,
     };
 
@@ -54,6 +87,7 @@
     }
 
     try {
+      // 报错，需修改。
       const response = await fetch(`${PUBLIC_API_BASE_URL}/users`, {
         method: 'PATCH',
         headers: {
@@ -83,6 +117,7 @@
     }
   }
 
+  // realise delete account
   async function handleDeleteAccount() {
     if (!confirm("Are you sure you want to delete your account? This action cannot be undone."))return;
       try {
@@ -131,40 +166,42 @@
     />
   </aside>
 
-  
   <section class="user-content">
-    
     <div class="user-tab-bar">
-      <button
-        class:active={currentTab === "overview"}
-        on:click={() => currentTab = "overview"}
-      >Overview</button>
-      <button
-        class:active={currentTab === "liked"}
-        on:click={() => currentTab = "liked"}
-      >Liked</button>
-      <button
-        class:active={currentTab === "comments"}
-        on:click={() => currentTab = "comments"}
-      >Comments</button>
+      <button class:active={currentTab === "overview"} on:click={() => (currentTab = "overview")}
+        >Overview</button
+      >
+      <button class:active={currentTab === "liked"} on:click={() => (currentTab = "liked")}
+        >Liked</button
+      >
+      <button class:active={currentTab === "comments"} on:click={() => (currentTab = "comments")}
+        >Comments</button
+      >
     </div>
 
-    {#if currentTab === 'overview'}
+    {#if currentTab === "overview"}
       <div class="articles-feed">
         {#if myArticles.length === 0}
           <div class="empty-feed">No articles at the moment, write a new ~~</div>
+
         {:else}
-          {#each myArticles as article (article.id)}
+          {#each myArticles.slice(0, displayCount) as article (article.id)}
             <UserArticleCard {article}
               on:edit={handleArticleEdit}
               on:readmore={handleReadMore}
+              on:delete={handleDeleteArticle}
             />
           {/each}
-          <!-- Load More, future extension -->
-          <button class="load-more-btn">Load More</button>
+
+          {#if displayCount < myArticles.length}
+            <button type="button" class="load-more-text" on:click={loadMore}>
+              Load more...
+            </button>
+          {/if}
+
         {/if}
       </div>
-    {:else if currentTab === 'liked'}
+    {:else if currentTab === "liked"}
       <div class="articles-feed">
         {#if likedArticles.length === 0}
           <div class="empty-feed">Have no liked</div>
@@ -174,7 +211,7 @@
           {/each}
         {/if}
       </div>
-    {:else if currentTab === 'comments'}
+    {:else if currentTab === "comments"}
       <div class="comments-feed">
         {#if myComments.length === 0}
           <div class="empty-feed">No comment yet</div>
@@ -198,7 +235,7 @@
   <div class="edit-profile-popup">
     <div class="popup-content">
       <div class="avatar-container">
-        <img class="avatar-img" src={`${PUBLIC_API_BASE_URL}/avatars/${selectedAvatarId}.png`} alt="Avatar" />
+        <img class="avatar-img" src={`http://localhost:5173/avatars/avatar${selectedAvatarId}.png`} alt="Avatar" />
         <button class="btn-change-image" on:click={()=> {const sel = document.getElementById('avatarSelect'); if (sel) sel.click();}}>
           Change Avatar </button>
         <button class="btn-delete-account" on:click={handleDeleteAccount}>Delete Account</button>
@@ -263,80 +300,80 @@
   
 
 <style>
-.user-page-main {
-  display: flex;
-  max-width: 1000px;
-  margin: 44px auto 0 auto;
-  gap: 34px;
-  align-items: flex-start;
-  min-height: 70vh;
-}
-.user-page-main aside {
-  flex: 0 0 280px;
-}
-.user-content {
-  flex: 1 1 0;
-  min-width: 0;
-}
+  .user-page-main {
+    display: flex;
+    max-width: 1000px;
+    margin: 44px auto 0 auto;
+    gap: 34px;
+    align-items: flex-start;
+    min-height: 70vh;
+  }
+  .user-page-main aside {
+    flex: 0 0 280px;
+  }
+  .user-content {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 
-.user-tab-bar {
-  display: flex;
-  gap: 18px;
-  margin-bottom: 26px;
-  border-bottom: 1.5px solid #e1e7f2;
-  padding-bottom: 4px;
-}
-.user-tab-bar button {
+  .user-tab-bar {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 26px;
+    border-bottom: 1.5px solid #e1e7f2;
+    padding-bottom: 4px;
+  }
+  .user-tab-bar button {
+    background: none;
+    border: none;
+    padding: 6px 24px;
+    font-size: 1.03rem;
+    color: #466ab0;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    font-weight: 500;
+    transition:
+      background-color 0.13s,
+      color 0.13s;
+    outline: none;
+  }
+  .user-tab-bar button.active,
+  .user-tab-bar button:hover {
+    background: #f2f7ff;
+    color: #1751a1;
+    border-bottom: 2.5px solid #3788e7;
+  }
+
+  /* Feed style */
+  .articles-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .empty-feed {
+    color: #b1b6c2;
+    text-align: center;
+    padding: 46px 0;
+    font-size: 1.06rem;
+  }
+
+  .load-more-text {
   background: none;
   border: none;
-  padding: 6px 24px;
-  font-size: 1.03rem;
-  color: #466ab0;
-  border-radius: 6px 6px 0 0;
+  padding: 0;
+  color: rgba(0, 0, 0, 0.4);
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.13s, color 0.13s;
-  outline: none;
-}
-.user-tab-bar button.active,
-.user-tab-bar button:hover {
-  background: #f2f7ff;
-  color: #1751a1;
-  border-bottom: 2.5px solid #3788e7;
-}
-
-/* Feed区样式 */
-.articles-feed {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-.empty-feed {
-  color: #b1b6c2;
-  text-align: center;
-  padding: 46px 0;
-  font-size: 1.06rem;
-}
-
-.load-more-btn {
-  margin: 24px auto 0 auto;
+  font-size: 1rem;
+  text-decoration: underline;
+  margin: 16px auto;
   display: block;
-  background: #2567c5;
-  color: #fff;
-  padding: 9px 36px;
-  border-radius: 99px;
-  font-size: 1.04rem;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 2px 8px #b3cdf240;
-  transition: background-color 0.16s;
-}
-.load-more-btn:hover {
-  background-color: #14437b;
 }
 
-/* 评论区样式 */
+.load-more-text:hover {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+/* comment style */
 .comments-feed {
   display: flex;
   flex-direction: column;

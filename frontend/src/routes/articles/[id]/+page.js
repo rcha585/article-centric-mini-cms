@@ -14,8 +14,25 @@ export async function load({ params, fetch }) {
   let user = null;
   if (article.author_id) {
     const userRes = await fetch(`${BASE_URL}/users/${article.author_id}`);
-    if (userRes.ok) user = await userRes.json();
+    if (userRes.ok) {
+      const userJson = await userRes.json();
+      const avatarId = userJson.avatar_id;
+      let avatarUrl;
+      if (avatarId && typeof avatarId === 'number') {
+        avatarUrl = `/avatars/avatar${avatarId}.png`;
+      } else {
+        avatarUrl = `/avatars/avatar-1.png`; // the “no avatar” fallback
+      }
+      user = {
+        id: userJson.id,
+        username: userJson.username,
+        first_name: userJson.first_name,
+        last_name: userJson.last_name,
+        avatarUrl
+      };
+    }
   }
+  console.log("user:", user);
 
   // fetch tags
   const tagsRes = await fetch(`${BASE_URL}/articles/${id}/tags`);
@@ -37,4 +54,4 @@ export async function load({ params, fetch }) {
     comments,
     error: false
   };
-}
+};

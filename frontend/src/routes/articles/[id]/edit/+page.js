@@ -1,7 +1,7 @@
 // use SvelteKkit throw error and redirect
 import { redirect, error } from '@sveltejs/kit';
 
-const BASE_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
+const BASE_URL = import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ params, fetch }) {
@@ -24,7 +24,7 @@ export async function load({ params, fetch }) {
         const t = await tagRes.json();
         console.log('tags:', t);
         // assemble tags
-        tagStr = t.map(x => `#${x.content}`).join(' ');
+        tagStr = t.map(x => `${x.content}`).join(' ');
         console.log('tagStr:', tagStr);
     }
   } catch {}
