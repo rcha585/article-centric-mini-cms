@@ -20,7 +20,7 @@
 -->
 <a
   class="tag-card"
-  href={`/search?tag=${encodeURIComponent(tag.content)}`}
+  href={`/search?tag=${encodeURIComponent(tag.content)}&id=${tag.id}`}
   aria-label={`Search articles tagged with "${tag.content}"`}
 >
   <div class="card-inner">
