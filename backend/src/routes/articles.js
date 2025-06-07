@@ -59,10 +59,69 @@ router.get("/", async (req, res) => {
   const db = await getDatabase();
   let articles;
   if (!req.query.key) {
-    articles = await db.all("SELECT a.*, u.username FROM articles AS a INNER JOIN users AS u ON a.author_id = u.id");
+    articles = await db.all(`
+      SELECT
+        a.*,
+        u.username
+      FROM
+        articles AS a
+      INNER JOIN
+        users AS u
+      ON
+        a.author_id = u.id
+    `);
+  } else if (!req.query.match || req.query.match == "partial"){
+    const key = `%${req.query.key}%`;
+    articles = await db.all(`
+      SELECT
+        a.*,
+        u.username
+      FROM
+        articles AS a
+      INNER JOIN
+        users AS u
+      On
+        a.author_id = u.id
+      WHERE
+        a.title LIKE ? COLLATE NOCASE
+      OR
+        a.content LIKE ? COLLATE NOCASE
+      OR
+        u.username LIKE ? COLLATE NOCASE
+    `, [key, key, key]);
   } else {
-    const key = req.query.match && req.query.match == "exact" ? req.query.key : `%${req.query.key}%`;
-    articles = await db.all("SELECT a.*, u.username FROM articles AS a INNER JOIN users AS u On a.author_id = u.id WHERE a.title LIKE ? COLLATE NOCASE OR a.content LIKE ? COLLATE NOCASE OR u.username LIKE ? COLLATE NOCASE", [key, key, key]);
+    const key1 = `${req.query.key} %`;
+    const key2 = `% ${req.query.key} %`;
+    const key3 = `% ${req.query.key}`;
+    articles = await db.all(`
+      SELECT
+        a.*,
+        u.username
+      FROM
+        articles AS a
+      INNER JOIN
+        users AS u
+      On
+        a.author_id = u.id
+      WHERE
+        a.title LIKE ? COLLATE NOCASE
+      OR
+        a.title LIKE ? COLLATE NOCASE
+      OR
+        a.title LIKE ? COLLATE NOCASE
+      OR    
+        a.content LIKE ? COLLATE NOCASE
+      OR    
+        a.content LIKE ? COLLATE NOCASE
+      OR    
+        a.content LIKE ? COLLATE NOCASE
+      OR 
+        u.username LIKE ? COLLATE NOCASE
+      OR 
+        u.username LIKE ? COLLATE NOCASE
+      OR 
+        u.username LIKE ? COLLATE NOCASE
+      `, [key1, key2, key3, key1, key2, key3, key1, key2, key3]);
   }
   if (articles.length == 0) {
     return res.status(200).json(articles);
