@@ -1,10 +1,9 @@
 <script>
   import { onMount } from 'svelte';
+  const PUBLIC_API_BASE_URL = "http://localhost:3000/api";
 
   export let data;
 
-  let liked = false;
-  let showComments = false;
   let newComment = "";
   let users = [];
   let filteredUsers = [];
@@ -12,14 +11,89 @@
   let mentionQuery = "";
 
   // Initialize data
-  const { article, user, tags = [], likes: initialLikes = 0, comments: initialComments = [] } = data;
+  let { article, user, tags = [], comments: initialComments = [], likes: initialLikes = 0 } = data;
+
   let likes = initialLikes;
+  let liked = false;
+
+  let showComments = false;
   let comments = [...initialComments];
 
-  // Handle like toggle
-  function handleLike() {
-    liked = !liked;
-    likes += liked ? 1 : -1;
+  // onMount fetches both initial likes & comment list if needed
+  onMount(async () => {
+    // Fetch initial likes
+    try {
+      const res = await fetch(`${PUBLIC_API_BASE_URL}/articles/${article.id}/likes`, {
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const likeUsers = await res.json();
+        console.log('likeUsers from backend:', likeUsers);
+        console.log('current user object:', user);
+        likes = likeUsers.length;
+        if (user) {
+          liked = likeUsers.some(u => u.username === user.username);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load likes', e);
+    }
+
+    // Optionally fetch initial comments instead of data.comments
+    try {
+      const res2 = await fetch(`${PUBLIC_API_BASE_URL}/articles/${article.id}/comments`);
+      if (res2.ok) {
+        comments = await res2.json();
+      }
+    } catch (e) {
+      console.error('Failed to load comments', e);
+      comments = [];
+    }
+
+    // Fetch mentionable users
+    try {
+      const res3 = await fetch("/api/users");
+      if (res3.ok) users = await res3.json();
+    } catch (e) {
+      console.error("Failed to fetch users", e);
+    }
+  });
+
+  // handleLike will sync backend and only can like once.
+  async function handleLike() {
+    if (!user) {
+      alert("Please login to like!");
+      return;
+    }
+
+    let res;
+
+    if (!liked) {
+      res = await fetch(`${PUBLIC_API_BASE_URL}/articles/${article.id}/likes`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } else {
+      res = await fetch(`${PUBLIC_API_BASE_URL}/articles/${article.id}/likes`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+    }
+
+    if (res.status === 401) {
+      alert("Please login to like!");
+      return;
+    }
+
+    if (res.ok || res.status === 409 || res.status === 404) {
+      liked = !liked;
+      likes += liked ? 1 : -1;
+      return;
+    }
+
+  
+    console.error("failed to like", res.status);
+    alert("Failed to like");
   }
 
   // Toggle comments section
@@ -48,7 +122,7 @@
     newComment = "";
   }
 
-  // --- SAFE HIGHLIGHTING FUNCTIONS ---
+  // Safe Highlighting Functions
   // Prevent XSS by escaping HTML
   function escapeHtml(text) {
     const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
@@ -110,8 +184,11 @@
 
   // Fetch user list when component mounts
   onMount(async () => {
-    const res = await fetch("/api/users");
+    const res = await fetch(`${PUBLIC_API_BASE_URL}/users`, {
+      credentials: 'include'
+    });
     if (res.ok) users = await res.json();
+    console.log("sss",users);
   });
 </script>
 
@@ -163,8 +240,9 @@
 
       <div class="article-content">{@html article.content}</div>
 
-      <button class="btn-like" class:liked={liked} on:click={handleLike}>
-        <span>{liked ? "❤️" : "🤍"}</span> {likes}
+      <!-- Likes feature -->
+      <button class="btn-like" class:liked={user && liked} on:click={handleLike}>
+        {#if user && liked} ❤️ {:else} 🤍 {/if} {likes}
       </button>
 
       <div class="comments-section">

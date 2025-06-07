@@ -52,7 +52,7 @@
     <div class="actions-row">
       <button class="delete-btn" on:click={handleDelete}>Delete</button>
       <button class="edit-btn"   on:click={handleEdit}>Edit</button>
-      <button class="loadmore-btn" on:click={handleReadMore}>Load More</button>
+      <button class="loadmore-btn" on:click={handleReadMore}>Read More</button>
     </div>
 
     <div class="card-createdat">Created at {createdDate}</div>
