@@ -1,22 +1,76 @@
 <script>
+  import { PUBLIC_API_BASE_URL } from "$env/static/public";
   export let data;
+  import { onMount } from 'svelte';
 
   const {
-    articles = [],
-    totalCount = 0,
-    page = 1,
-    perPage = 6,
-    search = ""
+    tag_id,
+    // totalCount = 0,
+    // page = 1,
+    // perPage = 6,
+    query,
+    query_matchtype
   } = data;
 
-  const totalPages = Math.ceil(totalCount / perPage);
+  // const totalPages = Math.ceil(totalCount / perPage);
 
   // Track which tab is active.
   let selectedTab = "all";
 
-  function goToPage(p) {
-    window.location.href = `/search?query=${encodeURIComponent(search)}&page=${p}`;
+  // function goToPage(p) {
+  //   window.location.href = `/search?query=${encodeURIComponent(search)}&page=${p}`;
+  // }
+  
+  let articles = [];
+
+  console.log("checkingeddd", tag_id);
+  
+  async function returnSearchResults() {
+
+    try {
+    let articlesRes;
+    if (tag_id) {
+      articlesRes = await fetch(`${PUBLIC_API_BASE_URL}/tags/${tag_id}/articles`, { credentials: 'include' });
+      console.log(`${PUBLIC_API_BASE_URL}/tags/${tag_id}/articles`);
+    } else if (query) {
+      articlesRes = await fetch(`${PUBLIC_API_BASE_URL}/articles/?key=${encodeURIComponent(query)}&match=${encodeURIComponent(query_matchtype)}`, { credentials: 'include' });
+
+      const rawArticles = await articlesRes.json();
+      articles = rawArticles.map(article => ({
+        article_id: article.id,
+        article_title: article.title,
+        article_content: article.content,
+        article_created_at: article.created_at,      
+      }));
+
+    } else {
+      articles = [];
+      return;
+    }
+
+    if (!articlesRes.ok) {
+      throw new Error(`Failed to fetch articles: ${articlesRes.status} ${articlesRes.statusText}`);
+    }
+
+    articles = await articlesRes.json();
+    console.log("Fetched articles:", articles);
+
+  } catch(e) {
+    console.error("Error fetching articles:", e);
+    // Optionally reset articles or set an error state here
+    articles = [];
   }
+  }
+
+
+  onMount(() => {
+    returnSearchResults(); // call the async function
+  });
+
+  $: if (articles.length) {
+  console.log("Articles changed:", articles);
+  }
+
 </script>
 
 <div class="search-background">
@@ -25,45 +79,42 @@
 
     {#if articles.length === 0}
       <p class="no-results">
-        No articles found{search ? ` for "${search}"` : ""}.<br/>
+        No articles found{query ? ` for "${query}"` : ""}.<br/>
         Try adjusting your search or check back later.
       </p>
     {:else}
-
-      <!-- TAB BAR -->
-      <div class="tab-bar">
-        <button
-          class:selected={selectedTab === "all"}
-          on:click={() => (selectedTab = "all")}
-        >
-          All
-        </button>
-        <button
-          class:selected={selectedTab === "title"}
-          on:click={() => (selectedTab = "title")}
-        >
-          Title
-        </button>
-        <button
-          class:selected={selectedTab === "content"}
-          on:click={() => (selectedTab = "content")}
-        >
-          Content
-        </button>
-        <button
-          class:selected={selectedTab === "author"}
-          on:click={() => (selectedTab = "author")}
-        >
-          Author
-        </button>
-      </div>
-
       <!-- ARTICLE LIST -->
       <ul class="article-list">
-        {#each articles as article (article.id)}
-          <li class="article-card">
-            {#if selectedTab === "all"}
-              <!-- FULL CARD: Thumbnail + Title + Snippet + Author -->
+
+        {#each articles as article}
+        <p>{article.article_title}</p>
+        <li class="article-card">
+          <img
+                class="thumbnail"
+                src={article.image_path}
+                alt={"Thumbnail for " + article.article_title}
+                on:error="{(e) => (e.target.style.background = '#e0e0e0')}"
+              />
+
+              <div class="info">
+                <h3>
+                  <a href={`/articles/${article.id}`} class="article-link">
+                    {article.article_title}
+                  </a>
+                </h3>
+
+                <p class="desc">
+                  {article.article_content.slice(0, 110)}
+                  {article.article_content.length > 110 ? "..." : ""}
+                </p>
+
+                <div class="meta">
+                  By <span class="author">{article.username}</span>
+                </div>
+
+              </div>
+        </li>
+          <!-- <li class="article-card">
               <img
                 class="thumbnail"
                 src={article.image_path}
@@ -85,36 +136,13 @@
                   By <span class="author">{article.username}</span>
                 </div>
               </div>
-
-            {:else if selectedTab === "title"}
-              <!-- TITLE ONLY (no image, no snippet, no author) -->
-              <div class="info-only">
-                <h3>
-                  <a href={`/articles/${article.id}`} class="article-link">
-                    {article.title}
-                  </a>
-                </h3>
-              </div>
-
-            {:else if selectedTab === "content"}
-              <!-- CONTENT ONLY (no image, no title link, no author) -->
-              <div class="info-only">
-                <p class="desc-only">{article.content}</p>
-              </div>
-
-            {:else if selectedTab === "author"}
-              <!-- AUTHOR ONLY (no image, no title, no snippet) -->
-              <div class="info-only">
-                <p class="author-only">{article.username}</p>
-              </div>
-            {/if}
-          </li>
+          </li> -->
         {/each}
       </ul>
     {/if}
 
     <!-- PAGINATION (unchanged) -->
-    {#if totalPages > 1}
+    <!-- {#if totalPages > 1}
       <div class="pagination">
         <span class="pagination-info">
           Showing {(page - 1) * perPage + 1} – 
@@ -137,7 +165,7 @@
           &gt;
         </button>
       </div>
-    {/if}
+    {/if} -->
   </div>
 </div>
 
@@ -191,7 +219,7 @@
   /* ============================================ */
   /*  TAB BAR (white text, underline on selected) */
   /* ============================================ */
-  .tab-bar {
+  /* .tab-bar {
     display: flex;
     gap: 1.5rem;
     margin-bottom: 24px;
@@ -213,7 +241,7 @@
   .tab-bar button.selected {
     color: #ffffff;
     border-bottom-color: #ffffff;
-  }
+  } */
 
   /* ============================================ */
   /*   ARTICLE LIST & “FULL CARD” (transparent)   */
@@ -288,45 +316,9 @@
   }
 
   /* ============================================ */
-  /*   “INFO‐ONLY” STYLES FOR TITLE/CONTENT/AUTHOR */
-  /* ============================================ */
-  .info-only {
-    flex: 1;
-    margin-left: 0;
-  }
-  .info-only h3 {
-    margin: 0;
-    font-size: 1.35rem;
-    font-weight: 600;
-    color: #ffffff;
-  }
-  .info-only h3 a {
-    text-decoration: none;
-    color: #ffffff;
-  }
-  .info-only h3 a:hover {
-    text-decoration: underline;
-    color: #ffeb3b;
-  }
-
-  .desc-only {
-    margin: 0;
-    color: #f0f0f5;
-    font-size: 1rem;
-    line-height: 1.5;
-  }
-
-  .author-only {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 1rem;
-    font-weight: 600;
-  }
-
-  /* ============================================ */
   /*  PAGINATION (light on dark card)             */
   /* ============================================ */
-  .pagination {
+  /* .pagination {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -358,7 +350,7 @@
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.5);
     cursor: not-allowed;
-  }
+  } */
 
   
 </style>

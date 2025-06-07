@@ -138,12 +138,15 @@
       return;
     }
 
+    // http://localhost:5173/search?tag=Technology&id=1
+    // http://localhost:5173/search?query=hihelo
+
     // If partial, wrap in %...%
     const finalQuery = matchType === "partial"
       ? `%${trimmed}%`
       : trimmed;
 
-    goto(`/search?q=${encodeURIComponent(finalQuery)}`);
+    goto(`/search?q=${encodeURIComponent(finalQuery)}&match=${matchType}`);
   
     // Build the final URL based on matchType:
     //   If matchType==="partial", we do ?key=<term>&match=partial
@@ -221,7 +224,7 @@
             <div class="notification-content">
               {#if n.comment_id}
               <a href="/" class="notif-childbox">
-              <p class="notification-sender"><b>{n.commenter_name}</b> added a comment to {n.article_title}</p>
+              <p class="notification-sender"><b>{n.commenter_name}</b> mentioned you in a comment to {n.article_title}</p>
               <p class="notification-preview">{truncateChars(n.comment_content,50)}</p>
               <p class="notification-date">{n.created_at}</p>
               </a>
