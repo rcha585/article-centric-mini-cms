@@ -7,6 +7,14 @@
 
   // Import the TagList component to display individual tag cards.
   import TagList from "$lib/components/TagList.svelte";
+
+  // Adding a load more feature. 
+  let displayCount = 5;
+
+  // load more cards if trigger the function. 
+  function loadMore() {
+    displayCount = Math.min(tags.length, displayCount + 5);
+  }
 </script>
 
 <svelte:head>
@@ -28,12 +36,19 @@
   <p class="no-tags">No tags available.</p>
 {:else}
   <div class="tag-list">
-    {#each tags as tag (tag.id)}
+    {#each tags.slice(0, displayCount) as tag (tag.id)}
       <!-- Render each tag using the TagList component.
            Pass the `tag` object as a prop. -->
       <TagList {tag} />
     {/each}
   </div>
+
+  <!-- add a load more buttom to load more cards -->
+  {#if displayCount < tags.length}
+    <button class="load-more" on:click={loadMore}>
+      Load more…
+    </button>
+  {/if}
 {/if}
 
 <style>
@@ -56,5 +71,20 @@
     display: flex;
     flex-direction: column;
     gap: 16px; /* 16px vertical gap between cards */
+  }
+
+  /* load more style to maintain the same */
+  .load-more {
+    margin: 24px auto;
+    display: block;
+    background: none;
+    border: none;
+    color: #707070;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .load-more:hover {
+    color: #145aa1;
   }
 </style>
