@@ -16,7 +16,7 @@
   let firstName = user.firstName || "";
   let lastName = user.lastName || "";
   let description = user.introduction || "";
-  let selectedAvatarId = user.avatar_id || null;
+  let selectedAvatarId = user.avatar_id || 1;
   let avatars = [];
 
   onMount(async () => {
@@ -223,7 +223,7 @@
   <div class="edit-profile-popup">
     <div class="popup-content">
       <div class="avatar-container">
-        <img class="avatar-img" src={`${PUBLIC_API_BASE_URL}/avatars/${selectedAvatarId}.png`} alt="Avatar" />
+        <img class="avatar-img" src={`http://localhost:5173/avatars/avatar${selectedAvatarId}.png`} alt="Avatar" />
         <button class="btn-change-image" on:click={()=> {const sel = document.getElementById('avatarSelect'); if (sel) sel.click();}}>
           Change Avatar </button>
         <button class="btn-delete-account" on:click={handleDeleteAccount}>Delete Account</button>

@@ -109,8 +109,8 @@ export async function load({ fetch }) {
     firstName: rawUser.first_name,
     lastName: rawUser.last_name,
     introduction: rawUser.description ?? '',
+    avatar: `http://localhost:5173/avatars/${avatarFilename}`,
     avatar_id: rawUser.avatar_id,
-    // avatar: `${PUBLIC_API_BASE_URL}/avatars/${rawUser.avatar_id}.png`,
     likedPosts: likedArticles.length,
     subscribers: subscriberCount
   }
