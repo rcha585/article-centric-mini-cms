@@ -156,7 +156,7 @@ function highlightMentions(text) {
       </div>
 
       <div class="author-row">
-        <img class="author-avatar" src={"/" + (user?.avatar_path || "avatars/avatar1.png")} alt="author" />
+        <img class="author-avatar" src={"http://localhost:5173" + (user?.avatarUrl || "/avatars/avatar-1.png")} alt="author" />
         <div class="author-info">
           <div class="author-name">{user ? `${user.first_name} ${user.last_name}` : "Anonymous"}</div>
           <div class="author-followers">{user?.followers || "0"} followers</div>
