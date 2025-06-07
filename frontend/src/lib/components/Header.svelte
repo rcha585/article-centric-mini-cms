@@ -104,9 +104,12 @@
         credentials: 'include' // Include cookies for authentication
       });
       user = response.ok ? await response.json() : null;
+      user = me;
+      currentUser.set(me); // Update the store
     } catch (error) {
       console.error('Error fetching user data:', error);
       user = null; // Reset user on error
+      currentUser.set(null); // Clear user store
     }
   });
 
@@ -118,7 +121,7 @@
       });
       if (response.ok) {
         currentUser.set(null); // Clear user data on logout
-        goto('/'); 
+        window.location.href = '/login'; // Redirect to login page
       } else {
         console.error('Logout failed');
       }

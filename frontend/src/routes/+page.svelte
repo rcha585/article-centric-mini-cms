@@ -2,8 +2,10 @@
   export let data;
   import ArticleCard from '$lib/components/ArticleCard.svelte';
   import { goto } from '$app/navigation';
+  import { currentUser } from '$lib/stores/currentUser.js';
 
   let { articles = [] } = data;
+  $: user = $currentUser; // reactive user store
 
    // --- SORTING LOGIC ---
   let sortField  = 'date'; // default sort by date desc
@@ -72,7 +74,9 @@
   <div class="hero-content">
     <h1>Welcome to Blog Article</h1>
     <p>Discover insightful articles on technology, travel, and more. Curated by our passionate writers.</p>
-    <button class="hero-login-btn" on:click={goToLogin}>Join Us</button>
+    {#if !user}
+      <button class="hero-login-btn" on:click={goToLogin}>Join Us</button>
+    {/if}
   </div>
 </section>
 
