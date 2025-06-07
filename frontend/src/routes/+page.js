@@ -14,23 +14,52 @@ export async function load({ fetch }) {
         const tagRes = await fetch(`${PUBLIC_API_BASE_URL}/articles/${a.id}/tags`);
         if (tagRes.ok) {
           tags = await tagRes.json();
+          tags = tags.map((t) => t.content.replace(/^#/, ""));
+          // tags array is now ["tag"] instead of ["#tag"].
         }
       } catch (e) {
         tags = []; // fails just show nothing
       }
 
+      // Create a excerpt and remove all HTML tags from `a.content`
+      const strippedText = a.content.replace(/<[^>]+>/g, "");
+      const excerpt = strippedText.length > 100
+        ? strippedText.slice(0, 100) + "…"
+        : strippedText;
+
+
+      let avatarUrl = "/default-avatar.png";
+      let authorName = a.username || "Unknown";
+
+      try {
+        const userRes = await fetch(`${PUBLIC_API_BASE_URL}/users/${a.author_id}`);
+        if (userRes.ok) {
+          const userJson = await userRes.json();
+          authorName = `${userJson.first_name} ${userJson.last_name}`; // prefer full name
+          if (userJson.avatar_id) {
+            avatarUrl = `/avatars/avatar${userJson.avatar_id}.png`;
+          }
+        }
+      } catch {
+      }
+
+      const backendRoot = PUBLIC_API_BASE_URL.replace(/\/api$/, "");
+      const coverUrl = a.image_path
+        ? `${backendRoot}/${a.image_path}`
+        : "/default-image.jpg";
+
+
       return {
         id: a.id,
         title: a.title,
-        excerpt: a.content.slice(0, 100),
-        coverUrl: a.image_path,
+        excerpt,
+        coverUrl,
         createdAt: a.created_at,
         author: {
           name: a.username,
-          avatarUrl: "/default-avatar.png"
+          avatarUrl
         },
-        // tags array, direct to ArticleCard component
-        tags: tags.length > 0 ? tags.map(t => t.content) : [],
+        tags,
       };
     })
   );

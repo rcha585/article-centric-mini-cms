@@ -16,7 +16,7 @@
   let firstName = user.firstName || "";
   let lastName = user.lastName || "";
   let description = user.introduction || "";
-  let selectedAvatarId = user.avatar_id || null;
+  let selectedAvatarId = user.avatar_id || 1;
   let avatars = [];
 
   onMount(async () => {
@@ -35,6 +35,33 @@
   let newPassword = '';
   let showPassword = false;
 
+  // delete article
+  async function handleDeleteArticle(e) {
+    const artId = e.detail.id;
+    if (!confirm("Are you sure you want to delete this article?")) return;
+
+    try {
+      const res = await fetch(`${PUBLIC_API_BASE_URL}/articles/${artId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (res.status === 204) {
+        // delete backend article. remove from array.
+        myArticles = myArticles.filter((a) => a.id !== artId);
+        alert("Article deleted successfully!");
+      } else if (res.status === 403) {
+        alert("You are not allowed to delete this article.");
+      } else if (res.status === 404) {
+        alert("Article not found.");
+      } else {
+        alert("Failed to delete article. Please try again later.");
+      }
+    } catch (err) {
+      console.error("Error deleting article:", err);
+      alert("An error occurred while deleting. Please try again later.");
+    }
+  }
+
   // Handle edit profile button click
   function toggleEditProfile() {
     showEditProfile.update(value => !value);
@@ -45,7 +72,7 @@
       username: username.trim(),
       first_name: firstName.trim(),
       last_name: lastName.trim(),
-      description: description.trim(),
+      description: description.trim(),  
       avatar_id: selectedAvatarId,
     };
 
@@ -54,7 +81,8 @@
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/users", {
+      // 报错，需修改。
+      const response = await fetch(`${PUBLIC_API_BASE_URL}/users`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -83,6 +111,7 @@
     }
   }
 
+  // realise delete account
   async function handleDeleteAccount() {
     if (!confirm("Are you sure you want to delete your account? This action cannot be undone."))return;
       try {
@@ -150,7 +179,11 @@
           <div class="empty-feed">No articles at the moment, write a new ~~</div>
         {:else}
           {#each myArticles as article (article.id)}
-            <UserArticleCard {article} on:edit={handleArticleEdit} on:readmore={handleReadMore} />
+            <UserArticleCard {article}
+              on:edit={handleArticleEdit}
+              on:readmore={handleReadMore}
+              on:delete={handleDeleteArticle}
+            />
           {/each}
           <!-- Load More, future extension -->
           <button class="load-more-btn">Load More</button>
@@ -190,7 +223,7 @@
   <div class="edit-profile-popup">
     <div class="popup-content">
       <div class="avatar-container">
-        <img class="avatar-img" src={`${PUBLIC_API_BASE_URL}/avatars/${selectedAvatarId}.png`} alt="Avatar" />
+        <img class="avatar-img" src={`http://localhost:5173/avatars/avatar${selectedAvatarId}.png`} alt="Avatar" />
         <button class="btn-change-image" on:click={()=> {const sel = document.getElementById('avatarSelect'); if (sel) sel.click();}}>
           Change Avatar </button>
         <button class="btn-delete-account" on:click={handleDeleteAccount}>Delete Account</button>

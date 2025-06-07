@@ -497,7 +497,7 @@
   }
   .avatar-dropdown {
     position: absolute;
-    top: 60px; /* 让菜单靠近 Header 下方 */
+    top: 60px;
     right: 10px;
     background: #fff;
     border-radius: 6px;
