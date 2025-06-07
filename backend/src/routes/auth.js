@@ -40,7 +40,7 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/logout", (req, res) => {
-  return res.cookie("authToken", "", { expires: new Date(0), httpOnly: true }).sendStatus(204);
+  return res.cookie("authToken", "", { path: "/", expires: new Date(0), httpOnly: true }).sendStatus(204);
 });
 
 router.get("/me", requiresAuthentication, async (req, res) => {
