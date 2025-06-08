@@ -6,17 +6,17 @@
   const BASE_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
   const apiKey   = import.meta.env.VITE_TINYMCE_API_KEY;
 
-  // make "#Tech #Travel" into ["#Tech", "#Travel"].
-  function parseTags(tagStr) {
-    return tagStr
-    .split(/[\s\u3000]+/)
-    .map(t => t.trim())
-    .filter(Boolean);
+
+  function parseTags(tagsInput) {
+    if (Array.isArray(tagsInput)) return tagsInput;
+    return (tagsInput || '')
+      .split(/[\s\u3000]+/)
+      .map(t => t.trim())
+      .filter(Boolean);
   }
 
-  // make sure tags started with #, and only alphabets and numbers.
   function validateTags(arr) {
-    const rule = /^#[a-zA-Z0-9]+$/;
+    const rule = /^[a-zA-Z0-9]+$/;
     return arr.every(t => rule.test(t));
   }
 

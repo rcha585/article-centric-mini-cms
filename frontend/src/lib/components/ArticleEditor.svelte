@@ -32,10 +32,20 @@
   $: tagArr   = parseTags(tags);
   $: tagValid = validateTags(tagArr);
 
+  $: tagValues = tagArr.map(t => t.startsWith('#') ? t.slice(1) : t);
+
   // -------------------- TAG PARSING & VALIDATION --------------------
-  function parseTags(str = '') {
-    // Split on whitespace (including full‐width), trim, and filter out empty
-    return str.split(/[\s\u3000]+/).map(x => x.trim()).filter(Boolean);
+  function parseTags(input = '') {
+   // if send in an array, just return.
+   if (Array.isArray(input)) {
+     return input.filter(Boolean);
+   }
+   // or treated as string
+   const s = typeof input === 'string' ? input : '';
+   return s
+     .split(/[\s\u3000]+/)
+     .map(x => x.trim())
+     .filter(Boolean);
   }
 
   function validateTags(arr) {
@@ -119,7 +129,7 @@
     // Dispatch a "publish" event so the parent page can handle saving to DB
     dispatch('publish', {
       title,
-      tags,
+      tags: tagValues,
       content,
       image_path: imgPath
     });
