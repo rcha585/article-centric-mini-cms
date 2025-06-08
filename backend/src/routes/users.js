@@ -199,3 +199,22 @@ router.get("/check/username", async (req, res) => {
     return res.status(200).json({available: false});
   }
 });
+
+router.get("/find/all", async (req, res) => {
+  const db = await getDatabase();
+  const users = await db.all(`
+    SELECT
+      u.*,
+      a.avatar_path,
+      (SELECT COUNT(*) FROM subscriptions WHERE subscribed_user_id = u.id) AS totl_subscriptions
+    FROM
+      users AS u
+    LEFT JOIN
+      avatars AS a
+    ON
+      u.avatar_id = a.id
+    WHERE
+      u.username LIKE ? COLLATE NOCASE
+    `, `%${req.query.key}%`);
+    return res.status(200).json(users);
+});
