@@ -2,14 +2,8 @@
   import ArticleEditor from '$lib/components/ArticleEditor.svelte';
   import { goto } from '$app/navigation';
 
-  // ******************************
-  // ****  CONFIG & CONSTANTS  ****
-  // ******************************
   const BASE_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
 
-  // ******************************
-  // ****  PUBLISH HANDLER     ****
-  // ******************************
   async function handlePublish(article) {
     /* ---------- tag validation ---------- */
     const tagArr = parseTags(article.tags);
@@ -67,8 +61,11 @@
   }
 
   /* ---------- helpers ---------- */
-  const tagRe = /^#[a-zA-Z0-9]+$/;
-  const parseTags    = (s='') => s.split(/[\s\u3000]+/).map(x=>x.trim()).filter(Boolean);
+  const tagRe = /^[a-zA-Z0-9]+$/;
+  const parseTags = (input = '') => {
+    if (Array.isArray(input)) return input.filter(Boolean);
+    return String(input).split(/[\s\u3000]+/).map(x => x.trim()).filter(Boolean);
+  };
   const validateTags = (arr)  => arr.every(t => tagRe.test(t));
 
   /* TinyMCE key */

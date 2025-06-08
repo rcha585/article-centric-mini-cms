@@ -26,19 +26,27 @@
   let coverFile  = null;      // File | null
   let coverPath  = '';        // path returned by backend (e.g. "images/abc.jpg")
   let uploading  = false;
-
-  // Live word‐count of the rich text (strip HTML tags)
-  $: wordCount = content.replace(/<[^>]+>/g, '').trim().length;
+  let coverError = ""; 
 
   // Track whether user has focused/touched the tags input, for validation
   let tagInputTouched = false;
   $: tagArr   = parseTags(tags);
   $: tagValid = validateTags(tagArr);
 
+  $: tagValues = tagArr.map(t => t.startsWith('#') ? t.slice(1) : t);
+
   // -------------------- TAG PARSING & VALIDATION --------------------
-  function parseTags(str = '') {
-    // Split on whitespace (including full‐width), trim, and filter out empty
-    return str.split(/[\s\u3000]+/).map(x => x.trim()).filter(Boolean);
+  function parseTags(input = '') {
+   // if send in an array, just return.
+   if (Array.isArray(input)) {
+     return input.filter(Boolean);
+   }
+   // or treated as string
+   const s = typeof input === 'string' ? input : '';
+   return s
+     .split(/[\s\u3000]+/)
+     .map(x => x.trim())
+     .filter(Boolean);
   }
 
   function validateTags(arr) {
@@ -53,6 +61,15 @@
     const input = event.target;
     const f = input.files && input.files[0];
     if (!f) return;
+
+    // if image large than 5MB, not update image.
+    if (f.size > 5 * 1024 * 1024) {
+      coverError = "Image size must be less than 5MB.";
+      coverFile = null;
+      return;
+    }
+    coverError = "";
+
     coverFile = f;
   }
 
@@ -85,11 +102,25 @@
     }
   }
 
+  const MAX_WORDS = 1500;
+  let wordCount = 0;
+  $: wordCount = content
+    .replace(/<[^>]+>/g, '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .length;
+
   // -------------------- PUBLISH BUTTON CLICK --------------------
   async function handlePublish() {
     // If tags are invalid, prevent publishing
     if (!tagValid) {
       alert('Each tag must start with “#” and contain only letters or numbers.');
+      return;
+    }
+
+    if (wordCount > MAX_WORDS) {
+      alert(`Your article is too long — please keep it under ${MAX_WORDS} words. You’re currently at ${wordCount}.`);
       return;
     }
 
@@ -108,7 +139,7 @@
     // Dispatch a "publish" event so the parent page can handle saving to DB
     dispatch('publish', {
       title,
-      tags,
+      tags: tagValues,
       content,
       image_path: imgPath
     });
@@ -158,6 +189,16 @@
     {/if}
   </div>
 
+  {#if coverError}
+    <div class="cover-error">{coverError}</div>
+  {/if}
+
+  {#if !coverFile && (existingCoverUrl.endsWith('/default-image.jpg') || !existingCoverUrl)}
+    <div class="cover-hint">
+      <span>This article has no cover image. If you don’t upload one, a default image will be used.</span>
+    </div>
+  {/if}
+
   <!-- COVER PREVIEW: show the newly selected file OR the existing cover -->
   <div class="preview-container">
     {#if coverFile}
@@ -176,7 +217,6 @@
     >
       {uploading ? 'Uploading…' : 'Publish'}
     </button>
-    <span class="word-count">Word Count: {wordCount}</span>
   </div>
 
   <!-- RICH TEXT EDITOR -->
@@ -282,8 +322,14 @@
     background: #9db5e3;
     cursor: not-allowed;
   }
-  .word-count {
-    font-size: 0.92rem;
-    color: #6b7280;
+  .cover-error {
+  color: #e11d48;
+  font-size: 0.99rem;
+  margin: 5px 0 0 3px;
+  }
+  .cover-hint {
+  color: #8b949e;
+  font-size: 0.98rem;
+  margin: 5px 0 0 3px;
   }
 </style>
