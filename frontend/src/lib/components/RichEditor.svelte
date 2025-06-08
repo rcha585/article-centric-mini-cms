@@ -12,6 +12,7 @@
       menubar: true,
       statusbar: true,
       toolbar_sticky: false,
+      paste_data_images: false,  // not allowed user to paste a picture
       elementpath: false,
       plugins: 'wordcount lists code table',
       placeholder:'Here starts with your story~~',
