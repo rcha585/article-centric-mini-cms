@@ -27,9 +27,6 @@
   let coverPath  = '';        // path returned by backend (e.g. "images/abc.jpg")
   let uploading  = false;
 
-  // Live word‐count of the rich text (strip HTML tags)
-  $: wordCount = content.replace(/<[^>]+>/g, '').trim().length;
-
   // Track whether user has focused/touched the tags input, for validation
   let tagInputTouched = false;
   $: tagArr   = parseTags(tags);
@@ -85,11 +82,25 @@
     }
   }
 
+  const MAX_WORDS = 1500;
+  let wordCount = 0;
+  $: wordCount = content
+    .replace(/<[^>]+>/g, '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .length;
+
   // -------------------- PUBLISH BUTTON CLICK --------------------
   async function handlePublish() {
     // If tags are invalid, prevent publishing
     if (!tagValid) {
       alert('Each tag must start with “#” and contain only letters or numbers.');
+      return;
+    }
+
+    if (wordCount > MAX_WORDS) {
+      alert(`Your article is too long — please keep it under ${MAX_WORDS} words. You’re currently at ${wordCount}.`);
       return;
     }
 
@@ -176,7 +187,6 @@
     >
       {uploading ? 'Uploading…' : 'Publish'}
     </button>
-    <span class="word-count">Word Count: {wordCount}</span>
   </div>
 
   <!-- RICH TEXT EDITOR -->
