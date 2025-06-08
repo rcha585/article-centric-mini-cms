@@ -258,8 +258,17 @@
     <div class="popup-content">
       <div class="avatar-container">
         <img class="avatar-img" src={`http://localhost:5173/avatars/avatar${selectedAvatarId}.png`} alt="Avatar" />
-        <button class="btn-change-image" on:click={()=> {const sel = document.getElementById('avatarSelect'); if (sel) sel.click();}}>
-          Change Avatar </button>
+
+        <div class="select-overlay">
+          <select bind:value={selectedAvatarId}>
+            <option value={null} disabled>Change Avatar ▾</option>
+              {#each avatars as a}
+                <option value={a.id}>{a.avatar_path.split('/').pop()}</option>
+              {/each}
+          </select>
+        </div>
+
+
         <button class="btn-delete-account" on:click={handleDeleteAccount}>Delete Account</button>
       </div>
       
@@ -300,15 +309,6 @@
       <div class="form-row textarea-row">
         <label for="description">Description:</label>
         <textarea id="description" bind:value={description}></textarea>
-      </div>
-
-      <div class="hidden-select">
-        <select id="avatarSelect" bind:value={selectedAvatarId}>
-          <option value={null} disabled>Select an avatar</option>
-          {#each avatars as a}
-            <option value={a.id}>{a.avatar_path.split('/').pop()}</option>
-          {/each}
-        </select>
       </div>
 
       <div class="popup-buttons">
@@ -448,6 +448,7 @@
 .avatar-container {
   display: flex;
   flex-direction: column;
+  gap: 16px;   
   align-items: center;
   width: 240px;   
   margin-right: 32px;
@@ -463,27 +464,11 @@
   margin-bottom: 16px;
 }
 
-.btn-change-image {
-  background: #cfe8fb;
-  color: #254060;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 0.98rem;
-  cursor: pointer;
-  margin-bottom: 12px;
-  transition: background-color 0.2s, color 0.2s;
-}
-
-.btn-change-image:hover {
-  background: #aad4f7;
-  color: #1e3454;
-}
-
 .btn-delete-account {
   background: #fde6e5;
   color: #ce4242;
   border: none;
+  width: 160px;
   border-radius: 8px;
   padding: 8px 16px;
   font-size: 0.98rem;
@@ -559,24 +544,6 @@
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .textarea-row textarea:focus {
-  outline: none;
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
-}
-
-#avatarSelect {
-  flex: 1;
-  padding: 6px 10px;
-  border: 1px solid #d4e3f6;
-  border-radius: 6px;
-  background: #fff;
-  font-size: 0.96rem;
-  color: #254060;
-  box-sizing: border-box;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-#avatarSelect:focus {
   outline: none;
   border-color: #60a5fa;
   box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
@@ -659,8 +626,39 @@
 .btn-toggle-pwd:hover {
   color: #333;
 }
-.hidden-select {
-  display: none;
+
+.select-overlay {
+  position: relative;
+  width: 160px;
 }
+
+.select-overlay select {
+  width: 100%;
+  padding: 8px 20px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 6px;   /* match button rounding */
+  background: #cfe8fb;  /* same background as btn-change-image */
+  color: #254060;
+  cursor: pointer;
+  appearance: none;
+  font-size: 0.98rem;
+  /* text-align: center; */
+  text-align-last: center; 
+  text-indent: 0px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Add a little arrow indicator on the right */
+.select-overlay::after {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  text-align: center;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #254060;
+}
+
 </style>
 
