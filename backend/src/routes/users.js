@@ -204,7 +204,9 @@ router.get("/find/all", async (req, res) => {
   const db = await getDatabase();
   const users = await db.all(`
     SELECT
-      u.*,
+      u.id,
+      u.username,
+      u.description,
       a.avatar_path,
       (SELECT COUNT(*) FROM subscriptions WHERE subscribed_user_id = u.id) AS totl_subscriptions
     FROM

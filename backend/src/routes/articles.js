@@ -198,7 +198,7 @@ router.get("/:aid/comments", async (req, res) => {
     return res.sendStatus(404);
   }
   const comments = await db.all(
-    "SELECT c.id, c.content, c.created_at, u.username FROM comments AS c, users AS u WHERE c.user_id = u.id AND c.article_id = ? ORDER BY c.created_at ASC",
+    "SELECT c.id, c.content, c.created_at, u.username, u.id, u.avatar_id, a.avatar_path, (SELECT COUNT(*) FROM subscriptions WHERE subscribed_user_id = u.id) AS total_subscriptions FROM comments AS c, users AS u, avatars AS a WHERE c.user_id = u.id AND u.avatar_id = a.id AND c.article_id = ? ORDER BY c.created_at ASC",
     req.params.aid
   );
   return res.status(200).json(comments);
