@@ -24,7 +24,7 @@ export async function load({ params, fetch }) {
         const t = await tagRes.json();
         console.log('tags:', t);
         // assemble tags
-        tagStr = t.map(x => `${x.content}`).join(' ');
+        tagStr = t.map(x => `#${x.content}`).join(' ');
         console.log('tagStr:', tagStr);
     }
   } catch {}
