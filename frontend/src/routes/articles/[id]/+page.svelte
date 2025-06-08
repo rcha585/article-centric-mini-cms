@@ -213,7 +213,7 @@
           <img class="avatar" src={user?.avatarUrl ? `http://localhost:5173${user.avatarUrl}` : "/avatars/avatar-1.png"} alt="author" />
           <div>
             <div class="name">{user ? `${user.first_name} ${user.last_name}` : "Anonymous"}</div>
-            <div class="followers">{user?.followers || 0} followers</div>
+            <div class="followers">{user?.followers || 0} Subscribers</div>
           </div>
         </div>
         <button class="btn-subscribe">Subscribe</button>
@@ -376,6 +376,7 @@
 
   .tags-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
     margin-bottom: 1rem;
