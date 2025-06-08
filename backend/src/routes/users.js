@@ -178,3 +178,24 @@ router.get("/:uid", async (req, res) => {
   if (!user) return res.sendStatus(404);
   res.status(200).json(user);
 });
+
+router.get("/check/username", async (req, res) => {
+  if (!req.query.username) {
+    return res.sendStatus(400);
+  }
+  const db = await getDatabase();
+  const username = await db.get(`
+    SELECT
+      *
+    FROM
+      users
+    WHERE
+      username = ? COLLATE NOCASE
+    `, req.query.username
+  );
+  if (!username) {
+    return res.status(200).json({available: true});
+  } else {
+    return res.status(200).json({available: false});
+  }
+});
