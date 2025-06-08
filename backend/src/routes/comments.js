@@ -89,3 +89,29 @@ router.get("/:cid", async (req, res) => {
       c.id = ?`, req.params.cid);
   return res.status(200).json(response);
 });
+
+router.get("/:cid/tagged_users", async (req, res) => {
+  const db = await getDatabase();
+  const tagged_users = await db.all(`
+    SELECT
+      u.id,
+      u.username,
+      u.avatar_id,
+      a.avatar_path,
+      (SELECT COUNT(*) FROM subscriptions WHERE subscribed_user_id = u.id) AS total_subscriptions
+    FROM
+      notifications AS n
+    LEFT JOIN
+      users AS u
+    ON
+      n.user_id = u.id
+    LEFT JOIN
+      avatars AS a
+    ON
+      u.avatar_id = a.id
+    WHERE
+      n.comment_id = ?
+    `, req.params.cid
+  );
+  return res.status(200).json(tagged_users);
+});
