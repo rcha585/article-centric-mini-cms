@@ -26,6 +26,7 @@
   let coverFile  = null;      // File | null
   let coverPath  = '';        // path returned by backend (e.g. "images/abc.jpg")
   let uploading  = false;
+  let coverError = ""; 
 
   // Track whether user has focused/touched the tags input, for validation
   let tagInputTouched = false;
@@ -60,6 +61,15 @@
     const input = event.target;
     const f = input.files && input.files[0];
     if (!f) return;
+
+    // if image large than 5MB, not update image.
+    if (f.size > 5 * 1024 * 1024) {
+      coverError = "Image size must be less than 5MB.";
+      coverFile = null;
+      return;
+    }
+    coverError = "";
+
     coverFile = f;
   }
 
@@ -178,6 +188,16 @@
       <button class="remove-cover-btn" type="button" on:click={() => coverFile = null}>Change Picture</button>
     {/if}
   </div>
+
+  {#if coverError}
+    <div class="cover-error">{coverError}</div>
+  {/if}
+
+  {#if !coverFile && (existingCoverUrl.endsWith('/default-image.jpg') || !existingCoverUrl)}
+    <div class="cover-hint">
+      <span>This article has no cover image. If you don’t upload one, a default image will be used.</span>
+    </div>
+  {/if}
 
   <!-- COVER PREVIEW: show the newly selected file OR the existing cover -->
   <div class="preview-container">
@@ -302,8 +322,14 @@
     background: #9db5e3;
     cursor: not-allowed;
   }
-  .word-count {
-    font-size: 0.92rem;
-    color: #6b7280;
+  .cover-error {
+  color: #e11d48;
+  font-size: 0.99rem;
+  margin: 5px 0 0 3px;
+  }
+  .cover-hint {
+  color: #8b949e;
+  font-size: 0.98rem;
+  margin: 5px 0 0 3px;
   }
 </style>
