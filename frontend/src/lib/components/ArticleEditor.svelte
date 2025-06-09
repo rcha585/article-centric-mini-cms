@@ -217,6 +217,7 @@
     >
       {uploading ? 'Uploading…' : 'Publish'}
     </button>
+    <span class="word-count">Word Count: {wordCount}</span>
   </div>
 
   <!-- RICH TEXT EDITOR -->
