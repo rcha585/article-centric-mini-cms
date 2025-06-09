@@ -1,7 +1,10 @@
 export async function load({ params, fetch }) {
   const id = params.id;
-
   const BASE_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
+
+  // user who are login in
+  const meRes = await fetch(`${BASE_URL}/auth/me`, { credentials: 'include' });
+  const me    = meRes.ok ? await meRes.json() : null;
 
   // fetch article information
   const articleRes = await fetch(`${BASE_URL}/articles/${id}`);
@@ -38,9 +41,12 @@ export async function load({ params, fetch }) {
   const tagsRes = await fetch(`${BASE_URL}/articles/${id}/tags`);
   const tags = tagsRes.ok ? await tagsRes.json() : [];
 
-  // fetch likes
-  const likesRes = await fetch(`${BASE_URL}/articles/${id}/likes`);
-  const likes = likesRes.ok ? (await likesRes.json()).length : 0;
+  // likes and user's like
+  const likeRes   = await fetch(`${BASE_URL}/articles/${id}/likes`);
+  const likeUsers = likeRes.ok ? await likeRes.json() : [];
+  const likesCount = likeUsers.length;
+  const likedByMe  = me ? likeUsers.some(u => u.username === me.username) : false;
+
 
   // fetch comments
   const commentsRes = await fetch(`${BASE_URL}/articles/${id}/comments`);
@@ -50,7 +56,9 @@ export async function load({ params, fetch }) {
     article,
     user,
     tags,
-    likes,
+    likesCount, 
+    likedByMe,
+    me,
     comments,
     error: false
   };
