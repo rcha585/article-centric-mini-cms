@@ -11,34 +11,16 @@
   let mentionQuery = "";
 
   // Initialize data
-  let { article, user, tags = [], comments: initialComments = [], likes: initialLikes = 0 } = data;
+  let { article, user, tags = [], comments: initialComments = [], likesCount,  likedByMe, me } = data;
 
-  let likes = initialLikes;
-  let liked = false;
+  let likes = likesCount;
+  let liked = likedByMe;
 
   let showComments = false;
   let comments = [...initialComments];
 
-  // onMount fetches both initial likes & comment list if needed
+  // onMount fetches & comment list if needed
   onMount(async () => {
-    // Fetch initial likes
-    try {
-      const res = await fetch(`${PUBLIC_API_BASE_URL}/articles/${article.id}/likes`, {
-        credentials: 'include'
-      });
-      if (res.ok) {
-        const likeUsers = await res.json();
-        console.log('likeUsers from backend:', likeUsers);
-        console.log('current user object:', user);
-        likes = likeUsers.length;
-        if (user) {
-          liked = likeUsers.some(u => u.username === user.username);
-        }
-      }
-    } catch (e) {
-      console.error('Failed to load likes', e);
-    }
-
     // Optionally fetch initial comments instead of data.comments
     try {
       const res2 = await fetch(`${PUBLIC_API_BASE_URL}/articles/${article.id}/comments`);
@@ -61,7 +43,7 @@
 
   // handleLike will sync backend and only can like once.
   async function handleLike() {
-    if (!user) {
+    if (!me) {
       alert("Please login to like!");
       return;
     }
@@ -75,8 +57,8 @@
       });
     } else {
       res = await fetch(`${PUBLIC_API_BASE_URL}/articles/${article.id}/likes`, {
-        method: 'DELETE',
-        credentials: 'include'
+      method: 'DELETE',
+      credentials: 'include'
       });
     }
 
@@ -90,8 +72,7 @@
       likes += liked ? 1 : -1;
       return;
     }
-
-  
+    
     console.error("failed to like", res.status);
     alert("Failed to like");
   }
@@ -241,8 +222,8 @@
       <div class="article-content">{@html article.content}</div>
 
       <!-- Likes feature -->
-      <button class="btn-like" class:liked={user && liked} on:click={handleLike}>
-        {#if user && liked} ❤️ {:else} 🤍 {/if} {likes}
+      <button class="btn-like" class:liked={me && liked} on:click={handleLike}>
+        {#if me && liked} ❤️ {:else} 🤍 {/if} {likes}
       </button>
 
       <div class="comments-section">
