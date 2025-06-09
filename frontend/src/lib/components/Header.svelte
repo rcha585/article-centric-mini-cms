@@ -1,7 +1,7 @@
 <script>
   import { page } from "$app/stores";
   import { PUBLIC_API_BASE_URL } from "$env/static/public";
-  import { unviewedCount, newNotificationIds } from "../js/notifications.js";
+  import { unviewedCount, newNotificationIds, myNotifications } from "../js/notifications.js";
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { currentUser } from '$lib/stores/currentUser.js';
@@ -33,14 +33,15 @@
                     notiResComments.json()
                 ]);
     
-    const all = [...myArticlesNotifications, ...myCommentsNotifications];
+    myNotifications.set([...myArticlesNotifications, ...myCommentsNotifications]);
 
 		// Extract IDs of unread
-		const unviewed = all.filter(n => n.is_viewed === 0);
+		const unviewed = $myNotifications.filter(n => n.is_viewed === 0);
+    // $: unviewed = $myNotifications.filter(n => n.is_viewed === 0);
 		const ids = unviewed.map(n => n.id);
 
 		newNotificationIds.set(ids); // Used to store notification_id
-    console.log("all notifications:",all);
+    console.log("all notifications:", $myNotifications);
     console.log("new notifications:",unviewed);
 		unviewedCount.set(0);     // Clear unviewed
 
@@ -82,7 +83,7 @@
     return () => document.removeEventListener('click', handleClickOutside);
   });
 
-  export let myNotifications = [];
+  // export let myNotifications = [];
   
   /* ------ the below is for the login bar ------ */
 
@@ -199,8 +200,8 @@
         {#if showNotiDropdown}
         <div class="notif-box">
           <!-- loop over notifications -->
-          <p>All notifications (to remove): {myNotifications.length}</p>
-          {#each myNotifications as n}
+          <p>All notifications (to remove): {$myNotifications.length}</p>
+          {#each $myNotifications as n}
           <div class="notification-card {highlightIds.includes(n.id) ? 'highlight' : ''}">
             <img
               class="notification-cover"
