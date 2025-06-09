@@ -4,28 +4,41 @@ export const ssr = false;
 import { PUBLIC_API_BASE_URL } from "$env/static/public";
 import { unviewedCount, newNotificationIds } from "../lib/js/notifications.js";
 // import { unviewedCount, newNotificationIds } from "../js/notifications.js";
+import { currentUser } from "$lib/stores/currentUser.js";
 
 export async function load({ fetch, url }) {
-    const path = url.pathname;
-    if (path.startsWith('/login') || path.startsWith('/register')) {
-        unviewedCount.set(0);
-        newNotificationIds.set([]);
-        return { myNotifications: [] };
+
+let meData = null;
+try {
+    const meRes = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, {
+        credentials: 'include'
+    });
+    if (meRes.ok) {
+        // if user can log in, the data will catch.
+        meData = await meRes.json();
     }
+} catch {
+    meData = null;
+}
+
+currentUser.set(meData);
+
     
-    let myNotifications = [];
+const path = url.pathname;
+     if (path.startsWith('/login') || path.startsWith('/register')) {
+         unviewedCount.set(0);
+         newNotificationIds.set([]);
+         return { myNotifications: [] };
+     }
+
+     let myNotifications = [];
 
     // check whether the user is logged in or not. 
     try {
-        const meRes = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, {
-        credentials: 'include'
-        });
-        if (meRes.ok) {
-            // if user can log in, the notifications will catch.
-            const [notiResArticles, notiResComments] = await Promise.all([
-                fetch(`${PUBLIC_API_BASE_URL}/notifications/articles`, {credentials: 'include'}),
-                fetch(`${PUBLIC_API_BASE_URL}/notifications/comments`, {credentials: 'include'}),
-            ]);
+        const [notiResArticles, notiResComments] = await Promise.all([
+            fetch(`${PUBLIC_API_BASE_URL}/notifications/articles`, {credentials: 'include'}),
+            fetch(`${PUBLIC_API_BASE_URL}/notifications/comments`, {credentials: 'include'}),
+        ]);
 
             if (notiResArticles.ok && notiResComments.ok) {
                 // if we got notifications, we package it to json.
@@ -52,16 +65,11 @@ export async function load({ fetch, url }) {
                 // else no notifications
                 myNotifications = [];
                 unviewedCount.set(0);
-            }
-        } else {
-        // if cannot log in, also treat as no notification
-            myNotifications = [];
-            unviewedCount.set(0);
         }
     } catch (e) {
     // if it is a login error, don't notify.      
         myNotifications = [];
         unviewedCount.set(0);
     }
-        return { myNotifications }
+        return { myNotifications };
 }
