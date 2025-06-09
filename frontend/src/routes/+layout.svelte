@@ -6,7 +6,7 @@
   let { myNotifications } = data;
 </script>
 
-<Header myNotifications = {myNotifications} />
+<Header />
 
 <main class="main-content">
   <slot />

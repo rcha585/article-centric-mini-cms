@@ -1,11 +1,13 @@
 <script>
   import { page } from "$app/stores";
   import { PUBLIC_API_BASE_URL } from "$env/static/public";
-  import { unviewedCount, newNotificationIds, myNotifications } from "../js/notifications.js";
+  import { unviewedCount, newNotificationIds, myNotifications, fetchNotifications } from "../js/notifications.js";
+  // import { currentUser } from "../stores/currentUser.js";
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { currentUser } from '$lib/stores/currentUser.js';
   import { onDestroy } from "svelte";
+  import { get } from "svelte/store";
 
   let user;
   const unsubscribe = currentUser.subscribe(u => user = u);
@@ -15,34 +17,15 @@
   $: path = $page.url.pathname;
 
   /* ------ the below is for the notification bar ------ */
-
+  $: userinfo = $currentUser;
+  // console.log("current user",userinfo);
   function handleReadNoti(target_url) {
     window.location.href = target_url;
   }
 
   async function handleClickNotification() {
-		// Fetch full list
-		// const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications/`, { credentials: 'include' });
-    const [notiResArticles, notiResComments] = await Promise.all([
-                fetch(`${PUBLIC_API_BASE_URL}/notifications/articles`, {credentials: 'include'}),
-                fetch(`${PUBLIC_API_BASE_URL}/notifications/comments`, {credentials: 'include'}),
-            ]);
-		// const all = await res.json();
-    const [myArticlesNotifications, myCommentsNotifications] = await Promise.all([
-                    notiResArticles.json(),
-                    notiResComments.json()
-                ]);
-    
-    myNotifications.set([...myArticlesNotifications, ...myCommentsNotifications]);
-
-		// Extract IDs of unread
-		const unviewed = $myNotifications.filter(n => n.is_viewed === 0);
-    // $: unviewed = $myNotifications.filter(n => n.is_viewed === 0);
-		const ids = unviewed.map(n => n.id);
-
-		newNotificationIds.set(ids); // Used to store notification_id
-    console.log("all notifications:", $myNotifications);
-    console.log("new notifications:",unviewed);
+    console.log("current user",userinfo);
+		await fetchNotifications({fetch}); 
 		unviewedCount.set(0);     // Clear unviewed
 
     // Update all unviewed to viewed
@@ -188,6 +171,9 @@
 
     <!-- ========== RIGHT SIDE (Notifications & Profile) ========== -->
     <div class="nav-right">
+
+      {#if userinfo}
+
       <div class="notif-wrapper" bind:this={notifWrapper}>
       
         <button class="notif-bell" on:click={onClickNotification}>
@@ -232,6 +218,7 @@
         </div>
         {/if}
       </div>
+      {/if}
 
       {#if !user}
       <a href="/login" class="nav-login">Login</a>
