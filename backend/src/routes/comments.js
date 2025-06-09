@@ -59,6 +59,25 @@ router.delete("/:cid", requiresAuthentication, async (req, res) => {
   return res.sendStatus(204);
 });
 
+router.get("/user/:uid", requiresAuthentication, async (req, res) => {
+  if (+req.params.uid !== req.user.id) return res.sendStatus(403);
+
+  const db = await getDatabase();
+  const rows = await db.all(`
+    SELECT
+      c.id AS comment_id,
+      c.content AS comment_content,
+      c.created_at AS comment_created_at,
+      c.article_id,
+      a.title AS article_title
+    FROM comments AS c
+    JOIN articles AS a ON a.id = c.article_id
+    WHERE c.user_id = ?
+    ORDER BY c.created_at DESC`, req.user.id);
+
+  res.json(rows);
+});
+
 router.get("/:cid", async (req, res) => {
   const db = await getDatabase();
   const response = await db.get(`

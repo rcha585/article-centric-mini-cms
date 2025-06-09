@@ -38,7 +38,12 @@
     {#if article.tags?.length}
       <div class="tags">
         {#each article.tags.slice(0, 4) as tag}
-          <span class="tag">#{tag}</span>
+          <a
+            class="tag"
+            href={`/search?tag=${encodeURIComponent(tag.content)}&id=${tag.id}`}
+          >
+            #{tag.content}
+          </a>
         {/each}
         {#if article.tags.length > 4}
           <span class="tag more">+{article.tags.length - 4}</span>
@@ -118,7 +123,7 @@
     gap: 7px 11px;
     margin-bottom: 10px;
   }
-  .tag {
+  a.tag {
     background: #dcecfb;
     color: #2068a3;
     padding: 3px 14px;
@@ -127,6 +132,7 @@
     font-weight: 500;
     line-height: 1.5;
     white-space: nowrap;
+    text-decoration: none;
   }
   .tag.more {
     background: #b8cff1;
@@ -139,11 +145,6 @@
     align-items: center;
     margin-bottom: 12px; /* space after tags/excerpt */
     gap: 6px;
-  }
-  .icon-like {
-    width: 19px;
-    height: 19px;
-    filter: drop-shadow(0 0 1px #ffffff90);
   }
   .likes-count {
     color: #215c99;
