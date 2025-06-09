@@ -7,11 +7,12 @@
   import { currentUser } from '$lib/stores/currentUser.js';
   import { onDestroy } from "svelte";
 
-  $: path = $page.url.pathname;
-
   let user;
   const unsubscribe = currentUser.subscribe(u => user = u);
   onDestroy(() => unsubscribe()); // Clean up subscription when component is destroyed{
+  
+  
+  $: path = $page.url.pathname;
 
   /* ------ the below is for the notification bar ------ */
 
@@ -93,25 +94,7 @@
 
   let showProfileDropdown = false;
 
-  onMount(async () => {
-    if (path.startsWith("/login") || path.startsWith("/register")) {
-      user = null; // Reset user on login/register pages
-      return;
-    }
-    // Fetch current user data
-    try {
-      const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, {
-        credentials: 'include' // Include cookies for authentication
-      });
-      const me = response.ok ? await response.json() : null;
-      user = me;
-      currentUser.set(me); // Update the store
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      user = null; // Reset user on error
-      currentUser.set(null); // Clear user store
-    }
-  });
+  $: user = $currentUser;
 
   async function handleLogout() {
     try {
