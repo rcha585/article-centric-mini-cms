@@ -262,13 +262,12 @@
               <div class="comment-content">{c.content}</div>
               <div class="comment-meta">
                 On: <span class="meta-title">{c.articleTitle}</span>
-                <span class="meta-date">{new Date(c.createdAt).toLocaleString()}</span>
-                <button
-                  class="comment-del-btn"
-                  on:click={() => handleDeleteComment(c.id)}
-                >
-                Delete Comment
-                </button>
+                <span class="meta-date">{new Date(c.createdAt).toLocaleDateString()}</span>
+                <div class="comment-actions">
+                  <button class="delete-btn" on:click={() => handleDeleteComment(c.id)}>
+                    Delete Comment
+                  </button>
+                </div>
               </div>
             </div>
           {/each}
@@ -443,9 +442,17 @@
   margin-bottom: 5px;
 }
 .comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 0.91rem;
   color: #8592ad;
 }
+
+.comment-actions {
+  margin-left: auto;
+}
+
 .meta-title {
   color: #4077b7;
   font-weight: bold;
@@ -690,18 +697,19 @@
   color: #254060;
 }
 
-
-  .comment-del-btn {
-  background: none;
+.delete-btn {
+  background: #fde6e5;
+  color: #ce4242;
   border: none;
+  border-radius: 8px;
+  padding: 6px 18px;
   cursor: pointer;
-  margin-left: 12px;
-  font-size: 0.95rem;
-  color: #c04545;
-  transition: color 0.2s;
-  }
-  .comment-del-btn:hover {
-   color: #901616;
-  }
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+.delete-btn:hover {
+  background: #eac1c1;
+  color: #901616;
+}
 </style>
 
