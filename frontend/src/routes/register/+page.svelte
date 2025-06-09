@@ -31,6 +31,8 @@
   let isConfirmPasswordVisible = false;
   let passwordInput;
   let confirmPasswordInput;
+  const today = new Date().toISOString().split("T")[0];
+
 
   function togglePasswordVisibility() {
     isPasswordVisible = !isPasswordVisible;
@@ -57,32 +59,28 @@
     selectedAvatarId = id;
   }
 
-  let _lastChecked = "";
-  $: if (username.trim().length) {
-    checkUsernameAvailability(username.trim());
-  } else {
-    usernameTaken.set(false);
+  let checkTimeout;
+  $: {
+    clearTimeout(checkTimeout);
+    const name = username.trim();
+    if (name.length>=3) {
+      checkTimeout = setTimeout(() => {
+        checkUsernameAvailability(name);
+      }, 300);
+    } else {
+      usernameTaken.set(false);
+    }
   }
 
   async function checkUsernameAvailability(name) {
-    if (_lastChecked === name) return;
-    _lastChecked = name;
-
     try {
       const response = await fetch(
-        `${PUBLIC_API_BASE_URL}/users?username=${encodeURIComponent(name)}`,
-        {}
-      );
+        `${PUBLIC_API_BASE_URL}/users/check-username?username=${encodeURIComponent(name)}`,
 
-      if (response.ok) {
-        usernameTaken.set(true);
-      } else if (response.status === 404 || response.status === 401) {
-        usernameTaken.set(false);
-      } else {
-        usernameTaken.set(false);
-      }
+      );
+      usernameTaken.set(response.status === 200);
     } catch (error) {
-      console.error("Error checkinh username", error);
+      console.error("Error checking username availability", error);
       usernameTaken.set(false);
     }
   }
@@ -94,6 +92,10 @@
   async function handleRegister(event) {
     event.preventDefault();
     formError.set(null);
+    if (dateOfBirth && new Date(dateOfBirth) > new Date(today)) {
+      formError.set("Date of birth cannot be in the future");
+      return;
+    }
 
     if ($usernameTaken) {
       formError.set("Username is already taken");
@@ -255,7 +257,7 @@
 
         <div class="field">
           <label for="dateOfBirth">Date of Birth</label>
-          <input type="date" id="dateOfBirth" bind:value={dateOfBirth} required />
+          <input type="date" id="dateOfBirth" bind:value={dateOfBirth} max={today} required />
         </div>
 
         <div class="field">
