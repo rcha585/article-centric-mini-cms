@@ -2,11 +2,9 @@
 <script>
   import "$lib/css/app.css";
   import Header from '$lib/components/Header.svelte';
-  export let data;
-  let { myNotifications } = data;
 </script>
 
-<Header />
+<Header/>
 
 <main class="main-content">
   <slot />

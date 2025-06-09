@@ -4,7 +4,7 @@ import { PUBLIC_API_BASE_URL } from "$env/static/public";
 import { fetchNotifications } from "../lib/js/notifications.js";
 import { currentUser } from "$lib/stores/currentUser.js";
 import { get } from "svelte/store";
-export async function load({ fetch }) {
+export async function load({ fetch, url }) {
 
 let meData = null;
 try {
@@ -21,4 +21,12 @@ try {
 
 currentUser.set(meData);
 
+// call fetchNotifications right after user finishes log in 
+// so the number of unviewed Notification can appear above the notiication bell
+const path = url.pathname; // hỏi Đức
+  if (path.startsWith('/login')) {
+    return { myNotifications: [] };
+  }
+  const allNotifications = await fetchNotifications({fetch});
+  return { myNotifications: allNotifications };
 }

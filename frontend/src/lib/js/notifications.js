@@ -18,20 +18,17 @@ export async function fetchNotifications({ fetch }) {
                     notiResArticles.json(),
                     notiResComments.json()
                 ]);
-                // refresh the viewed data.
-
+                
+                // store all Notifications for later use for component file: Header.svelte
                 myNotifications.set([...myArticlesNotifications, ...myCommentsNotifications].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
                 
+                // store all Notifications for later use for component file: Header.svelte
                 const unviewedArticlesNoti = myArticlesNotifications.filter(n => n.is_viewed === 0);
                 const unviewedCommentsNoti = myCommentsNotifications.filter(n => n.is_viewed === 0);
                 const unviewed = [...unviewedArticlesNoti, ...unviewedCommentsNoti];
-                const ids = unviewed.map(n=>n.id);
-                newNotificationIds.set(ids); // Used to store notification_id
                 unviewedCount.set(unviewed.length);
-
-                console.log("new notifications id:", get(newNotificationIds));
-                console.log("all notifications:", myNotifications);
-                console.log("new notifications:",unviewed);
+                console.log("unviewedCount1:",get(unviewedCount));
+                
             }
             else {
                 // else no notifications
@@ -40,7 +37,6 @@ export async function fetchNotifications({ fetch }) {
         }
     } catch (e) {
     // if it is a login error, don't notify.     
-    // console.log("DCM") 
         myNotifications.set([]);
         unviewedCount.set(0);
     }
