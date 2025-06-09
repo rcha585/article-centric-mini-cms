@@ -138,6 +138,7 @@
       last_name: lastName.trim(),
       description: description.trim(),  
       avatar_id: selectedAvatarId,
+      date_of_birth: dateOfBirth
     };
 
     if (newPassword.trim().length > 0) {

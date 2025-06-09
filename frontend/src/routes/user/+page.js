@@ -121,7 +121,8 @@ export async function load({ fetch }) {
     avatar: `http://localhost:5173/avatars/${avatarFilename}`,
     avatar_id: rawUser.avatar_id,
     likedPosts: likedArticles.length,
-    subscribers: subscriberCount
+    subscribers: subscriberCount,
+    date_of_birth: rawUser.date_of_birth
   }
 
 
