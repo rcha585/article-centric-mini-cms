@@ -165,6 +165,30 @@
   function handleReadMore(e) {
     window.location.href = `/articles/${e.detail.id}`;
   }
+
+   // Delete Comment
+  async function handleDeleteComment(commentId) {
+   if (!confirm("Delete this comment?")) return;
+
+   try {
+     const res = await fetch(
+       `${PUBLIC_API_BASE_URL}/comments/${commentId}`,
+       { method: "DELETE", credentials: "include" }
+     );
+
+     if (res.status === 204) {
+       myComments = myComments.filter((c) => c.id !== commentId);
+       alert("Comment deleted.");
+     } else if (res.status === 403) {
+       alert("You can’t delete this comment.");
+     } else {
+       alert("Failed to delete comment.");
+     }
+   } catch (err) {
+     console.error("delete comment error", err);
+     alert("Network error when deleting.");
+   }
+  }
 </script>
 
 <div class="user-page-main">
@@ -239,6 +263,12 @@
               <div class="comment-meta">
                 On: <span class="meta-title">{c.articleTitle}</span>
                 <span class="meta-date">{new Date(c.createdAt).toLocaleString()}</span>
+                <button
+                  class="comment-del-btn"
+                  on:click={() => handleDeleteComment(c.id)}
+                >
+                Delete Comment
+                </button>
               </div>
             </div>
           {/each}
@@ -660,5 +690,18 @@
   color: #254060;
 }
 
+
+  .comment-del-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 12px;
+  font-size: 0.95rem;
+  color: #c04545;
+  transition: color 0.2s;
+  }
+  .comment-del-btn:hover {
+   color: #901616;
+  }
 </style>
 

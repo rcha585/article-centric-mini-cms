@@ -146,11 +146,6 @@
     margin-bottom: 12px; /* space after tags/excerpt */
     gap: 6px;
   }
-  .icon-like {
-    width: 19px;
-    height: 19px;
-    filter: drop-shadow(0 0 1px #ffffff90);
-  }
   .likes-count {
     color: #215c99;
     font-size: 1.01rem;
