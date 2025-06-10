@@ -38,17 +38,14 @@
   $ : if (user.date_of_birth) {
     dateOfBirth = user.date_of_birth.split("T")[0];
   }
-
    const today = new Date().toISOString().split("T")[0];
   $: dobInvalid.set(
     !!dateOfBirth && dateOfBirth > today
   );
-
   const usernameTaken = writable(false);
   const dobInvalid = writable(false);
   const isSubmitting = writable(false);
   const formError = writable(null);
-
   const originalUsername = user.username;
   let username = originalUsername;
   let checkTimeout;
@@ -61,7 +58,6 @@
       usernameTaken.set(false);
     }
   }
-
   async function checkUsernameAvailability(name) {
     try {
       const res = await fetch(
@@ -73,7 +69,6 @@
       usernameTaken.set(false);
     }
   }
-
   // require every field non-empty, DOB valid, username not taken
   let canSave = false;
   $: canSave =
@@ -86,7 +81,6 @@
     newPassword.trim().length > 0 &&
     !$usernameTaken &&
     !$dobInvalid;
-
 
   onMount(async () => {
     try {
@@ -203,6 +197,8 @@
       } catch (error) {
         console.error("Error deleting account:", error);
         alert("An error occurred while deleting your account. Please try again later.");
+      } finally {
+        isSubmitting.set(false);
       }
   }
 
@@ -220,6 +216,28 @@
   }
   function handleReadMore(e) {
     window.location.href = `/articles/${e.detail.id}`;
+  }
+
+  // Delete Comment
+  async function handleDeleteComment(commentId) {
+   if (!confirm("Delete this comment?")) return;
+   try {
+     const res = await fetch(
+       `${PUBLIC_API_BASE_URL}/comments/${commentId}`,
+       { method: "DELETE", credentials: "include" }
+     );
+     if (res.status === 204) {
+       myComments = myComments.filter((c) => c.id !== commentId);
+       alert("Comment deleted.");
+     } else if (res.status === 403) {
+       alert("You can't delete this comment.");
+     } else {
+       alert("Failed to delete comment.");
+     }
+   } catch (err) {
+     console.error("delete comment error", err);
+     alert("Network error when deleting.");
+   }
   }
 </script>
 
@@ -251,16 +269,18 @@
           <div class="empty-feed">No articles at the moment, write a new ~~</div>
 
         {:else}
-          {#each myArticles.slice(0, displayCount) as article (article.id)}
+          {#each myArticles.slice(0, displayOverview) as article (article.id)}
             <UserArticleCard {article}
+              canEdit={true}
+              canDelete={true}
               on:edit={handleArticleEdit}
               on:readmore={handleReadMore}
               on:delete={handleDeleteArticle}
             />
           {/each}
 
-          {#if displayCount < myArticles.length}
-            <button type="button" class="load-more-text" on:click={loadMore}>
+          {#if displayOverview  < myArticles.length}
+            <button type="button" class="load-more-text" on:click={() => loadMore('overview')}>
               Load more...
             </button>
           {/if}
@@ -272,9 +292,17 @@
         {#if likedArticles.length === 0}
           <div class="empty-feed">Have no liked</div>
         {:else}
-          {#each likedArticles as article (article.id)}
-            <UserArticleCard {article} on:readmore={handleReadMore} />
+          {#each likedArticles.slice(0, displayLiked) as article (article.id)}
+            <UserArticleCard {article} 
+            canEdit={false}
+            canDelete={false}
+            on:readmore={handleReadMore} />
           {/each}
+          {#if displayLiked < likedArticles.length}
+            <button type="button" class="load-more-text" on:click={() => loadMore('liked')}>
+              Load more...
+            </button>
+          {/if}
         {/if}
       </div>
     {:else if currentTab === "comments"}
@@ -282,15 +310,26 @@
         {#if myComments.length === 0}
           <div class="empty-feed">No comment yet</div>
         {:else}
-          {#each myComments as c}
+          {#each myComments.slice(0, displayComments) as c}
             <div class="comment-block">
               <div class="comment-content">{c.content}</div>
               <div class="comment-meta">
                 On: <span class="meta-title">{c.articleTitle}</span>
-                <span class="meta-date">{new Date(c.createdAt).toLocaleString()}</span>
+                <span class="meta-date">{new Date(c.createdAt).toLocaleDateString()}</span>
+
+                <div class="comment-actions">
+                  <button class="delete-btn" on:click={() => handleDeleteComment(c.id)}>
+                    Delete Comment
+                  </button>
+                </div>
               </div>
             </div>
           {/each}
+          {#if displayComments < myComments.length}
+            <button type="button" class="load-more-text" on:click={() => loadMore('comments')}>
+              Load more...
+            </button>
+          {/if}
         {/if}
       </div>
     {/if}
@@ -302,8 +341,14 @@
     <div class="popup-content">
       <div class="avatar-container">
         <img class="avatar-img" src={`http://localhost:5173/avatars/avatar${selectedAvatarId}.png`} alt="Avatar" />
-        <button class="btn-change-image" on:click={()=> {const sel = document.getElementById('avatarSelect'); if (sel) sel.click();}}>
-          Change Avatar </button>
+        <div class="select-overlay">
+          <select bind:value={selectedAvatarId}>
+            <option value={null} disabled>Change Avatar ▾</option>
+              {#each avatars as a}
+                <option value={a.id}>{a.avatar_path.split('/').pop()}</option>
+              {/each}
+          </select>
+        </div>
         <button class="btn-delete-account" on:click={handleDeleteAccount}>Delete Account</button>
       </div>
       
@@ -527,22 +572,6 @@
   margin-bottom: 16px;
 }
 
-.btn-change-image {
-  background: #cfe8fb;
-  color: #254060;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 0.98rem;
-  cursor: pointer;
-  margin-bottom: 12px;
-  transition: background-color 0.2s, color 0.2s;
-}
-
-.btn-change-image:hover {
-  background: #aad4f7;
-  color: #1e3454;
-}
 
 .btn-delete-account {
   background: #fde6e5;
@@ -734,9 +763,7 @@
   line-height: 1.2;
 }
 
-input.invalid,
-textarea.invalid,
-select.invalid {
+input.invalid{
   border-color: #e74c3c;
   box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
 }
