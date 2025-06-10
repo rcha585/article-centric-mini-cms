@@ -156,6 +156,39 @@
 }
 
 
+  /** Delete a comment by its ID */
+  async function deleteComment(commentId) {
+    if (!confirm("Really delete this comment?")) return;
+
+    try {
+      const res = await fetch(
+        `${PUBLIC_API_BASE_URL}/articles/${article.id}/comments/${commentId}`,{
+          method: "DELETE",
+          // headers: {"Content-Type": "application/json"},
+          credentials: "include"
+          // body: JSON.stringify({ content: newComment,
+          // mentioned_user_ids: [] })
+        }
+      );
+
+      if (res.ok) {
+        // remove from the array so Svelte re-renders
+        comments = comments.filter(c => c.id !== commentId);
+      } else {
+        console.error("Delete failed:", res.status, await res.text());
+        alert("Couldn’t delete comment");
+      }
+    } catch (err) {
+      console.error("Error deleting comment:", err);
+      alert("Error deleting comment");
+    }
+  }
+
+
+
+
+
+
 
 
 
@@ -308,12 +341,21 @@
                   <div class="comment-user">{c.username}</div>
                   <div class="comment-content">
                     {#each splitByMentions(c.content) as part}
-                      {#if part.isMention}<span class="mention">{part.text}</span>{:else}{part.text}{/if}
+                      {#if part.isMention}<span class="mention">{part.text}</span>
+                    {:else}
+                      {part.text}
+                    {/if}
                     {/each}
                   </div>
-                  <div class="comment-date">{formatDateTime(c.created_at)}</div>
+                  <div class="comment-meta">
+                    <span class="comment-date">{formatDateTime(c.created_at)}</span>
+                    <!-- ✂️ Delete button -->
+                    <button class="btn-delete" on:click={() => deleteComment(c.id)}>
+                      Delete
+                    </button>
                 </div>
               </div>
+            </div>
             {/each}
           {/if}
 
@@ -479,6 +521,26 @@
     font-size: 1.1em;
     color: #1e3a8a;
     margin-bottom: 10px;
+  }
+
+  .comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  }
+
+  .btn-delete {
+  background: transparent;
+  border: none;
+  color: #e11d48;
+  cursor: pointer;
+  font-size: 0.9em;
+  padding: 0;
+  }
+
+  .btn-delete:hover {
+  text-decoration: underline;
   }
 
   .btn-toggle {
