@@ -12,9 +12,9 @@ router.get("/articles", requiresAuthentication, async (req, res) => {
             n.id,
             n.created_at,
             n.is_viewed,
-            n.user_id,
-
-            n.article_id,
+            n.is_read,
+            n.user_id,  
+            n.article_id, 
             a.title AS article_title,
             a.content AS article_content,
             a.author_id AS author_id,
@@ -55,6 +55,7 @@ router.get("/comments", requiresAuthentication, async (req, res) => {
         n.id,
         n.created_at,
         n.is_viewed,
+        n.is_read,
         n.user_id,
         
         a.id AS article_id,
@@ -98,7 +99,7 @@ router.patch("/", requiresAuthentication, async (req, res) => {
 router.patch("/:nid", requiresAuthentication, async (req, res) => {
   const db = await getDatabase();
   await db.run(
-    "UPDATE notifications SET is_viewed = 1 WHERE id = ? AND user_id = ?",
+    "UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?",
     req.params.nid,
     req.user.id
   );

@@ -44,12 +44,11 @@
     {#if article.tags?.length}
       <div class="article-tags">
         {#each article.tags.slice(0, 4) as tag}
-          <a
-            class="article-tag"
-            href={`/search?tag=${encodeURIComponent(tag)}`}
-          >
-            #{tag}
-          </a>
+          {#if typeof tag === 'string'}
+            <a class="article-tag" href={`/search?tag=${encodeURIComponent(tag)}`}>#{tag}</a>
+          {:else}
+            <a class="article-tag" href={`/search?tag=${encodeURIComponent(tag.content)}&id=${tag.id}`}>#{tag.content}</a>
+          {/if}
         {/each}
       </div>
     {/if}

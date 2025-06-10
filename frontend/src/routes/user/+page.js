@@ -70,7 +70,6 @@ export async function load({ fetch }) {
 
   //  likes and comments
   const likedArticles = [];
-  const myComments = [];
 
   await Promise.all(
     allArticles.map(async (art) => {
@@ -82,26 +81,36 @@ export async function load({ fetch }) {
         likedArticles.push(art);
       }
 
-      // get comments
-      const commRes = await fetch(`${PUBLIC_API_BASE_URL}/articles/${art.id}/comments`);
-      const comments = commRes.ok && commRes.status !== 204 ? await commRes.json() : [];
-      art.comments = comments.length;
-      comments
-        .filter((c) => c.username === rawUser.username)
-        .forEach((c) => myComments.push({ ...c, articleTitle: art.title }));
-
       // get tags
       try {
         const tagRes = await fetch(`${PUBLIC_API_BASE_URL}/articles/${art.id}/tags`);
         if (tagRes.ok) {
           const tagJson = await tagRes.json(); 
-          art.tags = tagJson.map((t) => t.content.replace(/^#/, "")); 
+          art.tags = tagJson.map(t =>  ({
+            id: t.id,
+            content: t.content.replace(/^#/, "")
+           }));
         }
       } catch (err) {
         art.tags = [];
       }
     })
   );
+
+  // +page.js
+  const res = await fetch(`${PUBLIC_API_BASE_URL}/comments/user/${rawUser.id}`, {
+    credentials: 'include'
+  });
+  const list = res.ok ? await res.json() : [];
+  const myComments = list.map(c => ({
+    id:          c.comment_id,
+    content:     c.comment_content,
+    createdAt:   c.comment_created_at,
+    articleId:   c.article_id,
+    articleTitle:c.article_title
+  }));
+
+  
 
   const user = {
     id: rawUser.id,
@@ -112,7 +121,8 @@ export async function load({ fetch }) {
     avatar: `http://localhost:5173/avatars/${avatarFilename}`,
     avatar_id: rawUser.avatar_id,
     likedPosts: likedArticles.length,
-    subscribers: subscriberCount
+    subscribers: subscriberCount,
+    date_of_birth: rawUser.date_of_birth
   }
 
 
