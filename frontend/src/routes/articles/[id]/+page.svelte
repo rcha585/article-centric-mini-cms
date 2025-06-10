@@ -310,7 +310,7 @@
         <span>Tags:</span>
         {#each tags as tag}
           <a 
-            href={`/search?tag=${encodeURIComponent(tag.content)}`}
+            href={`/search?tag=$${encodeURIComponent(tag.content)}&id=${tag.id}`}
             class="tag"
           >
             {`#${tag.content}`}
