@@ -271,6 +271,8 @@
         {:else}
           {#each myArticles.slice(0, displayOverview) as article (article.id)}
             <UserArticleCard {article}
+              canEdit={true}
+              canDelete={true}
               on:edit={handleArticleEdit}
               on:readmore={handleReadMore}
               on:delete={handleDeleteArticle}
@@ -291,7 +293,10 @@
           <div class="empty-feed">Have no liked</div>
         {:else}
           {#each likedArticles.slice(0, displayLiked) as article (article.id)}
-            <UserArticleCard {article} on:readmore={handleReadMore} />
+            <UserArticleCard {article} 
+            canEdit={false}
+            canDelete={false}
+            on:readmore={handleReadMore} />
           {/each}
           {#if displayLiked < likedArticles.length}
             <button type="button" class="load-more-text" on:click={() => loadMore('liked')}>

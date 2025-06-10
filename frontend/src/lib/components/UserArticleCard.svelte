@@ -1,6 +1,10 @@
 <script>
 
   export let article;
+  export let canEdit   = false;
+  export let canDelete = false;
+  export let canRead   = true;
+
 
   // Format article.createdAt as "DD/MM/YYYY" (locale default may vary).
   $: createdDate = new Date(article.createdAt).toLocaleDateString(undefined, {
@@ -55,11 +59,24 @@
     </div>
 
     <div class="actions-row">
-      <button class="delete-btn" on:click={handleDelete}>Delete</button>
-      <button class="edit-btn"   on:click={handleEdit}>Edit</button>
-      <button class="loadmore-btn" on:click={handleReadMore}>Read More</button>
-    </div>
+      {#if canDelete}
+        <button class="delete-btn" on:click={() => dispatch('delete', { id: article.id })}>
+        Delete
+        </button>
+      {/if}
 
+      {#if canEdit}
+        <button class="edit-btn" on:click={() => dispatch('edit', { id: article.id })}>
+        Edit
+        </button>
+      {/if}
+
+      {#if canRead}
+        <button class="loadmore-btn" on:click={() => dispatch('readmore', { id: article.id })}>
+        Read&nbsp;More
+        </button>
+      {/if}
+    </div>
     <div class="card-createdat">Created at {createdDate}</div>
   </div>
 </div>
