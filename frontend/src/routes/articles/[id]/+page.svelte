@@ -259,7 +259,7 @@
 
     const method = subscribed ? "DELETE" : "POST";
     const res = await fetch(
-      `${PUBLIC_API_BASE_URL}/subscriptions/${user.id}/subscribe`,
+      `${PUBLIC_API_BASE_URL}/subscriptions/${user.id}`,
       { method, credentials:"include" }
     );
 
