@@ -315,7 +315,7 @@
           {:else}
             {#each comments as c}
               <div class="comment-item">
-                <img class="avatar-sm" src={`/avatars/avatar${(c.comment_id % 10) + 1}.png`} alt="avatar" />
+                <img class="avatar-sm" src={`/${c.avatar_path}`} alt="avatar" />
                 <div>
                   <div class="comment-user">{c.username}</div>
                   <div class="comment-content">
