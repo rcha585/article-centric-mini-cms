@@ -74,15 +74,23 @@ router.get("/", async (req, res) => {
   } else if (!req.query.match || req.query.match == "partial"){
     const key = `%${req.query.key}%`;
     articles = await db.all(`
+      WITH author_subs AS (
+      SELECT s.subscribed_user_id AS author_id,
+      COUNT( * ) AS author_subscriber_count
+      FROM subscriptions s
+      GROUP BY s.subscribed_user_id
+      )
       SELECT
         a.*,
-        u.username
+        u.username,
+        author_subs.author_subscriber_count
       FROM
         articles AS a
       INNER JOIN
         users AS u
       On
         a.author_id = u.id
+      LEFT JOIN author_subs ON a.author_id = author_subs.author_id
       WHERE
         a.title LIKE ? COLLATE NOCASE
       OR
@@ -96,15 +104,23 @@ router.get("/", async (req, res) => {
     const key3 = `% ${req.query.key}`;
     const key4 = `${req.query.key}`;
     articles = await db.all(`
+      WITH author_subs AS (
+      SELECT s.subscribed_user_id AS author_id,
+      COUNT( * ) AS author_subscriber_count
+      FROM subscriptions s
+      GROUP BY s.subscribed_user_id
+      )
       SELECT
         a.*,
-        u.username
+        u.username,
+        author_subs.author_subscriber_count
       FROM
         articles AS a
       INNER JOIN
         users AS u
       On
         a.author_id = u.id
+      LEFT JOIN author_subs ON a.author_id = author_subs.author_id
       WHERE
         a.title LIKE ? COLLATE NOCASE
       OR
@@ -112,7 +128,7 @@ router.get("/", async (req, res) => {
       OR
         a.title LIKE ? COLLATE NOCASE
       OR
-        a.title LIKE ? COLLATE NOCASE
+        a.title = ? COLLATE NOCASE
       OR    
         a.content LIKE ? COLLATE NOCASE
       OR    
@@ -120,15 +136,15 @@ router.get("/", async (req, res) => {
       OR    
         a.content LIKE ? COLLATE NOCASE
       OR    
-        a.content LIKE ? COLLATE NOCASE
+        a.content = ? COLLATE NOCASE
       OR 
         u.username LIKE ? COLLATE NOCASE
       OR 
         u.username LIKE ? COLLATE NOCASE
       OR 
         u.username LIKE ? COLLATE NOCASE
-      OR 
-        u.username LIKE ? COLLATE NOCASE
+      OR    
+        u.username = ? COLLATE NOCASE
       `, [key1, key2, key3, key4, key1, key2, key3, key4, key1, key2, key3, key4]);
   }
   if (articles.length == 0) {

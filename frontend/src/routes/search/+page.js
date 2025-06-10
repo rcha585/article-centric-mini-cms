@@ -7,7 +7,7 @@
  * @param {function} context.fetch - The fetch function to make HTTP requests.
  * @returns {Promise<object>} - Returns an object with articles for the page.
  */
-export async function load({url }) {
+export async function load({url}) {
 
   const tag_id = url.searchParams.get('id');   // e.g. "123"
   const query = url.searchParams.get('q'); // e.g. "science"
