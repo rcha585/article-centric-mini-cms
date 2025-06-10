@@ -47,11 +47,11 @@ router.patch("/:cid", requiresAuthentication, async (req, res) => {
 
 router.delete("/:cid", requiresAuthentication, async (req, res) => {
   const db = await getDatabase();
-  const comment = await db.get("SELECT * FROM comments WHERE id = ?", req.params.cid);
+  const comment = await db.get("SELECT c.*, a.author_id FROM comments AS c LEFT JOIN articles AS a ON c.article_id = a.id WHERE c.id = ?", req.params.cid);
   if (!comment) {
     return res.sendStatus(404);
   }
-  if (req.user.id != comment.user_id) {
+  if (req.user.id != comment.user_id && req.user.id != comment.author_id) {
     return res.sendStatus(403);
   }
   await db.run("DELETE FROM comments WHERE id = ?", req.params.cid);
