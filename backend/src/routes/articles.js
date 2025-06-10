@@ -55,6 +55,7 @@ router.post("/", requiresAuthentication, async (req, res) => {
   }
 });
 
+
 router.get("/", async (req, res) => {
   const db = await getDatabase();
   let articles;
@@ -93,6 +94,7 @@ router.get("/", async (req, res) => {
     const key1 = `${req.query.key} %`;
     const key2 = `% ${req.query.key} %`;
     const key3 = `% ${req.query.key}`;
+    const key4 = `${req.query.key}`;
     articles = await db.all(`
       SELECT
         a.*,
@@ -109,6 +111,10 @@ router.get("/", async (req, res) => {
         a.title LIKE ? COLLATE NOCASE
       OR
         a.title LIKE ? COLLATE NOCASE
+      OR
+        a.title LIKE ? COLLATE NOCASE
+      OR    
+        a.content LIKE ? COLLATE NOCASE
       OR    
         a.content LIKE ? COLLATE NOCASE
       OR    
@@ -121,7 +127,9 @@ router.get("/", async (req, res) => {
         u.username LIKE ? COLLATE NOCASE
       OR 
         u.username LIKE ? COLLATE NOCASE
-      `, [key1, key2, key3, key1, key2, key3, key1, key2, key3]);
+      OR 
+        u.username LIKE ? COLLATE NOCASE
+      `, [key1, key2, key3, key4, key1, key2, key3, key4, key1, key2, key3, key4]);
   }
   if (articles.length == 0) {
     return res.status(200).json(articles);
