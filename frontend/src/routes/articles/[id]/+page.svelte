@@ -9,6 +9,7 @@
   let filteredUsers = [];
   let showSuggestions = false;
   let mentionQuery = "";
+  let mentionedUsers = [];
 
   // Initialize data
   let { article, user, tags = [], comments: initialComments = [], likesCount,  likedByMe, me } = data;
@@ -106,8 +107,9 @@
     headers: {"Content-Type": "application/json"},
     credentials: "include", // if you need session/cookie auth
     body: JSON.stringify({ content: newComment,
-    mentioned_user_ids: [] })
+    mentioned_user_ids: mentionedUsers})
   });
+    mentionedUsers = [];
 
     console.log("Response status:", response.status);
 
@@ -237,7 +239,10 @@
 
   // Insert selected username into comment input
   function selectUsername(username) {
-    newComment = newComment.replace(/@([\w]*)$/, `@${username} `);
+    if (!mentionedUsers.includes(username)) {
+      mentionedUsers.push(username.id);
+    }
+    newComment = newComment.replace(/@([\w]*)$/, `@${username.username} `);
     showSuggestions = false;
     mentionQuery = "";
   }
@@ -357,7 +362,7 @@
 
             {#if showSuggestions}
               <ul class="mention-suggestions">
-                {#each filteredUsers as u}<li tabindex="0" on:click={() => selectUsername(u.username)}>{u.username}</li>{/each}
+                {#each filteredUsers as u}<li tabindex="0" on:click={() => selectUsername(u)}>{u.username}</li>{/each}
               </ul>
             {/if}
           </div>
