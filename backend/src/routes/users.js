@@ -7,6 +7,24 @@ import yup from "yup";
 const router = express.Router();
 export default router;
 
+router.get("/check-username", async (req, res) => {
+  const name = req.query.username;
+  if (!name) {
+    return res.sendStatus(400);
+  }
+  try {
+    const db = await getDatabase();
+    const user = await db.get(
+      "SELECT 1 FROM users WHERE username = ?", 
+      name
+    );
+    return user ? res.sendStatus(200) : res.sendStatus(404);
+  } catch (err) {
+    console.error("check-username error:", err);
+    return res.sendStatus(500);
+  }
+});
+
 const createUserSchema = yup
   .object({
     username: yup.string().max(100).required(),
@@ -68,7 +86,9 @@ router.get("/", requiresAuthentication, async (req, res) => {
     return res.status(200).json(users);
   }
   if (!req.query.username) {
-    return res.sendStatus(403);
+    const db = await getDatabase();
+    const users = await db.all("SELECT u.id, u.username FROM users");
+    return res.status(200).json(users);
   }
   if (req.query.username) {
     const db = await getDatabase();

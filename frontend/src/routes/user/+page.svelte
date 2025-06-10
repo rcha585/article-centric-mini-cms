@@ -17,7 +17,7 @@
   let description = user.introduction || "";
   let selectedAvatarId = user.avatar_id || 1;
   let avatars = [];
-
+  
   // all display 2 card in each tab
   let displayOverview = 2;
   let displayLiked = 2;
@@ -33,7 +33,6 @@
       displayComments = Math.min(myComments.length, displayComments + 2);
     }
   }
-
 
   let dateOfBirth = '';
   $ : if (user.date_of_birth) {
@@ -132,11 +131,10 @@
   }
 
   async function handleSaveChanges() {
-     if (!canSave) {
+    if (!canSave) {
       alert("Please fill in all required fields correctly.");
       return;
     }
-
     const payload = {
       username: username.trim(),
       first_name: firstName.trim(),
@@ -149,9 +147,7 @@
     if (newPassword.trim().length > 0) {
       payload.password = newPassword.trim();
     }
-
     try {
-      //
       const response = await fetch(`${PUBLIC_API_BASE_URL}/users`, {
         method: 'PATCH',
         headers: {
@@ -159,23 +155,25 @@
         },
         credentials: 'include',
         body: JSON.stringify(payload),
-    });
-
+    });    
       if (response.ok) {
-        alert("Profile updated successfully!");
-        showEditProfile.set(false);
-        window.location.reload();
-      } else if (response.status === 400) {
-        const errorJson = await response.json();
-        alert("Validation error: " + (errorJson.message || "Please check your input."));
-      } else if (response.status === 409) {
-        alert("Username already exists. Please choose a different username.");
-      } else {
-        alert("Failed to update profile. Please try again later.");
-      }
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      alert("An error occurred while updating your profile. Please try again later.");
+          alert("Profile updated successfully!");
+          showEditProfile.set(false);
+          window.location.reload();
+        } else if (response.status === 400) {
+          const errorJson = await response.json();
+          alert("Validation error: " + (errorJson.message || "Please check your input."));
+        } else if (response.status === 409) {
+          alert("Username already exists. Please choose a different username.");
+        } else {
+          alert("Failed to update profile. Please try again later.");
+        }
+      } catch (error) {
+      console.error("Error saving profile:", error);
+      formError.set("An error occurred while saving your profile. Please try again later.");
+      return;
+    } finally {
+      isSubmitting.set(false);
     }
   }
 
@@ -220,21 +218,19 @@
     window.location.href = `/articles/${e.detail.id}`;
   }
 
-   // Delete Comment
+  // Delete Comment
   async function handleDeleteComment(commentId) {
    if (!confirm("Delete this comment?")) return;
-
    try {
      const res = await fetch(
        `${PUBLIC_API_BASE_URL}/comments/${commentId}`,
        { method: "DELETE", credentials: "include" }
      );
-
      if (res.status === 204) {
        myComments = myComments.filter((c) => c.id !== commentId);
        alert("Comment deleted.");
      } else if (res.status === 403) {
-       alert("You can’t delete this comment.");
+       alert("You can't delete this comment.");
      } else {
        alert("Failed to delete comment.");
      }
@@ -281,7 +277,7 @@
             />
           {/each}
 
-          {#if displayOverview < myArticles.length}
+          {#if displayOverview  < myArticles.length}
             <button type="button" class="load-more-text" on:click={() => loadMore('overview')}>
               Load more...
             </button>
@@ -289,7 +285,6 @@
 
         {/if}
       </div>
-
     {:else if currentTab === "liked"}
       <div class="articles-feed">
         {#if likedArticles.length === 0}
@@ -305,7 +300,6 @@
           {/if}
         {/if}
       </div>
-
     {:else if currentTab === "comments"}
       <div class="comments-feed">
         {#if myComments.length === 0}
@@ -317,6 +311,7 @@
               <div class="comment-meta">
                 On: <span class="meta-title">{c.articleTitle}</span>
                 <span class="meta-date">{new Date(c.createdAt).toLocaleDateString()}</span>
+
                 <div class="comment-actions">
                   <button class="delete-btn" on:click={() => handleDeleteComment(c.id)}>
                     Delete Comment
@@ -341,7 +336,6 @@
     <div class="popup-content">
       <div class="avatar-container">
         <img class="avatar-img" src={`http://localhost:5173/avatars/avatar${selectedAvatarId}.png`} alt="Avatar" />
-
         <div class="select-overlay">
           <select bind:value={selectedAvatarId}>
             <option value={null} disabled>Change Avatar ▾</option>
@@ -350,8 +344,6 @@
               {/each}
           </select>
         </div>
-
-
         <button class="btn-delete-account" on:click={handleDeleteAccount}>Delete Account</button>
       </div>
       
@@ -376,7 +368,7 @@
 
       <div class="form-row">    
         <label for="lastName">Last Name:</label>
-        <input type="text" id="lastName" bind:value={lastName} required/>
+        <input type="text" id="lastName" bind:value={lastName} required />
       </div>
 
       <div class="form-row">
@@ -392,7 +384,7 @@
         {#if showPassword}
         <input type="text" id="password" bind:value={newPassword} placeholder="Enter new password" required/>
         {:else}
-        <input type="password" id="password" bind:value={newPassword} placeholder="Enter new password" required/>
+        <input type="password" id="password" bind:value={newPassword} placeholder="Enter new password" required />
         {/if}
         
         <button type="button" class="btn-toggle-pwd" on:click={() => showPassword = !showPassword} title={showPassword ? 'Hide' : 'Show'}>
@@ -400,13 +392,31 @@
         </button>
       </div>
 
+      {#if $formError}
+        <div class="error-message">{$formError}</div>
+      {/if}
+
+
       <div class="form-row textarea-row">
         <label for="description">Description:</label>
         <textarea id="description" bind:value={description}></textarea>
       </div>
 
+      <div class="hidden-select">
+        <select id="avatarSelect" bind:value={selectedAvatarId}>
+          <option value={null} disabled>Select an avatar</option>
+          {#each avatars as a}
+            <option value={a.id}>{a.avatar_path.split('/').pop()}</option>
+          {/each}
+        </select>
+      </div>
+
+      {#if $formError}
+        <div class="error-message">{$formError}</div>
+      {/if}
+
       <div class="popup-buttons">
-         <button class="btn-save" on:click={handleSaveChanges} disabled={$isSubmitting}>{$isSubmitting ? "Saving…" : "Save Changes"} </button>
+        <button class="btn-save" on:click={handleSaveChanges} disabled={$isSubmitting}>{$isSubmitting ? "Saving…" : "Save Changes"} </button>
         <button class="btn-cancel" on:click={toggleEditProfile}>Cancel</button>
       </div>
     </div>
@@ -507,17 +517,9 @@
   margin-bottom: 5px;
 }
 .comment-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   font-size: 0.91rem;
   color: #8592ad;
 }
-
-.comment-actions {
-  margin-left: auto;
-}
-
 .meta-title {
   color: #4077b7;
   font-weight: bold;
@@ -550,7 +552,6 @@
 .avatar-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;   
   align-items: center;
   width: 240px;   
   margin-right: 32px;
@@ -566,11 +567,11 @@
   margin-bottom: 16px;
 }
 
+
 .btn-delete-account {
   background: #fde6e5;
   color: #ce4242;
   border: none;
-  width: 160px;
   border-radius: 8px;
   padding: 8px 16px;
   font-size: 0.98rem;
@@ -646,6 +647,24 @@
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .textarea-row textarea:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+}
+
+#avatarSelect {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #d4e3f6;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.96rem;
+  color: #254060;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#avatarSelect:focus {
   outline: none;
   border-color: #60a5fa;
   box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
@@ -728,59 +747,39 @@
 .btn-toggle-pwd:hover {
   color: #333;
 }
-
-.select-overlay {
-  position: relative;
-  width: 160px;
+.hidden-select {
+  display: none;
 }
 
-.select-overlay select {
-  width: 100%;
-  padding: 8px 20px;
-  margin-bottom: 20px;
-  border: none;
-  border-radius: 6px;   /* match button rounding */
-  background: #cfe8fb;  /* same background as btn-change-image */
-  color: #254060;
-  cursor: pointer;
-  appearance: none;
-  font-size: 0.98rem;
-  /* text-align: center; */
-  text-align-last: center; 
-  text-indent: 0px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+.error-message {
+  margin-top: 0.3rem;
+  color: #e74c3c;        
+  font-size: 0.85rem;   
+  line-height: 1.2;
 }
 
-/* Add a little arrow indicator on the right */
-.select-overlay::after {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  text-align: center;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: #254060;
+input.invalid{
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
 }
 
-.delete-btn {
-  background: #fde6e5;
-  color: #ce4242;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 18px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s, color 0.2s;
-}
-.delete-btn:hover {
-  background: #eac1c1;
-  color: #901616;
+input:invalid:focus,
+textarea:invalid:focus,
+select:invalid:focus {
+  outline: none;
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
 }
 
+.error-message {
+  margin-top: 0.3rem;
+  color: #e74c3c;        
+  font-size: 0.85rem;   
+  line-height: 1.2;
+}
 .btn-save:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
-
 </style>
 

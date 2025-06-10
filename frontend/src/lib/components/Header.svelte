@@ -1,11 +1,12 @@
 <script>
   import { page } from "$app/stores";
   import { PUBLIC_API_BASE_URL } from "$env/static/public";
-  import { unviewedCount, newNotificationIds, myNotifications } from "../js/notifications.js";
+  import { unviewedCount, newNotificationIds, myNotifications, fetchNotifications } from "../js/notifications.js";
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { currentUser } from '$lib/stores/currentUser.js';
   import { onDestroy } from "svelte";
+  import { get } from "svelte/store";
 
   let user;
   const unsubscribe = currentUser.subscribe(u => user = u);
@@ -16,6 +17,15 @@
 
   /* ------ the below is for the notification bar ------ */
 
+  // to check if the user has successully logged in -> user info should be recorded, 
+  // this will be used as a condition to decide whether or not to show the "icon-bell" 🔔 on nav bar
+  $: userinfo = $currentUser;
+  $: if (userinfo) {
+    console.log('userinfo:', userinfo);
+  }
+
+  // to help the page reload and go to target_url, without this function, 
+  // the page won't reload -> fail to navigate to new page
   async function handleReadNoti(target_url, notification_id) {
     window.location.href = target_url;
 
@@ -30,32 +40,34 @@
     }
   }
 
+  // this function is for handling the logic which relates to the notification box
+  // Collect notifications, mark unviewed notification as viewed once user clicks the notification bell,
+  // and store newNotificationIds so we can highlight them and differentiate them with old notifications
   async function handleClickNotification() {
-		// Fetch full list
-		// const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications/`, { credentials: 'include' });
-    const [notiResArticles, notiResComments] = await Promise.all([
-                fetch(`${PUBLIC_API_BASE_URL}/notifications/articles`, {credentials: 'include'}),
-                fetch(`${PUBLIC_API_BASE_URL}/notifications/comments`, {credentials: 'include'}),
-            ]);
-		// const all = await res.json();
-    const [myArticlesNotifications, myCommentsNotifications] = await Promise.all([
-                    notiResArticles.json(),
-                    notiResComments.json()
-                ]);
-    
-    myNotifications.set([...myArticlesNotifications, ...myCommentsNotifications]);
+    /* 
+    step 1: collecting all the below info by using fetch API:
+    + all history of notifications (myNotifications)
+    + the number of unviewed Notifications (unviewdCount)
+    */
+		await fetchNotifications({fetch}); 
 
-		// Extract IDs of unread
-		const unviewed = $myNotifications.filter(n => n.is_viewed === 0);
-    // $: unviewed = $myNotifications.filter(n => n.is_viewed === 0);
-		const ids = unviewed.map(n => n.id);
+    // step 2: 
+    // + filter out the unviewed notifications
+    // + store the IDs of unviewed notifications so we can mark & highlight them later using CSS
+    const unviewed = get(myNotifications).filter(n => n.is_viewed === 0);
+    const ids = unviewed.map(n=>n.id);
+    newNotificationIds.set(ids);
 
-		newNotificationIds.set(ids); // Used to store notification_id
-    console.log("all notifications:", $myNotifications);
-    console.log("new notifications:",unviewed);
+    // step 3: set the number of unviewed Notification to 0 after user clicked the notification bell icon
 		unviewedCount.set(0);     // Clear unviewed
 
-    // Update all unviewed to viewed
+    // console log for checking
+    console.log("new notifications id:", get(newNotificationIds));
+    console.log("new notifications id length:", get(newNotificationIds).length);
+    console.log("all notifications:", get(myNotifications));
+    console.log("unviewedCount2:",get(unviewedCount));
+
+    // step 4: Update all unviewed to viewed after the user clicked the notification bell icon
     const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications`, {
       method: 'PATCH',
       credentials: 'include',
@@ -67,37 +79,37 @@
     
 	}
 
-  let highlightIds = [];
-  $: highlightIds = $newNotificationIds;
-
   let showNotiDropdown = false;
   let notifWrapper;
 
+  // When the user clicks the bell icon repeatedly, the notification box toggles between appearing and disappearing
+  // at the same time calling function handleClickNotification 
   async function onClickNotification() {
-    await handleClickNotification(); // Mark as viewed or store newNotificationIds
+    await handleClickNotification();
     showNotiDropdown = !showNotiDropdown;
   }
 
-   // remove tag/html entity and select first few words from the article content/comment to appear on the notification box
+  // remove tag/html entity and select first few words from the article content/comment to appear on the notification box
   function truncateChars(text, charLimit) {
     const strippedText = text.replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").trim() ;
-      return strippedText.length > charLimit
-        ? strippedText.slice(0, charLimit) + '...'
-        : strippedText;
+    return strippedText.length > charLimit
+      ? strippedText.slice(0, charLimit) + '...'
+      : strippedText;
   }
 
+  // for closing notification box when use click outside the box
   function handleClickOutside(event) {
     if (notifWrapper && !notifWrapper.contains(event.target)) {
       showNotiDropdown = false;
     }
   }
 
+  // to trigger handlleClickOutside
   onMount(() => {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   });
 
-  // export let myNotifications = [];
   
   /* ------ the below is for the login bar ------ */
 
@@ -138,9 +150,6 @@
       goto(`/search`);
       return;
     }
-
-    // http://localhost:5173/search?tag=Technology&id=1
-    // http://localhost:5173/search?query=hihelo
 
     // If partial, wrap in %...%
     const finalQuery = matchType === "partial"
@@ -202,6 +211,10 @@
 
     <!-- ========== RIGHT SIDE (Notifications & Profile) ========== -->
     <div class="nav-right">
+
+      <!-- notification bell and notification box -->
+      {#if userinfo}
+
       <div class="notif-wrapper" bind:this={notifWrapper}>
       
         <button class="notif-bell" on:click={onClickNotification}>
@@ -213,10 +226,16 @@
 
         {#if showNotiDropdown}
         <div class="notif-box">
-          <!-- loop over notifications -->
-          <p>All notifications (to remove): {$myNotifications.length}</p>
+          <p>All notifications</p>
+
+          <!-- if user has no notification -->
+          {#if $myNotifications.length == 0}
+          <p>You have no notifications. Subscribe to a user to receive their latest articles.</p>
+          
+          <!-- if user has notification(s), loop over notifications -->
+          {:else}
           {#each $myNotifications as n}
-          <div class="notification-card {highlightIds.includes(n.id) ? 'highlight' : ''}">
+          <div class="notification-card {$newNotificationIds.includes(n.id) ? 'highlight' : ''}">
             <img
               class="notification-cover"
               src={n.author_avatar_path || n.commenter_avatar_path || '/default-cover.png'}
@@ -247,10 +266,13 @@
             
           </div>
           {/each}
+          {/if}
         </div>
         {/if}
       </div>
+      {/if}
 
+      <!-- user login -->
       {#if !user}
       <a href="/login" class="nav-login">Login</a>
       {:else}
@@ -490,13 +512,11 @@
     text-decoration: none;
     color: inherit;
   }
-
   .icon-unread {
     display: grid;
     place-items: center;
     height: 10vh;
   }
-
 /* ------ the below is for the login bar ------ */
   .avatar-img-header {
     width: 36px;
