@@ -8,6 +8,10 @@
     content: "",
     image_path: ""
   };
+
+  // default to your static asset if no image_path was provided
+  const defaultIcon = '/hashtag.png';
+
 </script>
 
 <!--
@@ -26,14 +30,10 @@
   <div class="card-inner">
     <!-- Icon/Image Section (left side) -->
     <div class="icon-wrapper">
-      {#if tag.image_path}
         <!-- If an image path is provided, show the tag's icon -->
-        <img src={tag.image_path} alt={`${tag.content} icon`} />
-      {:else}
-        <!-- If not, show a placeholder image for consistent card sizing.
-             You could put a default SVG here for better UX if you want. -->
-        <img alt={`${tag.content} icon`} />
-      {/if}
+        <img 
+          src={defaultIcon} alt={`#${tag.content} icon`} class="tag-icon"
+        />
     </div>
 
     <!-- Text Section (right side) -->
@@ -59,6 +59,12 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* Soft shadow on hover */
   }
 
+  .tag-icon {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+  }
+
   /* Inner content layout: icon left, text right */
   .card-inner {
     display: flex;
@@ -69,16 +75,17 @@
   /* Icon/image box styles */
   .icon-wrapper {
     flex-shrink: 0;
-    width: 64px;
-    height: 64px;
-    border-radius: 8px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     overflow: hidden;
-    background-color: white;
+    background-color: #e0f7ff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-right: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-right: 1rem;
   }
   .icon-wrapper img {
     width: 100%;
