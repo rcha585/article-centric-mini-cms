@@ -74,42 +74,6 @@
     }
   }
 
-  let dateOfBirth = '';
-  $ : if (user.date_of_birth) {
-    dateOfBirth = user.date_of_birth.split("T")[0];
-  }
-   const today = new Date().toISOString().split("T")[0];
-  $: dobInvalid.set(
-    !!dateOfBirth && dateOfBirth > today
-  );
-  const usernameTaken = writable(false);
-  const dobInvalid = writable(false);
-  const isSubmitting = writable(false);
-  const formError = writable(null);
-  const originalUsername = user.username;
-  let username = originalUsername;
-  let checkTimeout;
-  $: {
-    clearTimeout(checkTimeout);
-    const name = username.trim();
-    if (name && name !== originalUsername && name.length >= 3) {
-      checkTimeout = setTimeout(() => checkUsernameAvailability(name), 300);
-    } else {
-      usernameTaken.set(false);
-    }
-  }
-  async function checkUsernameAvailability(name) {
-    try {
-      const res = await fetch(
-        `${PUBLIC_API_BASE_URL}/users/check-username?username=${encodeURIComponent(name)}`
-      );
-      usernameTaken.set(res.status === 200);
-    } catch (err) {
-      console.error("Username check failed", err);
-      usernameTaken.set(false);
-    }
-  }
-
   // require every field non-empty, DOB valid, username not taken
   let canSave = false;
   $: canSave =
