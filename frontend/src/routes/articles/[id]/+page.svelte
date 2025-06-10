@@ -141,14 +141,22 @@
   alert("Failed to post comment: " + text);
 }
 
+    //handle Enter key for input
+  function handleKeyDown(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      postComment();
+    }
+  }
+  }
 
-  /** Delete a comment by its ID */
+   /** Delete a comment by its ID */
   async function deleteComment(commentId) {
     if (!confirm("Really delete this comment?")) return;
 
     try {
       const res = await fetch(
-        `${PUBLIC_API_BASE_URL}/articles/${article.id}/comments/${commentId}`,{
+        `${PUBLIC_API_BASE_URL}/comments/${commentId}`,{
           method: "DELETE",
           // headers: {"Content-Type": "application/json"},
           credentials: "include"
@@ -159,10 +167,10 @@
 
       if (res.ok) {
         // remove from the array so Svelte re-renders
-        comments = comments.filter(c => c.id !== commentId);
+        comments = comments.filter(c => c.comment_id !== commentId);
       } else {
         console.error("Delete failed:", res.status, await res.text());
-        alert("Couldn’t delete comment");
+        alert("Couldn't delete comment");
       }
     } catch (err) {
       console.error("Error deleting comment:", err);
@@ -170,22 +178,7 @@
     }
   }
 
-
-
-
-
-
-
-
-
-    //handle Enter key for input
-  function handleKeyDown(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      postComment();
-    }
-  }
-  }
+ 
 
   // Safe Highlighting Functions
   // Prevent XSS by escaping HTML
@@ -351,7 +344,7 @@
           {:else}
             {#each comments as c}
               <div class="comment-item">
-                <img class="avatar-sm" src={`/avatars/avatar${(c.id % 10) + 1}.png`} alt="avatar" />
+                <img class="avatar-sm" src={`/${c.avatar_path}`} alt="avatar" />
                 <div>
                   <div class="comment-user">{c.username}</div>
                   <div class="comment-content">
@@ -365,7 +358,7 @@
                   <div class="comment-meta">
                     <span class="comment-date">{formatDateTime(c.created_at)}</span>
                     <!-- ✂️ Delete button -->
-                    <button class="btn-delete" on:click={() => deleteComment(c.id)}>
+                    <button class="btn-delete" on:click={() => deleteComment(c.comment_id)}>
                       Delete
                     </button>
                 </div>
