@@ -26,8 +26,18 @@
 
   // to help the page reload and go to target_url, without this function, 
   // the page won't reload -> fail to navigate to new page
-  function handleReadNoti(target_url) {
+  async function handleReadNoti(target_url, notification_id) {
     window.location.href = target_url;
+
+    // Update all unread to read after the user clicked each notification child box
+    const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications/${notification_id}`, {
+      method: 'PATCH',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      alert('Failed to update unviewed: ' + (await res.text()));
+      return;
+    }
   }
 
   // this function is for handling the logic which relates to the notification box
@@ -79,9 +89,12 @@
     showNotiDropdown = !showNotiDropdown;
   }
 
-  // to select first few words from the article content/comment to appear on the notification box
+  // remove tag/html entity and select first few words from the article content/comment to appear on the notification box
   function truncateChars(text, charLimit) {
-  return text.length > charLimit ? text.replace(/<[^>]+>/g, "").slice(0, charLimit) + '...' : text;
+    const strippedText = text.replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").trim() ;
+    return strippedText.length > charLimit
+      ? strippedText.slice(0, charLimit) + '...'
+      : strippedText;
   }
 
   // for closing notification box when use click outside the box
@@ -237,7 +250,7 @@
               <p class="notification-date">{n.created_at}</p>
               </a>
               {:else}
-              <a href={`/articles/${n.article_id}`} class="notif-childbox" on:click={() => handleReadNoti(`/articles/${n.article_id}`)}>
+              <a href={`/articles/${n.article_id}`} class="notif-childbox" on:click={() => handleReadNoti(`/articles/${n.article_id}`,n.id)}>
               <p class="notification-sender"><b>{n.author_name}</b> published a new article: {n.article_title}</p>
               <p class="notification-preview">{truncateChars(n.article_content, 50)}</p>
               <p class="notification-date">{n.created_at}</p>
@@ -246,6 +259,10 @@
               {/if}
             
             </div>
+
+            {#if n.is_read == 0}
+              <span class="icon-unread">🔵</span>
+            {/if}
             
           </div>
           {/each}
@@ -456,7 +473,7 @@
     width: 100%;
     max-width: 340px;
     display: grid;
-    grid-template-columns: 50px 1fr; 
+    grid-template-columns: 50px 1fr 20px; 
     /* flex-direction: column; */
     border-radius: 18px;
     overflow: hidden;
@@ -495,7 +512,11 @@
     text-decoration: none;
     color: inherit;
   }
-
+  .icon-unread {
+    display: grid;
+    place-items: center;
+    height: 10vh;
+  }
 /* ------ the below is for the login bar ------ */
   .avatar-img-header {
     width: 36px;
