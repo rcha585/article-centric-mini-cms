@@ -17,6 +17,22 @@
   let description = user.introduction || "";
   let selectedAvatarId = user.avatar_id || 1;
   let avatars = [];
+  
+  // all display 2 card in each tab
+  let displayOverview = 2;
+  let displayLiked = 2;
+  let displayComments = 2;
+
+  // public loadMore function 
+  function loadMore(tab) {
+    if (tab === 'overview') {
+      displayOverview = Math.min(myArticles.length, displayOverview + 2);
+    } else if (tab === 'liked') {
+      displayLiked = Math.min(likedArticles.length, displayLiked + 2);
+    } else if (tab === 'comments') {
+      displayComments = Math.min(myComments.length, displayComments + 2);
+    }
+  }
 
   let dateOfBirth = '';
   $ : if (user.date_of_birth) {
@@ -58,6 +74,41 @@
     }
   }
 
+  let dateOfBirth = '';
+  $ : if (user.date_of_birth) {
+    dateOfBirth = user.date_of_birth.split("T")[0];
+  }
+   const today = new Date().toISOString().split("T")[0];
+  $: dobInvalid.set(
+    !!dateOfBirth && dateOfBirth > today
+  );
+  const usernameTaken = writable(false);
+  const dobInvalid = writable(false);
+  const isSubmitting = writable(false);
+  const formError = writable(null);
+  const originalUsername = user.username;
+  let username = originalUsername;
+  let checkTimeout;
+  $: {
+    clearTimeout(checkTimeout);
+    const name = username.trim();
+    if (name && name !== originalUsername && name.length >= 3) {
+      checkTimeout = setTimeout(() => checkUsernameAvailability(name), 300);
+    } else {
+      usernameTaken.set(false);
+    }
+  }
+  async function checkUsernameAvailability(name) {
+    try {
+      const res = await fetch(
+        `${PUBLIC_API_BASE_URL}/users/check-username?username=${encodeURIComponent(name)}`
+      );
+      usernameTaken.set(res.status === 200);
+    } catch (err) {
+      console.error("Username check failed", err);
+      usernameTaken.set(false);
+    }
+  }
 
   // require every field non-empty, DOB valid, username not taken
   let canSave = false;
@@ -72,12 +123,6 @@
     !$usernameTaken &&
     !$dobInvalid;
 
-
-  let displayCount = 2;
-
-  function loadMore() {
-    displayCount = Math.min(myArticles.length, displayCount + 2);
-  }
 
   onMount(async () => {
     try {
@@ -144,8 +189,6 @@
     if (newPassword.trim().length > 0) {
       payload.password = newPassword.trim();
     }
-
-    isSubmitting.set(true);
     try {
       const response = await fetch(`${PUBLIC_API_BASE_URL}/users`, {
         method: 'PATCH',
@@ -154,28 +197,27 @@
         },
         credentials: 'include',
         body: JSON.stringify(payload),
-    });
-  } catch (error) {
+    });    
+      if (response.ok) {
+          alert("Profile updated successfully!");
+          showEditProfile.set(false);
+          window.location.reload();
+        } else if (response.status === 400) {
+          const errorJson = await response.json();
+          alert("Validation error: " + (errorJson.message || "Please check your input."));
+        } else if (response.status === 409) {
+          alert("Username already exists. Please choose a different username.");
+        } else {
+          alert("Failed to update profile. Please try again later.");
+        }
+      } catch (error) {
       console.error("Error saving profile:", error);
       formError.set("An error occurred while saving your profile. Please try again later.");
       return;
-  } finally {
+    } finally {
       isSubmitting.set(false);
+    }
   }
-  
-  if (response.ok) {
-    alert("Profile updated successfully!");
-    showEditProfile.set(false);
-    window.location.reload();
-  } else if (response.status === 400) {
-    const errorJson = await response.json();
-    alert("Validation error: " + (errorJson.message || "Please check your input."));
-  } else if (response.status === 409) {
-    alert("Username already exists. Please choose a different username.");
-  } else {
-    alert("Failed to update profile. Please try again later.");
-  }
-}
 
   // realise delete account
   async function handleDeleteAccount() {
@@ -345,6 +387,11 @@
           {#if showPassword} 👁️ {:else} 🙈 {/if}
         </button>
       </div>
+
+      {#if $formError}
+        <div class="error-message">{$formError}</div>
+      {/if}
+
 
       <div class="form-row textarea-row">
         <label for="description">Description:</label>
@@ -738,6 +785,12 @@ select:invalid:focus {
   box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
 }
 
+.error-message {
+  margin-top: 0.3rem;
+  color: #e74c3c;        
+  font-size: 0.85rem;   
+  line-height: 1.2;
+}
 .btn-save:disabled {
     opacity: 0.5;
     cursor: not-allowed;
