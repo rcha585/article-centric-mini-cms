@@ -34,3 +34,12 @@ router.delete("/:target_uid", requiresAuthentication, async (req, res) => {
   }
   return res.sendStatus(200);
 });
+
+router.get("/:uid/subscriptions", async (req, res) => {
+  const db   = await getDatabase();
+  const rows = await db.all(
+    "SELECT subscriber_user_id FROM subscriptions WHERE subscribed_user_id = ?",
+    req.params.uid
+  );
+  res.json(rows);
+});

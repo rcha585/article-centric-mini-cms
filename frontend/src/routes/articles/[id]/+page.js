@@ -37,6 +37,11 @@ export async function load({ params, fetch }) {
   }
   console.log("user:", user);
 
+  const subRes = await fetch(`${BASE_URL}/subscriptions/${article.author_id}/subscriptions`);
+  const subs    = subRes.ok ? await subRes.json() : [];
+  const subCount   = subs.length;
+  const subscribed = me ? subs.some(r => r.subscriber_user_id === me.id) : false;
+
   // fetch tags
   const tagsRes = await fetch(`${BASE_URL}/articles/${id}/tags`);
   const tags = tagsRes.ok ? await tagsRes.json() : [];
@@ -58,6 +63,7 @@ export async function load({ params, fetch }) {
     tags,
     likesCount, 
     likedByMe,
+    subCount, subscribed,
     me,
     comments,
     error: false

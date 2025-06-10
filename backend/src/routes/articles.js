@@ -55,6 +55,7 @@ router.post("/", requiresAuthentication, async (req, res) => {
   }
 });
 
+
 router.get("/", async (req, res) => {
   const db = await getDatabase();
   let articles;
