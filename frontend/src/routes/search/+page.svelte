@@ -1,5 +1,5 @@
 <script>
-  import { PUBLIC_API_BASE_URL } from "$env/static/public";
+  import { PUBLIC_API_BASE_URL, PUBLIC_BASE_URL } from "$env/static/public";
   export let data;
   import { onMount } from 'svelte';
 
@@ -35,7 +35,10 @@
         article_id: article.id,
         article_title: article.title,
         article_content: article.content,
-        article_created_at: article.created_at,      
+        article_created_at: article.created_at,    
+        image_path: article.image_path,
+        username: article.username,
+        author_subscriber_count: article.author_subscriber_count
       }));
     } 
   }
@@ -46,6 +49,22 @@
 
   $: if (articles.length) {
   console.log("Articles changed:", articles);
+  }
+
+
+  // remove tag/html entity and select first few words from the article content/comment to appear on the notification box
+  function truncateChars(text, charLimit) {
+    // Create a temporary div to decode HTML entities
+    const temp = document.createElement('div');
+    temp.innerHTML = text;
+    const decodedText = temp.textContent || temp.innerText || '';
+
+    // Remove extra spaces and trim
+    const strippedText = decodedText.replace(/\s+/g, ' ').trim();
+
+    return strippedText.length > charLimit
+      ? strippedText.slice(0, charLimit) + '...'
+      : strippedText;
   }
 
 </script>
@@ -64,11 +83,10 @@
       <ul class="article-list">
 
         {#each articles as article}
-        <p>{article.article_title}</p>
         <li class="article-card">
           <img
                 class="thumbnail"
-                src={`/${article.image_path|| 'default-image.jpg'}`}
+                src={`${PUBLIC_BASE_URL}/${article.image_path}`|| '/default-image.jpg'}
                 alt={"Thumbnail for " + article.article_title}
                 on:error={(e) => (e.target.src = '/default-image.jpg')}
               />
@@ -81,12 +99,15 @@
                 </h3>
 
                 <p class="desc">
-                  {article.article_content.slice(0, 110)}
-                  {article.article_content.length > 110 ? "..." : ""}
+                  {truncateChars(article.article_content,150)}
                 </p>
 
                 <div class="meta">
                   By <span class="author">{article.username}</span>
+                  {#if article.author_subscriber_count > 0}
+                  , <span class="author">{article.author_subscriber_count}</span> subscribers 
+                  {/if}
+                  | Published @ <span class="author">{article.article_created_at}</span>
                 </div>
 
               </div>
