@@ -35,7 +35,9 @@
         article_id: article.id,
         article_title: article.title,
         article_content: article.content,
-        article_created_at: article.created_at,      
+        article_created_at: article.created_at,
+        image_path: article.image_path || article.cover_url || "" ,
+        username: article.username                     
       }));
     } 
   }
@@ -68,9 +70,13 @@
         <li class="article-card">
           <img
                 class="thumbnail"
-                src={article.image_path}
+                src={article.image_path
+                    ? article.image_path.startsWith("http")
+                    ? article.image_path
+                    : `http://localhost:3000${article.image_path.startsWith("/") ? "" : "/"}${article.image_path}`
+                    : "/placeholder-thumb.jpg"}
                 alt={"Thumbnail for " + article.article_title}
-                on:error="{(e) => (e.target.style.background = '#e0e0e0')}"
+                on:error="{(e) => (e.target.src = '/default-image.jpg')}"
               />
 
               <div class="info">

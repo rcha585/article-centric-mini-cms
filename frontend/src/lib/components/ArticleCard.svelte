@@ -16,6 +16,9 @@
     day: "numeric"
   });
 
+  // Subscribers number
+  $: subsText = `${article.subsCount} subscriber${article.subsCount === 1 ? "" : "s"}`;
+
   // Event dispatcher for "Read More" button
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
@@ -55,11 +58,13 @@
 
     <!-- Meta Info (Two-row Table Layout) -->
     <div class="article-meta-table">
+
       <div class="meta-row">
         <span class="meta-label">Created at</span>
         <span class="meta-empty"></span>
         <span class="meta-date">{createdDate}</span>
       </div>
+
       <div class="meta-row">
         <span class="meta-label">By</span>
         <span class="meta-empty"></span>
@@ -71,6 +76,12 @@
           />
           <span class="author-name">{article.author.name}</span>
         </span>
+      </div>
+
+      <div class="meta-row">
+        <span class="meta-label">Subscriber</span>
+        <span class="meta-empty"></span>
+        <span class="meta-subs">{subsText}</span>
       </div>
     </div>
 
@@ -86,6 +97,7 @@
   .article-card {
     width: 100%;
     max-width: 420px;
+    min-height:580px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -127,12 +139,12 @@
   .article-excerpt {
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 4;
+    -webkit-line-clamp: 7;
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.4em;
-    max-height: calc(1.4em * 4);
-    min-height: calc(1.4em * 4);
+    max-height: calc(1.4em * 7);
+    min-height: calc(1.4em * 7);
     font-size: 1rem;
     color: #555d65;
     margin-bottom: 10px;
@@ -196,6 +208,11 @@
   color: #1e293b;
   font-weight: 600;
   margin-right: 2px;
+  }
+
+  .meta-subs{
+  color:#0f172a;
+  font-weight:600;
   }
   .author-avatar {
     width: 48px;
