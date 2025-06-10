@@ -268,3 +268,6 @@ INSERT INTO likes (user_id, article_id) VALUES
 (9, 8),
 (10, 9),
 (1, 10);
+
+ALTER TABLE notifications
+ADD COLUMN is_read BOOLEAN NOT NULL DEFAULT FALSE;

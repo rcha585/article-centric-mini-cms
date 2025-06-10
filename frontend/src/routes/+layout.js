@@ -8,6 +8,8 @@ import { currentUser } from "$lib/stores/currentUser.js";
 
 export async function load({ fetch, url }) {
 
+console.log("start load", url.pathname); // must not delete this, to reload the page once user sign in
+
 let meData = null;
 try {
     const meRes = await fetch(`${PUBLIC_API_BASE_URL}/auth/me`, {
@@ -24,12 +26,12 @@ try {
 currentUser.set(meData);
 
     
-const path = url.pathname;
-     if (path.startsWith('/login') || path.startsWith('/register')) {
-         unviewedCount.set(0);
-         newNotificationIds.set([]);
-         return { myNotifications: [] };
-     }
+// const path = url.pathname;
+//      if (path.startsWith('/login') || path.startsWith('/register')) {
+//          unviewedCount.set(0);
+//          newNotificationIds.set([]);
+//          return { myNotifications: [] };
+//      }
 
      let myNotifications = [];
 
