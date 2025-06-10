@@ -33,6 +33,7 @@ export async function load({ fetch }) {
 
       let avatarUrl = "/default-avatar.png";
       let authorName = a.username || "Unknown";
+      let subsCount   = 0;
 
       try {
         const userRes = await fetch(`${PUBLIC_API_BASE_URL}/users/${a.author_id}`);
@@ -41,6 +42,12 @@ export async function load({ fetch }) {
           authorName = `${userJson.first_name} ${userJson.last_name}`; // prefer full name
           if (userJson.avatar_id) {
             avatarUrl = `/avatars/avatar${userJson.avatar_id}.png`;
+          }
+
+          const sRes = await fetch(`${PUBLIC_API_BASE_URL}/subscriptions/${a.author_id}/subscriptions`);
+          if (sRes.ok) {
+            const subs = await sRes.json();
+            subsCount = Array.isArray(subs) ? subs.length : (subs.count ?? 0);
           }
         }
       } catch {
@@ -60,8 +67,8 @@ export async function load({ fetch }) {
         createdAt: a.created_at,
         author: {
           name: a.username,
-          avatarUrl
-        },
+          avatarUrl}, 
+        subsCount,
         tags,
       };
     })

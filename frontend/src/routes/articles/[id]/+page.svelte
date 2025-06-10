@@ -12,7 +12,10 @@
   let mentionedUsers = [];
 
   // Initialize data
-  let { article, user, tags = [], comments: initialComments = [], likesCount,  likedByMe, me } = data;
+  let { article, user, tags = [], comments: initialComments = [],
+     likesCount,  likedByMe,
+     subCount,  subscribed,
+     me } = data;
 
   let likes = likesCount;
   let liked = likedByMe;
@@ -248,6 +251,26 @@
     if (res.ok) users = await res.json();
     console.log("sss",users);
   });
+
+  let subNumber = subCount;
+
+  async function toggleSub() {
+    if (!me) { alert("Login first"); return; }
+
+    const method = subscribed ? "DELETE" : "POST";
+    const res = await fetch(
+      `${PUBLIC_API_BASE_URL}/subscriptions/${user.id}`,
+      { method, credentials:"include" }
+    );
+
+    if (res.status === 401) { alert("Login"); return; }
+    if (res.ok || res.status === 409 || res.status === 404) {
+      subscribed = !subscribed;
+      subNumber += subscribed ? 1 : -1;
+      return;
+    }
+    alert("Failed");
+  }
 </script>
 
 {#if data.error}
@@ -263,28 +286,34 @@
       <h1 class="article-title">{article.title}</h1>
       <div class="article-meta">
         <span>Published on {formatDate(article.created_at)}</span>
-        {#if user}<span>Written by {user.first_name} {user.last_name}</span>{/if}
+        {#if user}<span>Written by {user.username}</span>{/if}
       </div>
 
       <div class="author-subscribe">
         <div class="author-info">
           <img class="avatar" src={user?.avatarUrl ? `http://localhost:5173${user.avatarUrl}` : "/avatars/avatar-1.png"} alt="author" />
           <div>
-            <div class="name">{user ? `${user.first_name} ${user.last_name}` : "Anonymous"}</div>
-            <div class="followers">{user?.followers || 0} Subscribers</div>
+            <div class="name">{user ? `${user.username}` : "Anonymous"}</div>
+            <div class="followers">{subNumber} Subscribers</div>
           </div>
         </div>
-        <button class="btn-subscribe">Subscribe</button>
+        {#if me && me.id !== user.id}
+          <button class="btn-subscribe"
+                  class:subbed={subscribed}
+                  on:click={toggleSub}>
+            {#if subscribed}Subscribed{:else}Subscribe{/if}
+          </button>
+        {/if}
       </div>
 
       <div class="tags-row">
         <span>Tags:</span>
         {#each tags as tag}
           <a 
-            href={`/search?tag=${encodeURIComponent(tag.content)}`}
+            href={`/search?tag=$${encodeURIComponent(tag.content)}&id=${tag.id}`}
             class="tag"
           >
-            {`${tag.content}`}
+            {`#${tag.content}`}
           </a>
         {/each}
       </div>

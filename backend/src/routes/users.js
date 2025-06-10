@@ -87,7 +87,7 @@ router.get("/", requiresAuthentication, async (req, res) => {
   }
   if (!req.query.username) {
     const db = await getDatabase();
-    const users = await db.all("SELECT u.id, u.username FROM users");
+    const users = await db.all("SELECT u.id, u.username FROM users AS u");
     return res.status(200).json(users);
   }
   if (req.query.username) {
