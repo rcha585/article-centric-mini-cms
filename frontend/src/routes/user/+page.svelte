@@ -17,7 +17,7 @@
   let description = user.introduction || "";
   let selectedAvatarId = user.avatar_id || 1;
   let avatars = [];
-
+  
   // all display 2 card in each tab
   let displayOverview = 2;
   let displayLiked = 2;
@@ -34,8 +34,47 @@
     }
   }
 
+  let dateOfBirth = '';
+  $ : if (user.date_of_birth) {
+    dateOfBirth = user.date_of_birth.split("T")[0];
+  }
 
-   let dateOfBirth = '';
+   const today = new Date().toISOString().split("T")[0];
+  $: dobInvalid.set(
+    !!dateOfBirth && dateOfBirth > today
+  );
+
+  const usernameTaken = writable(false);
+  const dobInvalid = writable(false);
+  const isSubmitting = writable(false);
+  const formError = writable(null);
+
+  const originalUsername = user.username;
+  let username = originalUsername;
+  let checkTimeout;
+  $: {
+    clearTimeout(checkTimeout);
+    const name = username.trim();
+    if (name && name !== originalUsername && name.length >= 3) {
+      checkTimeout = setTimeout(() => checkUsernameAvailability(name), 300);
+    } else {
+      usernameTaken.set(false);
+    }
+  }
+
+  async function checkUsernameAvailability(name) {
+    try {
+      const res = await fetch(
+        `${PUBLIC_API_BASE_URL}/users/check-username?username=${encodeURIComponent(name)}`
+      );
+      usernameTaken.set(res.status === 200);
+    } catch (err) {
+      console.error("Username check failed", err);
+      usernameTaken.set(false);
+    }
+  }
+
+  let dateOfBirth = '';
   $ : if (user.date_of_birth) {
     dateOfBirth = user.date_of_birth.split("T")[0];
   }
@@ -150,8 +189,7 @@
     if (newPassword.trim().length > 0) {
       payload.password = newPassword.trim();
     }
-
-   try {
+    try {
       const response = await fetch(`${PUBLIC_API_BASE_URL}/users`, {
         method: 'PATCH',
         headers: {
@@ -219,30 +257,6 @@
   function handleReadMore(e) {
     window.location.href = `/articles/${e.detail.id}`;
   }
-
-   // Delete Comment
-  async function handleDeleteComment(commentId) {
-   if (!confirm("Delete this comment?")) return;
-
-   try {
-     const res = await fetch(
-       `${PUBLIC_API_BASE_URL}/comments/${commentId}`,
-       { method: "DELETE", credentials: "include" }
-     );
-
-     if (res.status === 204) {
-       myComments = myComments.filter((c) => c.id !== commentId);
-       alert("Comment deleted.");
-     } else if (res.status === 403) {
-       alert("You can’t delete this comment.");
-     } else {
-       alert("Failed to delete comment.");
-     }
-   } catch (err) {
-     console.error("delete comment error", err);
-     alert("Network error when deleting.");
-   }
-  }
 </script>
 
 <div class="user-page-main">
@@ -273,7 +287,7 @@
           <div class="empty-feed">No articles at the moment, write a new ~~</div>
 
         {:else}
-          {#each myArticles.slice(0, displayOverview) as article (article.id)}
+          {#each myArticles.slice(0, displayCount) as article (article.id)}
             <UserArticleCard {article}
               on:edit={handleArticleEdit}
               on:readmore={handleReadMore}
@@ -281,55 +295,38 @@
             />
           {/each}
 
-          {#if displayOverview < myArticles.length}
-            <button type="button" class="load-more-text" on:click={() => loadMore('overview')}>
+          {#if displayCount < myArticles.length}
+            <button type="button" class="load-more-text" on:click={loadMore}>
               Load more...
             </button>
           {/if}
 
         {/if}
       </div>
-
     {:else if currentTab === "liked"}
       <div class="articles-feed">
         {#if likedArticles.length === 0}
           <div class="empty-feed">Have no liked</div>
         {:else}
-          {#each likedArticles.slice(0, displayLiked) as article (article.id)}
+          {#each likedArticles as article (article.id)}
             <UserArticleCard {article} on:readmore={handleReadMore} />
           {/each}
-          {#if displayLiked < likedArticles.length}
-            <button type="button" class="load-more-text" on:click={() => loadMore('liked')}>
-              Load more...
-            </button>
-          {/if}
         {/if}
       </div>
-
     {:else if currentTab === "comments"}
       <div class="comments-feed">
         {#if myComments.length === 0}
           <div class="empty-feed">No comment yet</div>
         {:else}
-          {#each myComments.slice(0, displayComments) as c}
+          {#each myComments as c}
             <div class="comment-block">
               <div class="comment-content">{c.content}</div>
               <div class="comment-meta">
                 On: <span class="meta-title">{c.articleTitle}</span>
-                <span class="meta-date">{new Date(c.createdAt).toLocaleDateString()}</span>
-                <div class="comment-actions">
-                  <button class="delete-btn" on:click={() => handleDeleteComment(c.id)}>
-                    Delete Comment
-                  </button>
-                </div>
+                <span class="meta-date">{new Date(c.createdAt).toLocaleString()}</span>
               </div>
             </div>
           {/each}
-          {#if displayComments < myComments.length}
-            <button type="button" class="load-more-text" on:click={() => loadMore('comments')}>
-              Load more...
-            </button>
-          {/if}
         {/if}
       </div>
     {/if}
@@ -341,17 +338,8 @@
     <div class="popup-content">
       <div class="avatar-container">
         <img class="avatar-img" src={`http://localhost:5173/avatars/avatar${selectedAvatarId}.png`} alt="Avatar" />
-
-        <div class="select-overlay">
-          <select bind:value={selectedAvatarId}>
-            <option value={null} disabled>Change Avatar ▾</option>
-              {#each avatars as a}
-                <option value={a.id}>{a.avatar_path.split('/').pop()}</option>
-              {/each}
-          </select>
-        </div>
-
-
+        <button class="btn-change-image" on:click={()=> {const sel = document.getElementById('avatarSelect'); if (sel) sel.click();}}>
+          Change Avatar </button>
         <button class="btn-delete-account" on:click={handleDeleteAccount}>Delete Account</button>
       </div>
       
@@ -363,8 +351,7 @@
 
       <div class="form-row">
         <label for="username">Username:</label>
-        <input type="text" id="username" bind:value={username} 
-        class:invalid={$usernameTaken} required/>
+        <input type="text" id="username" bind:value={username} class:invalid={$usernameTaken} required />
       </div>
       {#if $usernameTaken}
         <div class="error-message">Username is already taken.</div>
@@ -377,7 +364,7 @@
 
       <div class="form-row">    
         <label for="lastName">Last Name:</label>
-        <input type="text" id="lastName" bind:value={lastName} required/>
+        <input type="text" id="lastName" bind:value={lastName} required />
       </div>
 
       <div class="form-row">
@@ -393,7 +380,7 @@
         {#if showPassword}
         <input type="text" id="password" bind:value={newPassword} placeholder="Enter new password" required/>
         {:else}
-        <input type="password" id="password" bind:value={newPassword} placeholder="Enter new password" required/>
+        <input type="password" id="password" bind:value={newPassword} placeholder="Enter new password" required />
         {/if}
         
         <button type="button" class="btn-toggle-pwd" on:click={() => showPassword = !showPassword} title={showPassword ? 'Hide' : 'Show'}>
@@ -410,6 +397,19 @@
         <label for="description">Description:</label>
         <textarea id="description" bind:value={description}></textarea>
       </div>
+
+      <div class="hidden-select">
+        <select id="avatarSelect" bind:value={selectedAvatarId}>
+          <option value={null} disabled>Select an avatar</option>
+          {#each avatars as a}
+            <option value={a.id}>{a.avatar_path.split('/').pop()}</option>
+          {/each}
+        </select>
+      </div>
+
+      {#if $formError}
+        <div class="error-message">{$formError}</div>
+      {/if}
 
       <div class="popup-buttons">
         <button class="btn-save" on:click={handleSaveChanges} disabled={$isSubmitting}>{$isSubmitting ? "Saving…" : "Save Changes"} </button>
@@ -513,17 +513,9 @@
   margin-bottom: 5px;
 }
 .comment-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   font-size: 0.91rem;
   color: #8592ad;
 }
-
-.comment-actions {
-  margin-left: auto;
-}
-
 .meta-title {
   color: #4077b7;
   font-weight: bold;
@@ -556,7 +548,6 @@
 .avatar-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;   
   align-items: center;
   width: 240px;   
   margin-right: 32px;
@@ -572,11 +563,27 @@
   margin-bottom: 16px;
 }
 
+.btn-change-image {
+  background: #cfe8fb;
+  color: #254060;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.98rem;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-change-image:hover {
+  background: #aad4f7;
+  color: #1e3454;
+}
+
 .btn-delete-account {
   background: #fde6e5;
   color: #ce4242;
   border: none;
-  width: 160px;
   border-radius: 8px;
   padding: 8px 16px;
   font-size: 0.98rem;
@@ -652,6 +659,24 @@
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .textarea-row textarea:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+}
+
+#avatarSelect {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #d4e3f6;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.96rem;
+  color: #254060;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#avatarSelect:focus {
   outline: none;
   border-color: #60a5fa;
   box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
@@ -734,53 +759,8 @@
 .btn-toggle-pwd:hover {
   color: #333;
 }
-
-.select-overlay {
-  position: relative;
-  width: 160px;
-}
-
-.select-overlay select {
-  width: 100%;
-  padding: 8px 20px;
-  margin-bottom: 20px;
-  border: none;
-  border-radius: 6px;   /* match button rounding */
-  background: #cfe8fb;  /* same background as btn-change-image */
-  color: #254060;
-  cursor: pointer;
-  appearance: none;
-  font-size: 0.98rem;
-  /* text-align: center; */
-  text-align-last: center; 
-  text-indent: 0px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Add a little arrow indicator on the right */
-.select-overlay::after {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  text-align: center;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: #254060;
-}
-
-.delete-btn {
-  background: #fde6e5;
-  color: #ce4242;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 18px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s, color 0.2s;
-}
-.delete-btn:hover {
-  background: #eac1c1;
-  color: #901616;
+.hidden-select {
+  display: none;
 }
 
 .error-message {
@@ -790,20 +770,30 @@
   line-height: 1.2;
 }
 
+input.invalid,
+textarea.invalid,
+select.invalid {
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+}
 
+input:invalid:focus,
+textarea:invalid:focus,
+select:invalid:focus {
+  outline: none;
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+.error-message {
+  margin-top: 0.3rem;
+  color: #e74c3c;        
+  font-size: 0.85rem;   
+  line-height: 1.2;
+}
+.btn-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 </style>
 

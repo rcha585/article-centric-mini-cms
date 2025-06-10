@@ -1,11 +1,9 @@
 // Disable server-side rendering
 export const ssr = false;
-
 import { PUBLIC_API_BASE_URL } from "$env/static/public";
-import { unviewedCount, newNotificationIds } from "../lib/js/notifications.js";
-// import { unviewedCount, newNotificationIds } from "../js/notifications.js";
+import { fetchNotifications } from "../lib/js/notifications.js";
 import { currentUser } from "$lib/stores/currentUser.js";
-
+import { get } from "svelte/store";
 export async function load({ fetch, url }) {
 
 let meData = null;
@@ -23,53 +21,12 @@ try {
 
 currentUser.set(meData);
 
-    
-const path = url.pathname;
-     if (path.startsWith('/login') || path.startsWith('/register')) {
-         unviewedCount.set(0);
-         newNotificationIds.set([]);
-         return { myNotifications: [] };
-     }
-
-     let myNotifications = [];
-
-    // check whether the user is logged in or not. 
-    try {
-        const [notiResArticles, notiResComments] = await Promise.all([
-            fetch(`${PUBLIC_API_BASE_URL}/notifications/articles`, {credentials: 'include'}),
-            fetch(`${PUBLIC_API_BASE_URL}/notifications/comments`, {credentials: 'include'}),
-        ]);
-
-            if (notiResArticles.ok && notiResComments.ok) {
-                // if we got notifications, we package it to json.
-                const [myArticlesNotifications, myCommentsNotifications] = await Promise.all([
-                    notiResArticles.json(),
-                    notiResComments.json()
-                ]);
-                // refresh the viewed data.
-                const unviewedArticlesNoti = myArticlesNotifications.filter(n => n.is_viewed === 0);
-                const unviewedCommentsNoti = myCommentsNotifications.filter(n => n.is_viewed === 0);
-                unviewedCount.set(unviewedArticlesNoti.length + unviewedCommentsNoti.length);
-                
-                // sort by date.
-                // Flatten + merge + sort
-                myNotifications = [...myArticlesNotifications, ...myCommentsNotifications];
-                // const unviewed = [...unviewedArticlesNoti, ...unviewedCommentsNoti];
-                // const ids = unviewed.map(n=>n.id);
-
-                // newNotificationIds.set(ids); // Used to store notification_id
-
-                myNotifications.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            }
-            else {
-                // else no notifications
-                myNotifications = [];
-                unviewedCount.set(0);
-        }
-    } catch (e) {
-    // if it is a login error, don't notify.      
-        myNotifications = [];
-        unviewedCount.set(0);
-    }
-        return { myNotifications };
+// call fetchNotifications right after user finishes log in 
+// so the number of unviewed Notification can appear above the notiication bell
+const path = url.pathname; // hỏi Đức
+  if (path.startsWith('/login')) {
+    return { myNotifications: [] };
+  }
+  const allNotifications = await fetchNotifications({fetch});
+  return { myNotifications: allNotifications };
 }
