@@ -68,9 +68,9 @@
         <li class="article-card">
           <img
                 class="thumbnail"
-                src={article.image_path}
+                src={`/${article.image_path|| 'default-image.jpg'}`}
                 alt={"Thumbnail for " + article.article_title}
-                on:error="{(e) => (e.target.style.background = '#e0e0e0')}"
+                on:error={(e) => (e.target.src = '/default-image.jpg')}
               />
 
               <div class="info">

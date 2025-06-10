@@ -238,8 +238,9 @@
           <div class="notification-card {$newNotificationIds.includes(n.id) ? 'highlight' : ''}">
             <img
               class="notification-cover"
-              src={n.author_avatar_path || n.commenter_avatar_path || '/default-cover.png'}
+              src={`/${n.author_avatar_path || n.commenter_avatar_path || '/default-cover.png'}`}
               alt={n.article_title}
+              on:error={(e) => (e.target.src = '/default-image.jpg')}
             />
             
             <div class="notification-content">
