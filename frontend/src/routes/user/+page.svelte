@@ -3,7 +3,7 @@
   import UserProfileSidebar from '$lib/components/UserProfileSidebar.svelte';
   import UserArticleCard from '$lib/components/UserArticleCard.svelte';
   import { onMount } from 'svelte';
-  import {get, writable} from 'svelte/store';
+  import { writable, derived} from 'svelte/store';
   const PUBLIC_IMAGES_URL = "http://localhost:3000/images";
   const PUBLIC_API_BASE_URL = "http://localhost:3000/api"; 
 
@@ -12,7 +12,6 @@
 
   let { user, myArticles, likedArticles, myComments } = data;
   let showEditProfile = writable(false);
-  let username = user.username;
   let firstName = user.firstName || "";
   let lastName = user.lastName || "";
   let description = user.introduction || "";
@@ -34,6 +33,55 @@
       displayComments = Math.min(myComments.length, displayComments + 2);
     }
   }
+
+
+  let dateOfBirth = '';
+  $ : if (user.date_of_birth) {
+    dateOfBirth = user.date_of_birth.split("T")[0];
+  }
+   const today = new Date().toISOString().split("T")[0];
+  $: dobInvalid.set(
+    !!dateOfBirth && dateOfBirth > today
+  );
+  const usernameTaken = writable(false);
+  const dobInvalid = writable(false);
+  const isSubmitting = writable(false);
+  const formError = writable(null);
+  const originalUsername = user.username;
+  let username = originalUsername;
+  let checkTimeout;
+  $: {
+    clearTimeout(checkTimeout);
+    const name = username.trim();
+    if (name && name !== originalUsername && name.length >= 3) {
+      checkTimeout = setTimeout(() => checkUsernameAvailability(name), 300);
+    } else {
+      usernameTaken.set(false);
+    }
+  }
+  async function checkUsernameAvailability(name) {
+    try {
+      const res = await fetch(
+        `${PUBLIC_API_BASE_URL}/users/check-username?username=${encodeURIComponent(name)}`
+      );
+      usernameTaken.set(res.status === 200);
+    } catch (err) {
+      console.error("Username check failed", err);
+      usernameTaken.set(false);
+    }
+  }
+  // require every field non-empty, DOB valid, username not taken
+  let canSave = false;
+  $: canSave =
+    !$isSubmitting &&
+    username.trim().length > 0 &&
+    firstName.trim().length > 0 &&
+    lastName.trim().length > 0 &&
+    description.trim().length > 0 &&
+    dateOfBirth &&
+    newPassword.trim().length > 0 &&
+    !$usernameTaken &&
+    !$dobInvalid;
 
   onMount(async () => {
     try {
@@ -84,12 +132,18 @@
   }
 
   async function handleSaveChanges() {
+     if (!canSave) {
+      alert("Please fill in all required fields correctly.");
+      return;
+    }
+
     const payload = {
       username: username.trim(),
       first_name: firstName.trim(),
       last_name: lastName.trim(),
       description: description.trim(),  
       avatar_id: selectedAvatarId,
+      date_of_birth: dateOfBirth
     };
 
     if (newPassword.trim().length > 0) {
@@ -106,8 +160,6 @@
         credentials: 'include',
         body: JSON.stringify(payload),
     });
-
-    
 
       if (response.ok) {
         alert("Profile updated successfully!");
@@ -147,6 +199,8 @@
       } catch (error) {
         console.error("Error deleting account:", error);
         alert("An error occurred while deleting your account. Please try again later.");
+      } finally {
+        isSubmitting.set(false);
       }
   }
 
@@ -309,25 +363,36 @@
 
       <div class="form-row">
         <label for="username">Username:</label>
-        <input type="text" id="username" bind:value={username} />
+        <input type="text" id="username" bind:value={username} class:invalid={$usernameTaken} required />
       </div>
+      {#if $usernameTaken}
+        <div class="error-message">Username is already taken.</div>
+      {/if}
 
       <div class="form-row">
         <label for="firstName">First Name:</label>
-        <input type="text" id="firstName" bind:value={firstName} />
+        <input type="text" id="firstName" bind:value={firstName} required/>
       </div>
 
       <div class="form-row">    
         <label for="lastName">Last Name:</label>
-        <input type="text" id="lastName" bind:value={lastName} />
+        <input type="text" id="lastName" bind:value={lastName} required/>
+      </div>
+
+      <div class="form-row">
+        <label for="dateOfBirth">Date of Birth:</label>
+        <input type="date" id="dateOfBirth" bind:value={dateOfBirth} max={today} class:invalid={$dobInvalid} required/>
+        {#if $dobInvalid}
+          <div class="error-message">Date of birth cannot be in the future.</div>
+        {/if}
       </div>
 
       <div class="form-row">
         <label for="password">Password:</label>
         {#if showPassword}
-        <input type="text" id="password" bind:value={newPassword} placeholder="Enter new password" />
+        <input type="text" id="password" bind:value={newPassword} placeholder="Enter new password" required/>
         {:else}
-        <input type="password" id="password" bind:value={newPassword} placeholder="Enter new password" />
+        <input type="password" id="password" bind:value={newPassword} placeholder="Enter new password" required/>
         {/if}
         
         <button type="button" class="btn-toggle-pwd" on:click={() => showPassword = !showPassword} title={showPassword ? 'Hide' : 'Show'}>
@@ -341,7 +406,7 @@
       </div>
 
       <div class="popup-buttons">
-        <button class="btn-save" on:click={handleSaveChanges}>Save Changes</button>
+         <button class="btn-save" on:click={handleSaveChanges} disabled={$isSubmitting}>{$isSubmitting ? "Saving…" : "Save Changes"} </button>
         <button class="btn-cancel" on:click={toggleEditProfile}>Cancel</button>
       </div>
     </div>
@@ -711,5 +776,11 @@
   background: #eac1c1;
   color: #901616;
 }
+
+.btn-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
 </style>
 

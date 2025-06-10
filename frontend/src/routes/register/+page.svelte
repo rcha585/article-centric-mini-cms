@@ -32,6 +32,12 @@
   let passwordInput;
   let confirmPasswordInput;
 
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const dd = String(now.getDate()).padStart(2, '0');
+  const today = `${yyyy}-${mm}-${dd}`; // Format as YYYY-MM-DD
+
   function togglePasswordVisibility() {
     isPasswordVisible = !isPasswordVisible;
     if (passwordInput) {
