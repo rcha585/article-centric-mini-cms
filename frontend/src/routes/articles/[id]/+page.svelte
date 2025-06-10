@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   const PUBLIC_API_BASE_URL = "http://localhost:3000/api";
-
+  
   export let data;
 
   let newComment = "";
@@ -52,7 +52,9 @@
 
     // Fetch mentionable users
     try {
-      const res3 = await fetch("/api/users");
+      const res3 = await fetch(`${PUBLIC_API_BASE_URL}/users`, {
+        credentials: 'include'
+      });
       if (res3.ok) users = await res3.json();
     } catch (e) {
       console.error("Failed to fetch users", e);
@@ -106,20 +108,64 @@
     return dateStr ? new Date(dateStr).toLocaleDateString() : "";
   }
 
-  // Post a new comment
-  function postComment() {
-    if (!newComment.trim()) return;
+  function formatDateTime(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toLocaleString(); // Shows date and time, e.g., "2025-06-10, 11:44:52 AM"
+}
 
-    comments = [
-      ...comments,
-      {
-        id: comments.length ? Math.max(...comments.map(c => c.id)) + 1 : 1,
-        username: "currentuser",
-        content: newComment,
-        created_at: new Date().toISOString()
+  // // Post a new comment
+  async function postComment() {
+    console.log("postcomment called")
+    if (!newComment.trim()) return;
+    
+    console.log("Posting to:", `${PUBLIC_API_BASE_URL}/articles/${article.id}/comments`);
+    const response = await fetch(`${PUBLIC_API_BASE_URL}/articles/${article.id}/comments`, {
+      method: "POST",
+    headers: {"Content-Type": "application/json"},
+    credentials: "include", // if you need session/cookie auth
+    body: JSON.stringify({ content: newComment,
+    mentioned_user_ids: [] })
+  });
+
+    console.log("Response status:", response.status);
+
+    if (response.ok) {
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    const posted = await response.json();
+    comments = [...comments, posted.comment || posted];
+  } else {
+    const text = await response.text();
+    // display a toast, or re-fetch comments
+    // alert("Comment posted!"); 
+    // re-fetch the comments from the backend:
+    try {
+      const updated = await fetch(`${PUBLIC_API_BASE_URL}/articles/${article.id}/comments`);
+      if (updated.ok) {
+        comments = await updated.json();
       }
-    ];
-    newComment = "";
+    } catch (e) {
+      // fallback: do nothing or show error
+    }
+  }
+  newComment = "";
+} else {
+  const text = await response.text();
+  alert("Failed to post comment: " + text);
+}
+
+
+
+
+
+    //handle Enter key for input
+  function handleKeyDown(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      postComment();
+    }
+  }
   }
 
   // Safe Highlighting Functions
@@ -265,7 +311,7 @@
                       {#if part.isMention}<span class="mention">{part.text}</span>{:else}{part.text}{/if}
                     {/each}
                   </div>
-                  <div class="comment-date">{formatDate(c.created_at)}</div>
+                  <div class="comment-date">{formatDateTime(c.created_at)}</div>
                 </div>
               </div>
             {/each}
@@ -284,7 +330,7 @@
                 } else if (e.key === 'Enter' && !showSuggestions) postComment();
               }}
             />
-            <button class="btn-toggle" on:click={postComment}>Comment</button>
+            <button class="btn-toggle" on:click={()=>{postComment()}}>Comment</button>
 
             {#if showSuggestions}
               <ul class="mention-suggestions">
