@@ -1,5 +1,15 @@
 import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
+function htmlToText(html) {
+  if (typeof document !== 'undefined') {
+    const div = document.createElement('div');
+    div.innerHTML = html || '';
+    return div.textContent || '';
+  } else {
+    return (html || '').replace(/<[^>]+>/g, "");
+  }
+}
+
 export async function load({ fetch }) {
   // get all articles
   const res = await fetch(`${PUBLIC_API_BASE_URL}/articles`);
@@ -25,7 +35,7 @@ export async function load({ fetch }) {
       }
 
       // Create a excerpt and remove all HTML tags from `a.content`
-      const strippedText = a.content.replace(/<[^>]+>/g, "");
+      const strippedText = htmlToText(a.content);
       const excerpt = strippedText.length > 100
         ? strippedText.slice(0, 100) + "…"
         : strippedText;
@@ -39,7 +49,7 @@ export async function load({ fetch }) {
         const userRes = await fetch(`${PUBLIC_API_BASE_URL}/users/${a.author_id}`);
         if (userRes.ok) {
           const userJson = await userRes.json();
-          authorName = `${userJson.first_name} ${userJson.last_name}`; // prefer full name
+          authorName = `${userJson.first_name} ${userJson.last_name}`;
           if (userJson.avatar_id) {
             avatarUrl = `/avatars/avatar${userJson.avatar_id}.png`;
           }
