@@ -28,7 +28,6 @@
   // to help the page reload and go to target_url, without this function, 
   // the page won't reload -> fail to navigate to new page
   async function handleReadNoti(target_url, notification_id) {
-    window.location.href = target_url;
 
     // Update all unread to read after the user clicked each notification child box
     const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications/${notification_id}`, {
@@ -39,6 +38,8 @@
       alert('Failed to update unviewed: ' + (await res.text()));
       return;
     }
+
+    window.location.href = target_url;
   }
 
   // this function is for handling the logic which relates to the notification box
@@ -196,14 +197,14 @@
       <button
         type="button"
         class:selected={$matchType === "partial"}
-        on:click={() => matchType.set("partial")}
+        on:click|preventDefault={() => matchType.set("partial")}
       >
         Partial
       </button>
       <button
         type="button"
         class:selected={$matchType === "exact"}
-        on:click={() => matchType.set("exact")}
+        on:click|preventDefault={() => matchType.set("exact")}
       >
         Exact
       </button>
@@ -226,7 +227,7 @@
 
       <div class="notif-wrapper" bind:this={notifWrapper}>
       
-        <button class="notif-bell" on:click={onClickNotification}>
+        <button class="notif-bell" on:click|preventDefault={onClickNotification}>
           <span class="icon-bell">🔔</span>
           {#if $unviewedCount > 0}
             <span class="notif-dot">{$unviewedCount}</span>
@@ -245,22 +246,35 @@
           {:else}
           {#each $myNotifications as n}
           <div class="notification-card {$newNotificationIds.includes(n.id) ? 'highlight' : ''}">
+            {#if n.comment_id}
             <img
               class="notification-cover"
-              src={`/${n.author_avatar_path || n.commenter_avatar_path || '/default-cover.png'}`}
-              alt={n.article_title}
-              on:error={(e) => (e.target.src = '/default-image.jpg')}
+              src={`/${n.commenter_avatar_path}`}
+              alt={n.commenter_name}
             />
+            {:else}
+            <img
+              class="notification-cover"
+              src={`/${n.author_avatar_path}`}
+              alt={n.author_name}
+            />
+            {/if}
             
             <div class="notification-content">
               {#if n.comment_id}
-              <a href="/" class="notif-childbox">
+              <!-- <a href="/" class="notif-childbox"> -->
+              <a 
+              href={`/articles/${n.article_id}#commentid-${n.commenter_id}${n.comment_id}`} 
+              class="notif-childbox" 
+              on:click|preventDefault={() => {handleReadNoti(
+                `/articles/${n.article_id}#commentid-${n.commenter_id}${n.comment_id}`,n.id)}}>
               <p class="notification-sender"><b>{n.commenter_name}</b> mentioned you in a comment to {n.article_title}</p>
               <p class="notification-preview">{truncateChars(n.comment_content,65)}</p>
               <p class="notification-date">{n.created_at}</p>
               </a>
               {:else}
-              <a href={`/articles/${n.article_id}`} class="notif-childbox" on:click={() => handleReadNoti(`/articles/${n.article_id}`,n.id)}>
+              <a href={`/articles/${n.article_id}`} class="notif-childbox" 
+              on:click|preventDefault={() => handleReadNoti(`/articles/${n.article_id}`,n.id)}>
               <p class="notification-sender"><b>{n.author_name}</b> published a new article: {n.article_title}</p>
               <p class="notification-preview">{truncateChars(n.article_content, 65)}</p>
               <p class="notification-date">{n.created_at}</p>
@@ -286,13 +300,13 @@
       {#if !user}
       <a href="/login" class="nav-login">Login</a>
       {:else}
-      <button type="button" class="avatar-wrapper" on:click={() => showProfileDropdown = !showProfileDropdown}>
+      <button type="button" class="avatar-wrapper" on:click|preventDefault={() => showProfileDropdown = !showProfileDropdown}>
         <img src={`/avatars/avatar${user.avatar_id}.png`} alt="Avatar" class="avatar-img-header" />
         </button>
     
         {#if showProfileDropdown}
           <div class="avatar-dropdown">
-            <button on:click={handleLogout}>Logout</button>
+            <button on:click|preventDefault={handleLogout}>Logout</button>
           </div>
         {/if}
       {/if}
