@@ -222,6 +222,7 @@
     min-height: 96px;
     gap: 20px;
   }
+
   .article-card:last-child {
     border-bottom: none;
   }
@@ -250,17 +251,18 @@
 
   /* Style the link so it’s bright */
   .article-link {
+    color: #2b2b3c;
     text-decoration: none;
-    color: #ffffff;
     transition: color 0.2s;
   }
+
   .article-link:hover {
-    color: #ffeb3b; /* e.g. a bright accent on hover */
+    color: #2563eb;
   }
 
   .desc {
     margin: 0 0 6px 0;
-    color: #f0f0f5;
+    color: #334155;
     font-size: 1rem;
     line-height: 1.4;
     max-width: 620px;
@@ -268,12 +270,37 @@
 
   .meta {
     font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: #475569;
     margin-top: 2px;
   }
 
   .author {
     font-weight: 600;
+  }
+
+  @media (max-width: 600px) {
+    .content-wrapper {
+      padding: 24px 16px;
+      border-radius: 24px;
+      margin: 48px 16px 60px;
+    }
+    .article-card {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .thumbnail {
+      width: 100%;
+      max-width: 240px;
+      height: auto;
+      margin-bottom: 12px;
+    }
+    .info h3 {
+      font-size: 1.4rem;
+    }
+    .desc {
+      max-width: 100%;
+    }
   }
 
   /* ============================================ */
@@ -312,6 +339,4 @@
     color: rgba(255, 255, 255, 0.5);
     cursor: not-allowed;
   } */
-
-  
 </style>

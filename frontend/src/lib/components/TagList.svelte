@@ -48,15 +48,27 @@
   /* The clickable card container */
   .tag-card {
     display: block;
-    background-color: #e0f7ff;     /* Soft blue background */
-    border: 1px solid #a0d8ef;     /* Lighter blue border */
-    border-radius: 8px;
-    text-decoration: none;         /* Remove underline from link */
+    width: 100%;
+    box-sizing: border-box;
     margin: 8px 0;
-    transition: box-shadow 0.2s ease;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.3);        
+    backdrop-filter: blur(8px);                 
+    border: 1px solid rgba(255, 255, 255, 0.25); 
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
   }
+
   .tag-card:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* Soft shadow on hover */
+    transform: translateY(-4px);
+    border-color: #ffffff;
+    box-shadow:
+      0 0 8px rgba(255,255,255,0.8),    
+      0 0 16px rgba(93,194,244,0.6),    
+      0 0 24px rgba(93,194,244,0.4);
   }
 
   .tag-icon {
@@ -69,29 +81,27 @@
   .card-inner {
     display: flex;
     align-items: center;
-    padding: 12px;
+    gap: 1rem;
   }
 
   /* Icon/image box styles */
   .icon-wrapper {
     flex-shrink: 0;
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    overflow: hidden;
-    background-color: #e0f7ff;
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(4px);
+    border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-right: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 1rem;
   }
+
   .icon-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
   }
 
   /* Tag text section */
@@ -102,9 +112,9 @@
   /* Tag heading */
   .tag-title {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    color: #0a3d62;
+    color: #2d4a6e;
     line-height: 1.2;
   }
 </style>
