@@ -340,8 +340,8 @@
           {#if followingUsers.length === 0}
             <div class="empty-feed">You aren't following anyone yet.</div>
           {:else}
-            {#each followingUsers.slice(0, displayFollow) as f (f.id)}
-              <UserSubscriberCard follower={f} />
+            {#each followingUsers.slice(0, displayFollow) as follower (follower.id)}
+              <UserSubscriberCard follower={follower} />
             {/each}
 
             {#if displayFollow < followingUsers.length}

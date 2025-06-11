@@ -47,10 +47,19 @@ router.get("/:uid/subscriptions", async (req, res) => {
 router.get("/:uid/following", async (req, res) => {
   const db = await getDatabase();
   const rows = await db.all(`
-    SELECT u.id, u.username
-      FROM subscriptions s
-      JOIN users u ON u.id = s.subscribed_user_id
-     WHERE s.subscriber_user_id = ?
+    SELECT 
+      u.id, 
+      u.username, 
+      u.description, 
+      u.avatar_id,
+      (
+        SELECT COUNT(*) 
+        FROM subscriptions 
+        WHERE subscribed_user_id = u.id
+      ) AS subscribers
+    FROM subscriptions s
+    JOIN users u ON u.id = s.subscribed_user_id
+    WHERE s.subscriber_user_id = ?
   `, req.params.uid);
   res.status(200).json(rows);
 });

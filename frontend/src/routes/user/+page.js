@@ -50,7 +50,8 @@ export async function load({ fetch }) {
         id:       u.id,
         username: u.username,
         intro:    u.description ?? "",
-        avatarUrl: `/avatars/avatar${u.avatar_id || 1}.png`
+        avatarUrl: `/avatars/avatar${u.avatar_id || 1}.png`,
+        subscribers: u.subscribers
       }));
     followingUsers = followingUsers.filter(Boolean);
   }
