@@ -30,12 +30,32 @@ export async function load({ fetch }) {
     `${PUBLIC_API_BASE_URL}/users/${rawUser.id}/subscriptions`,
     { credentials: "include" }
   );
-  	let subscriberCount = 0;
+
+  let subscriberCount = 0;
   	if (subsRes.ok && subsRes.status !== 204) {
     	const subs = await subsRes.json();
     	subscriberCount = Array.isArray(subs) ? subs.length : (subs.count ?? 0);
   	}
 
+  const followingRes = await fetch(
+    `${PUBLIC_API_BASE_URL}/subscriptions/${rawUser.id}/following`,
+    { credentials: "include" }
+  );
+
+  let followingUsers = [];
+  if (followingRes.ok && followingRes.status !== 204) {
+    const subs = await followingRes.json();
+
+    followingUsers = subs.map(u => ({
+        id:       u.id,
+        username: u.username,
+        intro:    u.description ?? "",
+        avatarUrl: `/avatars/avatar${u.avatar_id || 1}.png`
+      }));
+    followingUsers = followingUsers.filter(Boolean);
+  }
+
+  	
   // modify article list
   const mapArticle = (a) => ({
     id: a.id,
@@ -126,5 +146,5 @@ export async function load({ fetch }) {
   }
 
 
-	return { user, myArticles, likedArticles, myComments };
+	return { user, myArticles, likedArticles, myComments, followingUsers };
 }
