@@ -72,8 +72,8 @@ public class MainFrame extends JFrame {
 		worker.execute();
 
         /**********************************************************************
-		 * - Instantiate view classes.
-		 * - Instantiate adapters.
+		 * - Instantiate view components: 
+		 * - Instantiate adapter, create row selection listener for the adapter
 		 * - Wire-up (connect) objects.
 		 */
 
@@ -83,18 +83,20 @@ public class MainFrame extends JFrame {
         JTable tableView = new JTable(); 
         
         /* Adapters. */
-        // UserTablePanel tableModel = new UserTablePanel<>(userInfo);
+		// Step 1: Instantiate adapter
 		tableModel = new UserTablePanel<>(userInfo);
         tableView.setModel(tableModel);
         
-		// row selection listener
+		// Step 2: create row selection listener (ListSelectionListener) for tableView -
+		// a specific interface used to listen for selection changes in components like JList or JTable.
         tableView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableView.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     int selectedRow = tableView.getSelectedRow();
-                    if (selectedRow != -1) {
+                    if (selectedRow != -1) //Returns the index of the first selected row, -1 if no row is selected.
+					{
 
                         // If table sorting is enabled, convert to model index
                         int modelIndex = tableView.convertRowIndexToModel(selectedRow);
@@ -233,7 +235,7 @@ public class MainFrame extends JFrame {
 	public static void main(String[] args) {
 		// new MainFrame();
 		MainFrame frame = new MainFrame();
-		frame.setLocation(100, 100);// Move frame to left so we can let UserProfilePanel appear on the right
+		frame.setLocation(20, 100);// Move frame to left so we can let UserProfilePanel appear on the right
 		frame.setVisible(true); 
 		
 	}
