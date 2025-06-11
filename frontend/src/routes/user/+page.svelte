@@ -2,6 +2,7 @@
   export let data;
   import UserProfileSidebar from '$lib/components/UserProfileSidebar.svelte';
   import UserArticleCard from '$lib/components/UserArticleCard.svelte';
+  import UserSubscriberCard from '../../lib/components/UserSubscriberCard.svelte';
   import { onMount } from 'svelte';
   import { writable, derived} from 'svelte/store';
   const PUBLIC_IMAGES_URL = "http://localhost:3000/images";
@@ -10,7 +11,7 @@
 
   let currentTab = "overview";
 
-  let { user, myArticles, likedArticles, myComments } = data;
+  let { user, myArticles, likedArticles, myComments, followingUsers } = data;
   let showEditProfile = writable(false);
   let firstName = user.firstName || "";
   let lastName = user.lastName || "";
@@ -22,6 +23,7 @@
   let displayOverview = 2;
   let displayLiked = 2;
   let displayComments = 2;
+  let displayFollow = 3;
 
   // public loadMore function 
   function loadMore(tab) {
@@ -31,6 +33,8 @@
       displayLiked = Math.min(likedArticles.length, displayLiked + 2);
     } else if (tab === 'comments') {
       displayComments = Math.min(myComments.length, displayComments + 2);
+    } else if (tab === 'following') {
+      displayFollow = Math.min(followingUsers.length, displayFollow + 3);
     }
   }
 
@@ -252,15 +256,14 @@
 
   <section class="user-content">
     <div class="user-tab-bar">
-      <button class:active={currentTab === "overview"} on:click={() => (currentTab = "overview")}
-        >Overview</button
-      >
-      <button class:active={currentTab === "liked"} on:click={() => (currentTab = "liked")}
-        >Liked</button
-      >
-      <button class:active={currentTab === "comments"} on:click={() => (currentTab = "comments")}
-        >Comments</button
-      >
+      <button class:active={currentTab === "overview"} on:click={() => (currentTab = "overview")}>
+      Overview</button>
+      <button class:active={currentTab === "liked"} on:click={() => (currentTab = "liked")}>
+      Liked</button>
+      <button class:active={currentTab === "comments"} on:click={() => (currentTab = "comments")}>
+      Comments</button>
+      <button class:active={currentTab === "following"} on:click={() => (currentTab = "following")}>
+      Following</button>
     </div>
 
     {#if currentTab === "overview"}
@@ -332,7 +335,24 @@
           {/if}
         {/if}
       </div>
+      {:else if currentTab === "following"}
+        <div class="follow-feed">
+          {#if followingUsers.length === 0}
+            <div class="empty-feed">You aren't following anyone yet.</div>
+          {:else}
+            {#each followingUsers.slice(0, displayFollow) as f (f.id)}
+              <UserSubscriberCard follower={f} />
+            {/each}
+
+            {#if displayFollow < followingUsers.length}
+              <button type="button" class="load-more-text" on:click={() => loadMore('following')}>
+                Load more...
+              </button>
+            {/if}
+          {/if}
+        </div>
     {/if}
+
   </section>
 </div>
 
