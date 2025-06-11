@@ -317,7 +317,10 @@
             <div class="comment-block">
               <div class="comment-content">{c.content}</div>
               <div class="comment-meta">
-                On: <span class="meta-title">{c.articleTitle}</span>
+                On: 
+                <a class="meta-title-link" href={`/articles/${c.articleId}`}>
+                  {c.articleTitle}
+                </a>
                 <span class="meta-date">{new Date(c.createdAt).toLocaleDateString()}</span>
 
                 <div class="comment-actions">
@@ -806,5 +809,16 @@ select:invalid:focus {
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  .meta-title-link {
+  color: #4077b7;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: color 0.15s;
+}
+.meta-title-link:hover {
+  color: #235a82;
+}
 </style>
 
