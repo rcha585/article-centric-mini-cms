@@ -2,6 +2,16 @@ export const ssr = false; // Disable server-side rendering
 import { redirect, error } from "@sveltejs/kit";
 import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
+function htmlToText(html) {
+  if (typeof document !== 'undefined') {
+    const div = document.createElement('div');
+    div.innerHTML = html || '';
+    return div.textContent || '';
+  } else {
+    return (html || '').replace(/<[^>]+>/g, "");
+  }
+}
+
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch }) {
   /* ---------- User login ---------- */
@@ -61,7 +71,7 @@ export async function load({ fetch }) {
   const mapArticle = (a) => ({
     id: a.id,
     title: a.title,
-    excerpt: a.content.replace(/<[^>]+>/g, "").slice(0, 120),
+    excerpt: htmlToText(a.content).slice(0, 180), 
     createdAt: a.created_at,
     coverUrl: a.image_path
       ? (a.image_path.startsWith('/') ? a.image_path : `/${a.image_path}`)
