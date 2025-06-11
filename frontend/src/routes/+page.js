@@ -76,6 +76,7 @@ export async function load({ fetch }) {
         coverUrl,
         createdAt: a.created_at,
         author: {
+          id: a.author_id, 
           name: a.username,
           avatarUrl}, 
         subsCount,
