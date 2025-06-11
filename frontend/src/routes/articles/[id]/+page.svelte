@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
+  import { afterUpdate, tick } from 'svelte';
   const PUBLIC_API_BASE_URL = "http://localhost:3000/api";
   
   export let data;
@@ -25,10 +26,12 @@
   
   // if the pageurl has # , it will change showComments to 
   // true so users can navigate to the comment section after clicking the notification
+  afterUpdate(async () => {
   if ($page.url.hash) {
+    await tick();
     showComments = true;
     console.log("check showcomments",showComments);
-  };
+  }});
 
   let comments = [...initialComments];
 
@@ -352,11 +355,11 @@
             <div class="no-comments">No comments yet.</div>
           {:else}
             {#each comments as c}
-              <div class="comment-item" id={"commentid-"+c.user_id+c.comment_id}>
+              <div class="comment-item">
                 <img class="avatar-sm" src={`/${c.avatar_path}`} alt="avatar" />
                 <div>
                   <div class="comment-user">{c.username}</div>
-                  <div class="comment-content">
+                  <div class="comment-content" id={"commentid-"+c.user_id+c.comment_id}>
                     {#each splitByMentions(c.content) as part}
                       {#if part.isMention}<span class="mention">{part.text}</span>
                     {:else}
@@ -393,7 +396,14 @@
 
             {#if showSuggestions}
               <ul class="mention-suggestions">
-                {#each filteredUsers as u}<li tabindex="0" on:click={() => selectUsername(u)}>{u.username}</li>{/each}
+                <!-- svelte-ignore a11y-role-has-required-aria-props -->
+                {#each filteredUsers as u (u.id)}<li tabindex="0" role="option" on:click={() => selectUsername(u)}
+                  on:keydown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      selectUsername(u);
+                    }
+                  }}>{u.username}</li>{/each}
               </ul>
             {/if}
           </div>
@@ -581,7 +591,6 @@
   .comment-date { font-size: .88em; color: #94a3b8; margin-top: 2px; }
 
   .comment-input-row { position: relative; display: flex; gap: 8px; margin-top: 8px; }
-  .comment-input { padding: 8px; border-radius: 6px; border: 1.3px solid #fff; width: 210px; }
 
   .mention-suggestions {
     position: absolute;
