@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
   const PUBLIC_API_BASE_URL = "http://localhost:3000/api";
   
   export let data;
@@ -21,6 +22,14 @@
   let liked = likedByMe;
 
   let showComments = false;
+  
+  // if the pageurl has # , it will change showComments to 
+  // true so users can navigate to the comment section after clicking the notification
+  if ($page.url.hash) {
+    showComments = true;
+    console.log("check showcomments",showComments);
+  };
+
   let comments = [...initialComments];
 
   // onMount fetches & comment list if needed
@@ -343,7 +352,7 @@
             <div class="no-comments">No comments yet.</div>
           {:else}
             {#each comments as c}
-              <div class="comment-item">
+              <div class="comment-item" id={"commentid-"+c.user_id+c.comment_id}>
                 <img class="avatar-sm" src={`/${c.avatar_path}`} alt="avatar" />
                 <div>
                   <div class="comment-user">{c.username}</div>
