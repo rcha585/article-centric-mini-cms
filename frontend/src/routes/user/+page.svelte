@@ -8,6 +8,26 @@
   const PUBLIC_IMAGES_URL = "http://localhost:3000/images";
   const PUBLIC_API_BASE_URL = "http://localhost:3000/api"; 
 
+  let overviewSortDir = 'desc';
+  let likedSortDir = 'desc';
+  let commentsSortDir = 'desc'; 
+
+  // sorting logic
+  $: sortedMyArticles = [...myArticles].sort((a, b) => {
+    const da = new Date(a.createdAt || a.created_at);
+    const db = new Date(b.createdAt || b.created_at);
+    return overviewSortDir === 'desc' ? db - da : da - db;
+  });
+  $: sortedLikedArticles = [...likedArticles].sort((a, b) => {
+    const da = new Date(a.createdAt || a.created_at);
+    const db = new Date(b.createdAt || b.created_at);
+    return likedSortDir === 'desc' ? db - da : da - db;
+  });
+  $: sortedMyComments = [...myComments].sort((a, b) => {
+    const da = new Date(a.createdAt || a.created_at);
+    const db = new Date(b.createdAt || b.created_at);
+    return commentsSortDir === 'desc' ? db - da : da - db;
+  });
 
   let currentTab = "overview";
 
@@ -264,15 +284,34 @@
       Comments</button>
       <button class:active={currentTab === "following"} on:click={() => (currentTab = "following")}>
       Following</button>
+
+      <!-- ===== Add a sort button, not showing when switch to followers tab ===== -->
+      {#if currentTab !== "following"}
+        <button
+          class="sort-btn-inline"
+          on:click={() => {
+            if (currentTab === "overview") overviewSortDir = overviewSortDir === 'desc' ? 'asc' : 'desc';
+            if (currentTab === "liked") likedSortDir = likedSortDir === 'desc' ? 'asc' : 'desc';
+            if (currentTab === "comments") commentsSortDir = commentsSortDir === 'desc' ? 'asc' : 'desc';
+          }}>
+
+          Sort by Time
+          {currentTab === "overview"
+            ? (overviewSortDir === 'asc' ? ' ▲' : ' ▼')
+            : currentTab === "liked"
+            ? (likedSortDir === 'asc' ? ' ▲' : ' ▼')
+            : (commentsSortDir === 'asc' ? ' ▲' : ' ▼')}
+        </button>
+      {/if}
     </div>
+
 
     {#if currentTab === "overview"}
       <div class="articles-feed">
         {#if myArticles.length === 0}
           <div class="empty-feed">No articles at the moment, write a new ~~</div>
-
         {:else}
-          {#each myArticles.slice(0, displayOverview) as article (article.id)}
+          {#each sortedMyArticles.slice(0, displayOverview) as article (article.id)}
             <UserArticleCard {article}
               canEdit={true}
               canDelete={true}
@@ -295,7 +334,7 @@
         {#if likedArticles.length === 0}
           <div class="empty-feed">Have no liked</div>
         {:else}
-          {#each likedArticles.slice(0, displayLiked) as article (article.id)}
+          {#each sortedLikedArticles.slice(0, displayLiked) as article (article.id)}
             <UserArticleCard {article} 
             canEdit={false}
             canDelete={false}
@@ -313,7 +352,7 @@
         {#if myComments.length === 0}
           <div class="empty-feed">No comment yet</div>
         {:else}
-          {#each myComments.slice(0, displayComments) as c}
+          {#each sortedMyComments.slice(0, displayComments) as c}
             <div class="comment-block">
               <div class="comment-content">{c.content}</div>
               <div class="comment-meta">
