@@ -587,10 +587,6 @@
   font-size: 0.91rem;
   color: #8592ad;
 }
-.meta-title {
-  color: #4077b7;
-  font-weight: bold;
-}
 .meta-date {
   margin-left: 18px;
 }
