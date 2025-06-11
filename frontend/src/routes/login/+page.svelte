@@ -69,7 +69,6 @@
             type="text"
             id="username"
             bind:value={username}
-            placeholder="Enter your username"
             required
           />
         </div>
@@ -81,7 +80,6 @@
               type="text"
               id="password"
               bind:value={password}
-              placeholder="Enter your password"
               required
             />
           {:else}
@@ -89,7 +87,6 @@
               type="password"
               id="password"
               bind:value={password}
-              placeholder="Enter your password"
               required
             />
           {/if}
@@ -110,20 +107,28 @@
   </section>
 
   <section class="right-panel">
-    <img src="/reading.webp" alt="Reading" class="login-image" />
+    <img src="/reading.jpg" alt="Reading" class="login-image" />
   </section>
 </div>
 
 <style>
+
   .page-wrapper {
     display: flex;
-    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 1rem;
+    max-width: 1200px;    
+    margin: 2rem 0 auto;
+    padding: 2rem;
     height: 100vh;
-    background: linear-gradient(90deg, #1e3a8a 0%, #93c5fd 100%);
+    background: linear-gradient(90deg,#2d4a6e 30%,#7eb3d1 100%);
   }
-
+  
   .left-panel {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -131,20 +136,17 @@
   }
 
   .right-panel {
-    flex: 1;
     display: flex;
+    flex: 0 0 40%;
+    max-width: 360px;
     align-items: center;
     justify-content: center;
-    padding-right: 2rem;
-  }
-
-  .login-image {
-    max-width: 100%;
-    max-height: 100%;
+    padding: 1rem;
   }
 
   .login-container {
     background: rgba(255, 255, 255, 0.15);
+    color: #111;
     backdrop-filter: blur(10px);
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -152,15 +154,14 @@
     width: 100%;
     padding: 2rem 1.5rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    color: #111;
   }
 
   .login-container h1 {
     margin: 0;
     margin-bottom: 0.5rem;
-    font-size: 2rem;
+    font-size: 1.5rem;
     text-align: center;
-    color: #ffffff;
+    color: #f0f9ff;   
   }
 
   .login-container .subtitle {
@@ -169,8 +170,9 @@
     font-size: 1rem;
     opacity: 0.85;
     text-align: center;
-    color: #f3f4f6;
+    color: #d0e7f7;
   }
+  
   .login-container form > .field {
     margin-bottom: 1.25rem;
   }
@@ -189,12 +191,9 @@
     border: 1px solid rgba(255, 255, 255, 0.6);
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(61, 90, 128, 0.5);
     color: #ffffff;
     font-size: 1rem;
-  }
-
-  .login-container input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
   }
 
   .login-container input:focus {
@@ -211,26 +210,31 @@
     color: #e5e7eb;
     font-size: 0.9rem;
   }
-
+ 
   .login-container .btn {
     width: 100%;
     padding: 0.75rem;
     font-size: 1rem;
     border: none;
     border-radius: 6px;
-    background: #3b82f6;
+    background: #5c7a99;
     color: #ffffff;
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
 
+  .login-container .btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(96,165,250,0.6);
+  }
+
   .login-container .btn:disabled {
-    background: rgba(59, 130, 246, 0.5);
+    background: rgba(92, 122, 153, 0.5);
     cursor: not-allowed;
   }
 
   .login-container .btn:not(:disabled):hover {
-    background: #2563eb;
+    background: #3d5a80;
   }
 
   .login-container .error {
@@ -247,22 +251,34 @@
     text-align: center;
     margin-top: 1rem;
     font-size: 0.9rem;
-    color: #f3f4f6;
+    color: #c4e0f0;
   }
 
   .login-container .signup-link a {
-    color: #bfdbfe;
+    color: #98c1d9;
     text-decoration: none;
     font-weight: 500;
   }
 
   .login-container .signup-link a:hover {
     text-decoration: underline;
+    color: #3d5a80;
   }
 
   .login-image {
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: auto;
+    max-height: none;
     object-fit: contain;
+    filter: drop-shadow(0 0 20px rgba(96, 165, 250, 0.7));
+    animation: imageGlow 3s ease-in-out infinite;
+  }
+
+  @media screen and (min-width: 1200px) {
+    .right-panel {
+      flex: 0 0 360px;
+      max-width: 1200px; 
+      margin: 0 auto;
+    }
   }
 </style>

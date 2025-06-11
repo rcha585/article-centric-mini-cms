@@ -229,9 +229,34 @@
   .article-editor {
     max-width: 820px;
     margin: 32px auto;
+    padding: 32px;
+    background: linear-gradient(90deg,#3d5a80cc 20%,#98c1d9cc 100%);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     gap: 24px;
+    transition: box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .article-editor::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -50px;
+    width: 300px;
+    height: 100%;
+    background: radial-gradient(circle at top left,rgba(255,255,255,0.2),transparent);
+    transform: rotate(15deg);
+    pointer-events: none;
+  }
+
+  .article-editor:hover {
+    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.3);
   }
 
   /* TITLE INPUT */
@@ -241,29 +266,58 @@
     border: none;
     outline: none;
     background: transparent;
-    color: #222;
+    color: #f0f9ff;
     padding: 8px 0;
   }
+
   .editor-title::placeholder {
-    color: #bbb;
+    color: #f0f9ff;
+  }
+
+  .editor-title:focus {
+    outline: none;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
   }
 
   /* TAGS SECTION */
   .tags-section {
-    position: relative;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 16px;
   }
+
   .editor-tags {
     width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 8px 12px;
+    max-width: 100%;
+    box-sizing: border-box;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
     font-size: 1rem;
-    background: #fafafa;
+    background: rgba(255,255,255,0.25);
+    color: #2b2b3c;  
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
   }
+
+  .editor-tags::placeholder {
+    color: rgba(43,43,60,0.5);
+  }
+
+  .editor-tags:focus {
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.8);
+  }
+
+  .editor-tags:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
+
   .tag-error {
     color: #e11d48;
     font-size: ninerem;
     margin-left: 8px;
+    border-radius: 4px;
   }
 
   /* COVER UPLOAD ROW */
@@ -272,30 +326,64 @@
     align-items: center;
     gap: 12px;
   }
+
   .upload-btn {
-    background: #2563eb;
+    background: #3d5a80;
     color: #fff;
-    padding: 6px 20px;
-    border-radius: 6px;
+    padding: 8px 24px;
+    border-radius: 8px;
     font-size: 0.95rem;
     font-weight: 600;
-    cursor: pointer;
-    user-select: none;
   }
+
+  .upload-btn:hover {
+    background: #2d4a6e;
+  }
+
+  .upload-btn,
+  .btn-publish {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .upload-btn:hover,
+  .btn-publish:hover:enabled {
+    transform: translateY(-3px);
+    box-shadow:
+      0 8px 24px rgba(61, 90, 128, 0.4),
+      0 0 12px rgba(61, 90, 128, 0.6);
+  }
+
   .file-name {
     font-size: ninerem;
     color: #334155;
   }
 
+  .remove-cover-btn {
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+  }
+
+  .remove-cover-btn:hover {
+    color: #3d5a80;
+    text-shadow: 0 0 6px rgba(231, 76, 60, 0.8);
+  }
+
   /* COVER PREVIEW IMAGE */
   .preview-container {
     margin-top: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   .cover-preview {
     max-width: 260px;
     border-radius: 8px;
     border: 1px solid #e5e7eb;
     object-fit: cover;
+  }
+
+  .cover-preview:hover {
+    transform: scale(1.02);
+    box-shadow:
+      0 8px 20px rgba(0, 0, 0, 0.2),
+      0 0 10px rgba(255, 255, 255, 0.7);
   }
 
   /* TOOLBAR AT BOTTOM */
@@ -305,8 +393,9 @@
     justify-content: space-between;
     margin-top: 6px;
   }
+
   .btn-publish {
-    background: #2563eb;
+   background: #3d5a80;   
     color: #fff;
     padding: 8px 34px;
     border-radius: 6px;
@@ -316,21 +405,38 @@
     cursor: pointer;
     transition: background-color 0.18s;
   }
+
   .btn-publish:hover:enabled {
-    background: #1e4fb7;
+    background: #2d4a6e;
   }
+
   .btn-publish:disabled {
-    background: #9db5e3;
+    background: rgba(92,122,153,0.5);
     cursor: not-allowed;
   }
+
   .cover-error {
-  color: #e11d48;
-  font-size: 0.99rem;
-  margin: 5px 0 0 3px;
+    color: #e11d48;
+    font-size: 0.99rem;
+    margin: 5px 0 0 3px;
   }
+
   .cover-hint {
-  color: #8b949e;
-  font-size: 0.98rem;
-  margin: 5px 0 0 3px;
+    color: rgba(255,255,255,0.75);
+    font-size: 0.98rem;
+    margin: 5px 0 0 3px;
+  }
+
+
+  @media (max-width: 600px) {
+    .article-editor {
+      padding: 16px;
+      margin: 16px;
+      gap: 16px;
+    }
+    .upload-btn, .btn-publish {
+      width: 100%;
+      text-align: center;
+    }
   }
 </style>

@@ -93,19 +93,19 @@
     min-height: 150px;
     transition: box-shadow 0.2s;
   }
+  
   .user-article-card:hover {
     box-shadow: 0 8px 32px 0 #b5cbe4cc;
   }
 
   .card-cover img {
-    width: 92px;
-    height: 92px;
+    width: 96px;
+    height: 96px;
     object-fit: cover;
-    border-radius: 12px;
-    margin-right: 32px;
-    border: 2px solid #dde3ea;
-    background: #fff;
-    box-shadow: 0 2px 8px #d4e3f6aa;
+    border-radius: 8px;
+    margin-right: 24px;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.2);
   }
 
   .card-main {
@@ -126,9 +126,8 @@
 
   .card-excerpt {
     font-size: 1rem;
-    color: #4570a0;
+    color: #244366;
     margin-bottom: 12px;
-    max-width: 97%;
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -139,7 +138,13 @@
     flex-wrap: wrap;
     gap: 7px 11px;
     margin-bottom: 10px;
+    transition: 
+    transform 0.2s ease,
+    background-color 0.2s ease, 
+    color 0.2s ease,
+    box-shadow 0.2s ease;
   }
+
   a.tag {
     background: #dcecfb;
     color: #2068a3;
@@ -154,6 +159,12 @@
   .tag.more {
     background: #b8cff1;
     color: #225;
+  }
+  .tag:hover {
+    transform: translateY(-4px);
+    background-color: rgba(61,90,128,0.6);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
 
   /* New “Likes” row styling */
@@ -175,6 +186,7 @@
     gap: 10px;
     margin-bottom: 8px;
   }
+
   .edit-btn,
   .loadmore-btn,
   .delete-btn {
@@ -189,25 +201,31 @@
       color 0.16s;
     box-shadow: 0 1px 2px rgba(25, 118, 210, 0.07);
   }
+
   .edit-btn {
     background: #e7eef9;
     color: #3970b7;
   }
+
   .edit-btn:hover {
     background: #c1d6f2;
     color: #204c7a;
   }
+
   .loadmore-btn {
     background: #1976d2;
     color: #fff;
   }
+
   .loadmore-btn:hover {
     background: #1252a1;
   }
+
   .delete-btn {
     background: #fde6e5;
     color: #ce4242;
   }
+
   .delete-btn:hover {
     background: #eac1c1;
     color: #901616;
@@ -220,5 +238,23 @@
     margin-top: 6px;
     margin-bottom: 2px;
     letter-spacing: 0.2px;
+  }
+
+  @media (max-width: 600px) {
+    .user-article-card {
+      flex-direction: column;
+      align-items: center;
+    }
+    .card-cover img {
+      margin: 0 0 16px 0;
+    }
+    .actions-row {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .card-createdat {
+      text-align: center;
+      margin-top: 8px;
+    }
   }
 </style>

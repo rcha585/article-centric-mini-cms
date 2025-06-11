@@ -117,6 +117,7 @@
 
 <!-- Article cards grid with paging -->
 <div class="main-page">
+  <div class="cards-wrapper">
   <div class="article-grid">
     {#each pagedArticles as a (a.id)}
       <ArticleCard article={a} on:readmore={toDetail} />
@@ -135,108 +136,152 @@
     <button on:click={() => goPage(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
   </div>
 </div>
-
+</div>
 <style>
   /* Hero visual styles */
+  .cards-wrapper {
+    background: linear-gradient(90deg,rgba(61, 90, 128, 0.7) 30%,rgba(152, 193, 217, 0.7) 100%);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    display: grid;
+    width: 100%;
+    gap: 32px;
+    margin: 0 auto;
+    max-width: 1220px;
+    box-sizing: border-box;
+    overflow-x: auto;
+    grid-template-rows: auto auto;   
+    position: relative;
+    overflow: hidden; 
+  }
+
+  .cards-wrapper::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -50px;
+    width: 300px;
+    height: 100%;
+    background: radial-gradient(circle at top left,rgba(255,255,255,0.2),transparent);
+    transform: rotate(15deg);
+    pointer-events: none;
+  }
+
   .hero {
     position: relative;
     width: 100%;
+    max-width: 1220px;
     height: 320px;
     overflow: hidden;
+    margin-top: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 24px;
+    border-radius: 12px;
   }
+
   .hero-bg {
     position: absolute;
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
-    filter: blur(6px) brightness(0.85);
-    transition: filter 0.42s cubic-bezier(.7,0,.3,1);
+    filter: blur(6px) brightness(0.7);
+    box-shadow: 0 0 30px rgba(255,255,255,0.6); 
+    transition: filter 0.4s ease, box-shadow 0.4s ease;
     z-index: 1;
   }
 
   .hero:hover .hero-bg {
-    filter: blur(2.0px) brightness(1.05);
+    filter: blur(3px) brightness(1.0);
+    box-shadow: 0 0 50px rgba(255,255,255,0.8);
   }
 
   .hero-mask {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, #2563eb99 18%, #64748b99 95%);
+    background: linear-gradient(90deg, #3d5a80bb 30%, #98c1d9bb 100%);
     z-index: 2;
     pointer-events: none;
-    opacity: 0.84;
   }
+
   .hero-content {
     position: relative;
     z-index: 3;
     text-align: center;
-    color: #fff;
     max-width: 650px;
     margin: 0 auto;
     padding: 0 24px;
+    color: #f0f9ff;
   }
+
   .hero-content h1 {
     font-size: 2.4rem;
     font-weight: bold;
-    letter-spacing: 1.2px;
-    margin-bottom: 0.4em;
-    text-shadow: 0 2px 16px #33415566;
+    letter-spacing: 1px;
+    margin-bottom: 0.5em;
+    text-shadow:
+      0 0 8px rgba(255,255,255,0.9),
+      0 0 16px rgba(255,255,255,0.7),
+      0 2px 16px rgba(0,0,0,0.4);
   }
+
   .hero-content p {
-    font-size: 1.18rem;
-    font-weight: 400;
-    margin-bottom: 1.2em;
-    opacity: 0.93;
-    text-shadow: 0 1px 8px #33415533;
+    font-size: 1.2rem;
+    margin-bottom: 1em;
+    text-shadow:
+      0 0 6px rgba(255,255,255,0.6),
+      0 1px 8px rgba(0,0,0,0.3);
   }
+
   .hero-login-btn {
-    padding: 0.75em 2.3em;
+    padding: 0.75em 2em;
     border: none;
     border-radius: 24px;
-    background: #f5f8fa;
-    color: #2563eb;
-    font-size: 1.07rem;
+    background: rgba(255,255,255,0.85);
+    color: #2b2b3c;
+    font-size: 1rem;
     font-weight: 600;
-    box-shadow: 0 2px 12px #1e293b21;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, box-shadow 0.2s;
   }
+
   .hero-login-btn:hover {
-    background: #e0edfa;
+    background: #fff;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
   }
+
+  /* Sort controls */
   .sort-row {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    padding: 14px 0;
+    gap: 16px;
     max-width: 1220px;
-    margin: 0 auto;
+    margin: 24px auto;
   }
+
   .sort-row button {
-    background: #f3f8fd;
-    color: #2563eb;
+    background: rgba(61,90,128,0.3);
+    color: #2b2b3c;
     font-weight: 600;
     border: none;
-    border-radius: 7px;
-    padding: 7px 18px;
+    border-radius: 8px;
+    padding: 8px 20px;
     font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.16s;
-    box-shadow: 0 1px 6px #93c5fd22;
-    outline: none;
+    transition: background-color 0.2s, color 0.2s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   }
-  .sort-row button:hover {
-    background: #2563eb;
-    color: #fff;
-  }
+
+  .sort-row button:hover,
   .sort-row button.active {
-    background: #2563eb;
+    background: rgba(61,90,128,0.6);
     color: #fff;
   }
 
@@ -244,49 +289,54 @@
   .main-page {
     width: 100%;
     max-width: 1220px;
-    margin: 0 auto 36px auto;
-    padding: 0 18px;
+    margin: 0 auto 48px;
+    padding: 0;
+    display: flex;
+    justify-content: center; 
   }
+
   .article-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(325px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-auto-columns: minmax(240px, 300px);
+    grid-auto-flow: column;
     gap: 32px;
-    margin-bottom: 28px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   /* Pagination */
   .pagination {
     display: flex;
-    gap: 0.5em;
+    gap: 8px;
     justify-content: center;
     align-items: center;
-    margin-top: 0.5em;
-  }
-  .pagination button {
-    padding: 0.52em 1.12em;
-    border: none;
-    background: #f1f5f9;
-    color: #2563eb;
-    font-weight: 600;
-    border-radius: 7px;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.17s;
-  }
-  .pagination button.active,
-  .pagination button:hover:not([disabled]) {
-    background: #2563eb;
-    color: #fff;
-  }
-  .pagination button[disabled] {
-    background: #cdd3de;
-    color: #6c7897;
-    cursor: not-allowed;
+    margin-top: 16px;
   }
 
-  @media (max-width: 700px) {
-    .hero-content h1 { font-size: 1.3rem;}
-    .main-page { padding: 0 3px;}
-    .article-grid { gap: 14px;}
+  .pagination button {
+    padding: 0.5em 1em;
+    border: none;
+    background: rgba(61,90,128,0.3);
+    color: #ffffffcc;
+    font-weight: 600;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .pagination button.active,
+  .pagination button:hover:not([disabled]) {
+    background: rgba(61,90,128,0.6);
+    color: #fff;
+  }
+
+  @media (max-width: 600x) {
+    .hero-content h1 { font-size: 2rem; }
+    .hero-content p { font-size: 1rem; }
+    .main-page { padding: 0 12px; }
+    .article-grid { grid-template-columns: 1fr;}
   }
 </style>
