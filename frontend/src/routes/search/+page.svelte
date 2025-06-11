@@ -4,6 +4,7 @@
   import { onMount } from 'svelte';
 
   const {
+    author_id,
     tag_id,
     // totalCount = 0,
     // page = 1,
@@ -19,9 +20,21 @@
   console.log("checkingeddd", tag_id);
   
   async function returnSearchResults() {
-
-    // let articlesRes;
-    if (tag_id) {
+    if (author_id) {
+    const res = await fetch(`${PUBLIC_API_BASE_URL}/users/${author_id}/articles`, { credentials: 'include' });
+    const rawArticles = await res.json();
+    articles = rawArticles.map(article => ({
+      article_id: article.id,
+      article_title: article.title,
+      article_content: article.content,
+      article_created_at: article.created_at,
+      image_path: article.image_path,
+      username: article.username,
+      author_subscriber_count: article.author_subscriber_count
+    }));
+  }
+  // let articlesRes;
+    else if (tag_id) {
       const articlesRes = await fetch(`${PUBLIC_API_BASE_URL}/tags/${tag_id}/articles`, { credentials: 'include' });
       console.log(`${PUBLIC_API_BASE_URL}/tags/${tag_id}/articles`);
 

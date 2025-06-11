@@ -19,6 +19,13 @@
   // Subscribers number
   $: subsText = `${article.subsCount} subscriber${article.subsCount === 1 ? "" : "s"}`;
 
+  // Clickable avatar
+  import { goto } from '$app/navigation';
+  function gotoAuthor() {
+    if (article.author && article.author.id) {
+    goto(`/search?author_id=${article.author.id}`);
+  }}
+
   // Event dispatcher for "Read More" button
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
@@ -68,18 +75,18 @@
       <div class="meta-row">
         <span class="meta-label">By</span>
         <span class="meta-empty"></span>
-        <span class="meta-author">
+        <a class="meta-author" href={article.author && article.author.id ? `/search?author_id=${article.author.id}` : '#'}>
           <img
             class="author-avatar"
             src={article.author.avatarUrl || '/default-avatar.png'}
             alt={article.author.name}
           />
           <span class="author-name">{article.author.name}</span>
-        </span>
+        </a>
       </div>
 
       <div class="meta-row">
-        <span class="meta-label">Subscriber</span>
+        <span class="meta-label">Subscribe</span>
         <span class="meta-empty"></span>
         <span class="meta-subs">{subsText}</span>
       </div>
@@ -212,18 +219,18 @@
 
    .meta-author {
     display: flex;
+    text-decoration: none;
+    cursor: pointer;
     align-items: center;
     gap: 8px;
     justify-content: flex-end;
     min-width: 90px;
   }
 
-  .meta-label {
-    color: #1e293b;
-    font-weight: 600;
-    margin-right: 2px;
+  .meta-author:hover {
+  color: #235a82;     
+  text-decoration: none;
   }
-
   .meta-subs{
     color:#0f172a;
     font-weight:600;

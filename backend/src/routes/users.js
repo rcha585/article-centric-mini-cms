@@ -106,7 +106,14 @@ router.get("/", requiresAuthentication, async (req, res) => {
 
 router.get("/:uid/articles", requiresAuthentication, async (req, res) => {
   const db = await getDatabase();
-  const articles = await db.all("SELECT * FROM articles WHERE author_id = ?", req.params.uid);
+  const articles = await db.all(
+    `
+    SELECT a.*, u.username, u.avatar_id, u.description
+    FROM articles a
+    JOIN users u ON a.author_id = u.id
+    WHERE a.author_id = ?
+  `
+    , req.params.uid);
   return res.status(200).json(articles);
 });
 

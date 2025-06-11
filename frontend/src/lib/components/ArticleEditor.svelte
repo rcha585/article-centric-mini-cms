@@ -28,33 +28,44 @@
   let uploading  = false;
   let coverError = ""; 
 
+  // -------------------- TAG PARSING & VALIDATION --------------------
   // Track whether user has focused/touched the tags input, for validation
   let tagInputTouched = false;
+
+  // maximum tags are 6, each length not exceed 15 characters.
+  const MAX_TAGS = 6;
+  const MAX_TAG_LEN = 15;
+  const TAG_RULE = /^#[a-zA-Z0-9]+$/;
+
   $: tagArr   = parseTags(tags);
   $: tagValid = validateTags(tagArr);
+  $: tagErrorMsg = getTagErrorMsg(tagArr);
 
   $: tagValues = tagArr.map(t => t.startsWith('#') ? t.slice(1) : t);
 
-  // -------------------- TAG PARSING & VALIDATION --------------------
   function parseTags(input = '') {
-   // if send in an array, just return.
-   if (Array.isArray(input)) {
-     return input.filter(Boolean);
-   }
-   // or treated as string
-   const s = typeof input === 'string' ? input : '';
-   return s
-     .split(/[\s\u3000]+/)
-     .map(x => x.trim())
-     .filter(Boolean);
+    if (Array.isArray(input)) return input.filter(Boolean);
+    const s = typeof input === 'string' ? input : '';
+    return s.split(/[\s\u3000]+/).map(x => x.trim()).filter(Boolean);
   }
 
   function validateTags(arr) {
-    // Each tag must start with "#" followed by alphanumeric characters
-    const rule = /^#[a-zA-Z0-9]+$/;
-    return arr.length > 0 && arr.every(t => rule.test(t));
+    if (arr.length > MAX_TAGS) return false;
+    if (arr.some(t => !TAG_RULE.test(t))) return false;
+    if (arr.some(t => t.length > MAX_TAG_LEN)) return false;
+    if (arr.length !== new Set(arr.map(t => t.toLowerCase())).size) return false; // no same tags allowed
+    return true;
   }
 
+  // errors of tags system.
+  function getTagErrorMsg(arr) {
+    if (arr.length > MAX_TAGS) return `Maximum ${MAX_TAGS} tags allowed.`;
+    if (arr.some(t => !TAG_RULE.test(t))) return "Each tag must start with # and use only letters/numbers.";
+    if (arr.some(t => t.length > MAX_TAG_LEN)) return `Each tag must be <= ${MAX_TAG_LEN} chars.`;
+    if (arr.length !== new Set(arr.map(t => t.toLowerCase())).size) return "Duplicate tags are not allowed.";
+    return "";
+  }
+ 
   // -------------------- FILE SELECTION --------------------
   function onFileChange(event) {
     // Fired when the user picks a file.
@@ -102,14 +113,17 @@
     }
   }
 
+  // -------------------- CONTENT RULES --------------------
   const MAX_WORDS = 1500;
   let wordCount = 0;
-  $: wordCount = content
-    .replace(/<[^>]+>/g, '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .length;
+  $: wordCount =  getTextContent(content).split(/\s+/).filter(Boolean).length;
+  
+  // transfer HTML into text
+  function getTextContent(html) {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
+  }
 
   // -------------------- PUBLISH BUTTON CLICK --------------------
   async function handlePublish() {
@@ -141,6 +155,7 @@
       title,
       tags: tagValues,
       content,
+      text_content: getTextContent(content),
       image_path: imgPath
     });
   }
@@ -152,7 +167,7 @@
   <input
     class="editor-title"
     type="text"
-    placeholder="Enter article title..."
+    placeholder="Title Here~~ Please Within 100 Characters"
     maxlength="100"
     bind:value={title}
   />
@@ -162,7 +177,7 @@
     <input
       class="editor-tags"
       type="text"
-      placeholder="#tag1 #tag2 #anotherTag"
+      placeholder="start with your #tag ~~"
       bind:value={tags}
       on:input={() => tagInputTouched = true}
       aria-invalid={!tagValid}
@@ -170,8 +185,7 @@
     />
     <span id="tag-error-msg" class="tag-error" aria-live="polite">
       {#if tagInputTouched && !tagValid}
-        Invalid tag format. Each tag must start with “#” and be alphanumeric,
-        separated by spaces (e.g. “#travel #food #hello”).
+        {tagErrorMsg}
       {/if}
     </span>
   </div>
@@ -195,7 +209,7 @@
 
   {#if !coverFile && (existingCoverUrl.endsWith('/default-image.jpg') || !existingCoverUrl)}
     <div class="cover-hint">
-      <span>This article has no cover image. If you don’t upload one, a default image will be used.</span>
+      <span>This article has no cover image. If you don't upload one, a default image will be used.</span>
     </div>
   {/if}
 
