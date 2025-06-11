@@ -23,6 +23,8 @@
   let liked = likedByMe;
 
   let showComments = false;
+  let currentUserId = me?.id;
+  let articleAuthorId = user?.id;
   
   // if the pageurl has # , it will change showComments to 
   // true so users can navigate to the comment section after clicking the notification
@@ -369,10 +371,12 @@
                   </div>
                   <div class="comment-meta">
                     <span class="comment-date">{formatDateTime(c.created_at)}</span>
-                    <!-- ✂️ Delete button -->
-                    <button class="btn-delete" on:click={() => deleteComment(c.comment_id)}>
-                      Delete
-                    </button>
+                    {#if currentUserId === articleAuthorId || currentUserId === c.user_id}
+                      <!-- ✂️ Delete button -->
+                      <button class="btn-delete" on:click={() => deleteComment(c.comment_id)}>
+                        Delete
+                      </button>
+                    {/if}
                 </div>
               </div>
             </div>

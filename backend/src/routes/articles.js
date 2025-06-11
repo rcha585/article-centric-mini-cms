@@ -3,6 +3,7 @@ import express from "express";
 import { getDatabase } from "../data/database.js";
 import { requiresAuthentication } from "../middleware/authentication.js";
 import yup from "yup";
+import { deleteImageIfNotDefault } from "./deleteimage.js";
 
 const router = express.Router();
 export default router;
@@ -309,6 +310,13 @@ router.patch("/:aid", requiresAuthentication, async (req, res) => {
   const newTitle = validatedInput.title ?? article.title;
   const newContent = validatedInput.content ?? article.content;
   const newImagePath = validatedInput.image_path ?? article.image_path;
+  // delete image from backend public file
+  if (
+    newImagePath !== article.image_path &&
+    article.image_path && newImagePath
+  ) {
+    deleteImageIfNotDefault(article.image_path);
+  }
   await db.run(
     "UPDATE articles SET title = ?, content = ?, image_path = ? WHERE id = ?",
     newTitle,
@@ -328,6 +336,8 @@ router.delete("/:aid", requiresAuthentication, async (req, res) => {
   if (req.user.id != article.author_id) {
     return res.sendStatus(403);
   }
+  // delete image from backend file at the same time
+  deleteImageIfNotDefault(article.image_path);
   await db.run("DELETE FROM articles WHERE id = ?", req.params.aid);
   return res.sendStatus(204);
 });

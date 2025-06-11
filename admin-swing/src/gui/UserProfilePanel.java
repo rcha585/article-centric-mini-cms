@@ -11,12 +11,12 @@ public class UserProfilePanel extends JFrame {
         super("User Profile: " + user.userName);
     
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(300, 400);
+        setSize(400, 400);
 
         // Position the window slightly offset from the relative component
         if (relativeTo != null) {
             Point loc = relativeTo.getLocationOnScreen();
-            setLocation(loc.x + 350, loc.y);
+            setLocation(loc.x + 900, loc.y);
         } else {
             setLocationRelativeTo(null);
         }
@@ -33,7 +33,10 @@ public class UserProfilePanel extends JFrame {
         // frontend/static/avatars/favicon.png
         String avatar_url = "frontend/static/"+user.avatarPath;
         System.out.println(avatar_url);
-        ImageIcon avatar = new ImageIcon(avatar_url);
+        ImageIcon originalIcon = new ImageIcon(avatar_url);
+        Image originalImage = originalIcon.getImage();
+        Image resizedImage = originalImage.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+        ImageIcon avatar = new ImageIcon(resizedImage);
         if (avatar.getIconWidth() == -1) {
             avatar = new ImageIcon("fallback.png");
         }
