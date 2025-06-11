@@ -5,17 +5,11 @@
   const BASE_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
 
   async function handlePublish(article) {
-    /* ---------- tag validation ---------- */
-    const tagArr = parseTags(article.tags);
-    if (!validateTags(tagArr)) {
-      alert('All tags must start with #, alphanumeric only');
-      return;
-    }
-
     /* ---------- 1.  POST /articles ------ */
     const body = {
       title:      article.title,
       content:    article.content,
+      text_content: article.text_content, 
       image_path: article.image_path || 'images/placeholder.png'
     };
     const res = await fetch(`${BASE_URL}/articles`, {
@@ -36,7 +30,7 @@
 
     /* ---------- 3.  create / taggings  ---- */
     // 3-1 ensure every tag exists
-    for (const tag of tagArr) {
+    for (const tag of article.tags) {
       await fetch(`${BASE_URL}/tags`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
@@ -45,8 +39,8 @@
     }
     // 3-2 find their ids
     const allTags = await (await fetch(`${BASE_URL}/tags`)).json();
-    const tagIds  = tagArr
-      .map(t => allTags.find(x => x.content === t)?.id)
+    const tagIds  = article.tags
+      .map(t => allTags.find(x => x.content.replace(/^#/, '') === t)?.id)
       .filter(Boolean);
     // 3-3 add taggings
     for (const tid of tagIds) {
@@ -59,14 +53,6 @@
     alert('Article published ✨');
     goto(`/articles/${aid}`);
   }
-
-  /* ---------- helpers ---------- */
-  const tagRe = /^[a-zA-Z0-9]+$/;
-  const parseTags = (input = '') => {
-    if (Array.isArray(input)) return input.filter(Boolean);
-    return String(input).split(/[\s\u3000]+/).map(x => x.trim()).filter(Boolean);
-  };
-  const validateTags = (arr)  => arr.every(t => tagRe.test(t));
 
   /* TinyMCE key */
   const apiKey = import.meta.env.VITE_TINYMCE_API_KEY;
