@@ -5,12 +5,15 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+/**
+ * send HTTP requests to get data
+ */
 public class HttpHelper {
 
     private static final java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder().build();
     private static String cookie;
 
-
+    // send login Request
     public static HttpResponse<String> sendLoginRequest(String userName, String passWord) throws IOException, InterruptedException {
         String json = "{\"username\": \""+userName+"\",\"password\": \""+passWord+"\"}";
 
@@ -27,6 +30,7 @@ public class HttpHelper {
         return postResponse;    
     }
 
+    // check if the login is from Admin
     public static int checkUserIsAdmin(String userName, String passWord) throws IOException, InterruptedException{
 
         String userAuthURL = "http://localhost:3000/api/auth/me";
@@ -60,6 +64,7 @@ public class HttpHelper {
         return isAdmin;
     }
 
+    // send logout request
     public static void sendLogoutRequest() throws IOException, InterruptedException {
         // Send POST (Sign Out) if user is valid but not admin
         String signOutURL = "http://localhost:3000/api/auth/logout";
@@ -73,11 +78,9 @@ public class HttpHelper {
         if (postResponse.statusCode() !=204) {
             System.out.println("Logout was uncessfull");
         }
-        else {
-            System.out.println("Logout was sucessfull");
-        }
     }
 
+    // get all user data
     public static String getAllUserData(String userName, String passWord) throws IOException, InterruptedException {
         String response;
         if (checkUserIsAdmin(userName, passWord) ==0){
@@ -101,6 +104,7 @@ public class HttpHelper {
         return response;
     }
 
+    // send delete request to delete user
     public static void sendDeleteRequest(int userID) throws IOException, InterruptedException {
         // Send POST (Sign Out) if user is valid but not admin
         String deleteURL = "http://localhost:3000/api/users/"+userID;

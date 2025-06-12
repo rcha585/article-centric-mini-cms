@@ -4,11 +4,20 @@ import javax.swing.*;
 import java.awt.*;
 import model.SingleUserData;
 
-public class UserProfilePanel extends JFrame {
+/**
+ * A JFrame to show user profile details.
+ */
+public class UserProfileFrame extends JFrame {
+    public SingleUserData user;
+    public JLabel usernameLabel;
+    public JLabel realnameLabel;
+    public JLabel dobLabel;
+    public JTextArea descriptionArea;
+    public JLabel avatarLabel;
 
-
-    public UserProfilePanel(SingleUserData user, Component relativeTo) {
+    public UserProfileFrame(SingleUserData user, Component relativeTo) {
         super("User Profile: " + user.userName);
+        this.user = user;
     
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(500, 500);
@@ -22,10 +31,10 @@ public class UserProfilePanel extends JFrame {
         }
 
         // 2. create details label
-        JLabel usernameLabel = new JLabel("Username: " + user.userName);
-        JLabel realnameLabel = new JLabel("Realname: " + user.firstName +" "+ user.lastName);
-        JLabel dobLabel = new JLabel("DOB: " + user.dateOfBirth);
-        JTextArea descriptionArea = new JTextArea("Description: " + user.description); // useJTextArea and add scroll in case description is long
+        usernameLabel = new JLabel("Username: " + user.userName);
+        realnameLabel = new JLabel("Realname: " + user.firstName +" "+ user.lastName);
+        dobLabel = new JLabel("DOB: " + user.dateOfBirth);
+        descriptionArea = new JTextArea("Description: " + user.description); // useJTextArea and add scroll in case description is long
         descriptionArea.setEditable(false);
         descriptionArea.setLineWrap(true);          
         descriptionArea.setWrapStyleWord(true);
@@ -42,10 +51,7 @@ public class UserProfilePanel extends JFrame {
         Image originalImage = originalIcon.getImage();
         Image resizedImage = originalImage.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
         ImageIcon avatar = new ImageIcon(resizedImage);
-        if (avatar.getIconWidth() == -1) {
-            avatar = new ImageIcon("fallback.png");
-        }
-        JLabel avatarLabel = new JLabel(avatar);
+        avatarLabel = new JLabel(avatar);
         
         // 4. Create detailsPanel to wrap everything vertically
         // 4.1. Create detailsPanel
@@ -78,5 +84,30 @@ public class UserProfilePanel extends JFrame {
 
         setVisible(true);
     
+    }
+
+    // Refresh and repaint all components of user profile JFrame when there's any update(s)
+    public void refresh() {
+        usernameLabel.setText("Username: " + user.userName);
+        realnameLabel.setText("Realname: " + user.firstName + " " + user.lastName);
+        dobLabel.setText("DOB: " + user.dateOfBirth);
+        descriptionArea.setText("Description: " + user.description);
+        
+        String avatar_url = "frontend/static/"+user.avatarPath;
+        ImageIcon originalIcon = new ImageIcon(avatar_url);
+        Image originalImage = originalIcon.getImage();
+        Image resizedImage = originalImage.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+        ImageIcon avatar = new ImageIcon(resizedImage);
+
+        avatarLabel.setIcon(avatar);
+
+        revalidate();
+        repaint();
+    }
+
+    // update User info accordingly
+    public void updateUser(SingleUserData newUser) {
+        this.user = newUser;
+        refresh(); // this calls the refresh method 
     }
 }

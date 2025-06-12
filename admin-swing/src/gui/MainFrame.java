@@ -2,24 +2,16 @@ package gui;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.IOException;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-import javax.management.relation.RelationSupport;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -32,259 +24,321 @@ import javax.swing.event.ListSelectionListener;
 import model.AllUserData;
 import model.SingleUserData;
 import util.HttpHelper;
-import controller.ButtonListener;
 
 /**
  * An application which has been designed according to Swing's model/view
- * architecture, this application is for the admin to see user data and delete user account
+ * architecture, this application is for the admin to see user data and delete
+ * user account
  * 
  */
 public class MainFrame extends JFrame {
 
-    /* Main model for this application. */
+	/* Main model for this application. */
 	private AllUserData userInfo;
+
+	List<SingleUserData> usersData;
 
 	// store selected userID
 	private SingleUserData selectedUser;
 
-	// build table by using table model adapter 
-	private UserTablePanel<Object> tableModel;
+	// build table by using table model adapter
+	private UserTableModel<Object> tableModel;
 
 	// a delete button to delete user data
 	public JButton deleteButton = new JButton("Delete Selected User");
-	
-	// a main JPanel to add registration panel, user table data panel and delete panel
+
+	// a main JPanel to add registration panel, user table data panel and delete
+	// panel
 	public JPanel mainPane = new JPanel();
 
 	// a seperate JFrame to display each user profile
-	private UserProfilePanel currentUserProfile = null;
+	private UserProfileFrame currentUserProfile = null;
 
+	protected static String userName;
+	protected static String userPassWord;
 
+	public MainFrame() {
+		super("Administration Panel");
 
-    public MainFrame() {
-        super("Administration Panel");
+		/* Create application's model. */
+		userInfo = new AllUserData();
 
-        /* Create application's model. */
-        userInfo = new AllUserData();
-
-        /* Load model data in the background. */
+		/* Load model data in the background. */
 		Worker worker = new Worker();
 		worker.execute();
 
-        /**********************************************************************
-		 * - Instantiate view components: 
+		/**********************************************************************
+		 * - Instantiate view components:
 		 * - Instantiate adapter, create row selection listener for the adapter
 		 * - Wire-up (connect) objects.
 		 */
 
-        /* View components. */
+		/* View components. */
 		RegistrationPanel registrationPanel = new RegistrationPanel();
 		registrationPanel.setPreferredSize(new Dimension(800, 200));
-        JTable tableView = new JTable(); 
-        
-        /* Adapters. */
+		JTable tableView = new JTable();
+
+		/* Adapters. */
 		// Step 1: Instantiate adapter
-		tableModel = new UserTablePanel<>(userInfo);
-        tableView.setModel(tableModel);
-        
-		// Step 2: choose row selection listener (ListSelectionListener) for tableView -
-		// a specific interface used to listen for selection changes in components like JList or JTable.
-		
-		// Step 2.1: limit only 1 row can be selected at a time to control selection behavior
-        tableView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); 
+		tableModel = new UserTableModel<>(userInfo);
+		tableView.setModel(tableModel);
 
-		// Step 2.2: getSelectionModel() returns which row is selected and attach addListSelectionListener
-		// to that row so we know when user selects or changes the selected row
-        tableView.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    int selectedRow = tableView.getSelectedRow();
-                    if (selectedRow != -1) //Returns the index of the first selected row, -1 if no row is selected.
-					{
-
-                        // If table sorting is enabled, convert to model index
-                        int modelIndex = tableView.convertRowIndexToModel(selectedRow);
-                        selectedUser = userInfo.getDataAt(modelIndex);
-                        System.out.println("Selected User ID: " + selectedUser.userID);
-
-                       // Dispose old window if it exists
-						if (currentUserProfile != null) {
-							currentUserProfile.dispose();
-						}
-						// Create and show new UserProfilePanel window
-						currentUserProfile = new UserProfilePanel(selectedUser, mainPane);
-
-						deleteButton.setEnabled(true);
-                    }
-					else {
-						selectedUser = null;
-						deleteButton.setEnabled(false);
-					}
-                }
-            }
-        });
-
-		// Set listener to respond when login/logout is successful
-		registrationPanel.setLoginListener(new ButtonListener() {
-			@Override
-			public void isLoginSuccess(List<SingleUserData> data) {
-				for (SingleUserData user : data) {
-					userInfo.addUserData(user);
-				}
-				tableModel.fireTableDataChanged(); //refresh data once log in, notifies all listeners that all cell values in the table's rows have changed
-			}
-		
-			@Override
-			public void clickLogout() {
-				userInfo.clear(); // model clears and notifies the table
-				
-				// dispose user profile when logout
-				if (currentUserProfile != null) {
-					currentUserProfile.dispose();
-					currentUserProfile = null;
-				}
-			}
-		});
-		
-
-        // Construct the GUI in the ED thread.
+		// Construct the GUI in the ED thread.
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				buildGUI(registrationPanel,tableView);
+				buildGUI(registrationPanel, tableView);
 			}
 		});
-    }
+	}
 
-    /*
+	/*
 	 * Builds the GUI.
 	 */
-    private void buildGUI(RegistrationPanel registrationView,JTable userDataView) {
+	private void buildGUI(RegistrationPanel registrationView, JTable userDataView) {
+
+		// -------------------- CREATE A MAIN PANE --------------------
 		/*
-		 * Create a Panel to combine the distribution and statistics visual
-		 * representations.
-            */
+		 * Create a mainPane (4) to combine:
+		 * 1) registrationPanel (located at the top)
+		 * 2) user table (located at the middle)
+		 * 3) delete button(Panel) (located at the bottom)
+		 */
+
+		/* 1) registrationPanel (located at the top) */
 		JPanel top = new JPanel();
 		top.setBorder(BorderFactory
 				.createTitledBorder("User Register"));
 		top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
 		top.add(registrationView);
 		top.add(Box.createRigidArea(new Dimension(10, 0)));
-		// right.add(statisticsView);
 
+		/* 2) user table (located at the middle) */
+		JPanel middle = new JPanel();
+		middle.setBorder(BorderFactory.createTitledBorder("All User Data"));
+		middle.setLayout(new BoxLayout(middle, BoxLayout.Y_AXIS));
+		JScrollPane scrollPane = new JScrollPane(userDataView);
+		middle.add(scrollPane);
+		middle.add(Box.createRigidArea(new Dimension(10, 0)));
 
-
-        JPanel bottom = new JPanel();
-        bottom.setBorder(BorderFactory.createTitledBorder("All User Data"));
-        bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
-        JScrollPane scrollPane = new JScrollPane(userDataView);
-        bottom.add(scrollPane);
-        bottom.add(Box.createRigidArea(new Dimension(10, 0)));
-
-		JPanel deletePanel = new JPanel();
-		// JButton deleteButton = new JButton("Delete Selected User");
+		/* 3) delete button(Panel) (located at the bottom) */
+		JPanel bottom = new JPanel();
 		deleteButton.setEnabled(false);
-		deletePanel.add(deleteButton);
+		bottom.add(deleteButton);
 
-		deleteButton.addActionListener(e -> {
-			if (selectedUser != null) {
-				int selectedUserID = selectedUser.getUserID();
-				userInfo.removeUserByID(selectedUserID);
-				System.out.println(selectedUserID);
-				// to add a HTML to delete user from the database
-				try {
-					HttpHelper.sendDeleteRequest(selectedUserID);
-				} catch (IOException | InterruptedException e1) {
-					e1.printStackTrace();
-				}
-
-				selectedUser = null; // Clear reference
-				tableModel.fireTableDataChanged(); // Refresh table
-
-				currentUserProfile.dispose();
-
-			} else {
-				// JOptionPane.showMessageDialog(MainFrame.this, "Please select a row to delete.");
-			}
-		});
-
-        /* Create main pane for the application. */
-		// JPanel mainPane = new JPanel();
+		/* 4) Create main pane for the application. */
 		mainPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.Y_AXIS));
 		mainPane.add(top);
 		mainPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		mainPane.add(middle);
 		mainPane.add(bottom);
-		mainPane.add(deletePanel);
 
 		add(mainPane);
 
+		// -------------------- CREATE A MAIN PANE --------------------
+		/*
+		 * Create Listener:
+		 * 1) ActionListner for registrationPanel (login and logout logic)
+		 * 2) ListSelectionListener for usertableModel (row selection logic)
+		 * 3) ActionListner for delete user data
+		 */
 
-        /* Quit the program in response to the user closing the window. */
-        addWindowListener(new WindowAdapter() {
+		/* 1) ActionListner for registrationPanel */
+		/* 1a) ActionListner for login */
+		registrationView.getLoginButton().addActionListener(e -> {
+			int isAdmin = 0;
+			try {
+				isAdmin = HttpHelper.checkUserIsAdmin(registrationView.getUsername(), registrationView.getPassword());
+			} catch (IOException | InterruptedException error) {
+				error.printStackTrace();
+			}
+
+			// if login sucessfully
+			// => return user data and create JTable data
+			// => enable logout, disable login + username/password TextField and reset
+			// TextField
+			// if login fail => a dialog pop up
+			if (isAdmin == 1) {
+				try {
+					String json = HttpHelper.getAllUserData(registrationView.getUsername(),
+							registrationView.getPassword());
+					usersData = JsonManualParser.parseUsers(json);
+					for (SingleUserData user : usersData) {
+						userInfo.addUserData(user);
+					}
+
+				} catch (IOException | InterruptedException error) {
+					error.printStackTrace();
+				}
+				tableModel.fireTableDataChanged();
+				registrationView.logoutButton.setEnabled(true);
+				registrationView.loginButton.setEnabled(false);
+				registrationView.usernameTextField.setEnabled(false);
+				registrationView.passwordTextField.setEnabled(false);
+				userName = registrationView.usernameTextField.getText();
+				userPassWord = registrationView.passwordTextField.getText();
+				registrationView.usernameTextField.setText("");
+				registrationView.passwordTextField.setText("");
+			} else {
+				DialogNoti dialogNoti = new DialogNoti(null);
+				dialogNoti.setVisible(true);
+			}
+		});
+
+		/* 1b) ActionListner for logout */
+		// logout -> disable logout button, enable login button + username/password
+		// TextField
+		registrationView.getLogoutButton().addActionListener(e -> {
+			try {
+				HttpHelper.sendLogoutRequest();
+				registrationView.logoutButton.setEnabled(false);
+				registrationView.loginButton.setEnabled(true);
+				registrationView.usernameTextField.setEnabled(true);
+				registrationView.passwordTextField.setEnabled(true);
+
+			} catch (IOException | InterruptedException error) {
+				error.printStackTrace();
+			}
+			userInfo.clear(); // model clears and notifies the table
+
+			// dispose user profile when logout
+			if (currentUserProfile != null) {
+				currentUserProfile.dispose();
+				currentUserProfile = null;
+			}
+
+			deleteButton.setEnabled(false);
+		});
+
+		/* 2) ListSelectionListener for usertableModel (row selection logic) */
+		// choose row selection listener (ListSelectionListener) for tableView -
+		// a specific interface used to listen for selection changes in components like
+		// JList or JTable.
+
+		// Step 2.1: limit only 1 row can be selected at a time to control selection
+		// behavior
+		userDataView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+		// Step 2.2: getSelectionModel() returns which row is selected and attach
+		// addListSelectionListener
+		// to that row so we know when user selects or changes the selected row
+		userDataView.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				if (!e.getValueIsAdjusting()) {
+					int selectedRow = userDataView.getSelectedRow();
+					if (selectedRow != -1) // Returns the index of the first selected row, -1 if no row is selected.
+					{
+						// If table sorting is enabled, convert to model index
+						int modelIndex = userDataView.convertRowIndexToModel(selectedRow);
+						selectedUser = userInfo.getDataAt(modelIndex);
+						System.out.println("Selected User ID: " + selectedUser.userID);
+
+						// Dispose old window if it exists
+						if (selectedUser == null || currentUserProfile != null) {
+							currentUserProfile.dispose();
+						}
+
+						// Create and show new UserProfilePanel window
+						currentUserProfile = new UserProfileFrame(selectedUser, mainPane);
+
+						deleteButton.setEnabled(true);
+					} else {
+						deleteButton.setEnabled(false);
+					}
+				}
+			}
+		});
+
+		/* 3) ActionListner for delete user data */
+		deleteButton.addActionListener(e -> {
+			if (selectedUser != null) {
+				int selectedUserID = selectedUser.getUserID();
+				System.out.println("Delete UserID: " + selectedUserID);
+				try {
+					HttpHelper.sendDeleteRequest(selectedUserID);
+					String json = HttpHelper.getAllUserData(userName, userPassWord);
+					usersData = JsonManualParser.parseUsers(json);
+					userInfo.clear(); // clear all data
+					for (SingleUserData user : usersData) {
+						userInfo.addUserData(user);
+					}
+
+					selectedUser = null; // Clear reference
+					tableModel.fireTableDataChanged(); // Refresh table
+
+					currentUserProfile.dispose();
+				} catch (IOException | InterruptedException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+
+		/* Quit the program in response to the user closing the window. */
+		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				System.exit(0);
 			}
 		});
 
 		pack();
-		// setLocationRelativeTo(null);
 		setResizable(false);
 		setVisible(true);
-        
-        }
 
-    /**
+	}
+
+	/**
 	 * Runs the application.
 	 */
 	public static void main(String[] args) {
 		// new MainFrame();
 		MainFrame frame = new MainFrame();
 		frame.setLocation(20, 100);// Move frame to left so we can let UserProfilePanel appear on the right
-		frame.setVisible(true); 
-		
+		frame.setVisible(true);
+
 	}
 
-    /*
-	 * Nested inner class to load Course data from file using a separate thread.
+	/*
+	 * For update user table if user info is newly added/deleted or updated
 	 */
-	private class Worker extends SwingWorker<List<SingleUserData>, Void> {
+	private class Worker extends SwingWorker<Void, List<SingleUserData>> {
 
 		@Override
-		protected List<SingleUserData> doInBackground() {
-			List<SingleUserData> data = RegistrationPanel.getUsersData();
-			System.out.println(data);
-			return data;
+		protected Void doInBackground() throws Exception {
+			while (true) {
+				Thread.sleep(1000); // Check every second
+				String json = HttpHelper.getAllUserData(userName, userPassWord);
+				List<SingleUserData> latestUsersData = JsonManualParser.parseUsers(json);
+				// if latest usersData from db is different from the current data from user table panel 
+				if (!latestUsersData.equals(usersData) && !latestUsersData.isEmpty() && latestUsersData.get(0).userID != 0) {
+					publish(latestUsersData); // Send to process()
+					usersData = new ArrayList<>(latestUsersData);
+					}
+				}
 		}
 
 		@Override
-		protected void done() {
-			try {
-				List<SingleUserData> data = get();
-		
-				if (data == null || data.isEmpty()) {
-					// JOptionPane.showMessageDialog(
-					// 	MainFrame.this,
-					// 	"Unable to load user data. You may not be authorized or the data is missing.",
-					// 	"Load Warning",
-					// 	JOptionPane.WARNING_MESSAGE
-					// );
-					return;
+		protected void process(List<List<SingleUserData>> publishedUsersData) {
+
+			// Refresh user table in the main frame
+			List<SingleUserData> latestUsersData = publishedUsersData.get(publishedUsersData.size() - 1);
+			userInfo.clear(); // Clear old data
+			for (SingleUserData user : latestUsersData) {
+				userInfo.addUserData(user); // Re-add fresh data
+			}
+			tableModel.fireTableDataChanged(); // Refresh data table
+
+			// Refresh user profile frame
+			if (currentUserProfile != null && selectedUser != null) {
+				// Get the updated version of selectedUser
+				for (SingleUserData user : latestUsersData) {
+					System.out.println("Updating user profile for ID: " + user.userID);
+					if (user.userID == selectedUser.userID) {
+						selectedUser = user;
+						currentUserProfile.updateUser(user);
+						break;
+					}
 				}
-		
-				// Only loop if data is valid
-				for (SingleUserData result : data) {
-					userInfo.addUserData(result);
-				}
-		
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-				JOptionPane.showMessageDialog(
-					MainFrame.this,
-					"An error occurred while loading user data:\n" + e.getCause(),
-					"Load Error",
-					JOptionPane.ERROR_MESSAGE
-				);
 			}
 		}
 	}
