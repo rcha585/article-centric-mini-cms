@@ -275,7 +275,8 @@
     margin-bottom: 2px;
     letter-spacing: 0.2px;
   }
-
+  
+  /* Responsive breakpoints - mobile adaptation */
   @media (max-width: 600px) {
     .user-article-card {
       flex-direction: column;
