@@ -156,9 +156,16 @@
     white-space: nowrap;
     text-decoration: none;
   }
+  
   .tag.more {
-    background: #b8cff1;
-    color: #225;
+    color: #2068a3;
+    background: #dcecfb;
+    font-size: 0.93rem;
+    padding: 3px 14px;
+    font-weight: 500;
+    border-radius: 10px;
+    margin:auto;
+    height: 22px;
   }
   .tag:hover {
     transform: translateY(-4px);

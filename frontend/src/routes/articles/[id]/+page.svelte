@@ -305,7 +305,9 @@
 
       <div class="author-subscribe">
         <div class="author-info">
+          <a href={`/search?author_id=${user?.id ?? 1}`}>
           <img class="avatar" src={user?.avatarUrl ? `http://localhost:5173${user.avatarUrl}` : "/avatars/avatar-1.png"} alt="author" />
+          </a>
           <div>
             <div class="name">{user ? `${user.username}` : "Anonymous"}</div>
             <div class="followers">{subNumber} Subscribers</div>
@@ -481,6 +483,17 @@
     border-radius: 50%;
     border: 3px solid #fff;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: 
+      box-shadow 0.25s,
+      transform 0.22s,
+      filter 0.18s;
+  }
+  .author-info a:hover .avatar,
+  .author-info a:focus .avatar {
+    transform: scale(1.08) rotate(-4deg);
+    box-shadow: 0 0 18px 3px #6cb6ff55, 0 2px 18px #81e7ea30;
+    filter: brightness(1.08) saturate(1.4) drop-shadow(0 0 5px #2196f388);
+    outline: none;
   }
 
   .avatar-sm {
@@ -687,6 +700,7 @@
   }
 
   .comment-input-row {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
@@ -713,7 +727,8 @@
     position: absolute;
     top: 100%;
     left: 0;
-    background: rgba(255,255,255,0.9);
+    background: rgba(245, 249, 255, 0.98);
+    color:#071c56;
     border: 1px solid #e0e7ef;
     border-radius: 6px;
     max-height: 130px;
@@ -724,16 +739,24 @@
     list-style: none;
     margin: 4px 0;
     padding: 0;
+    backdrop-filter: blur(2.5px);
+    animation: fade-in-down 0.18s;
   }
 
   .mention-suggestions li {
+    font-size: 1.06rem;
+    color: #315ca8;
     padding: 6px 12px;
     cursor: pointer;
     transition: background-color 0.2s;
+    letter-spacing: 0.01em;
   }
 
-  .mention-suggestions li:hover { 
+  .mention-suggestions li:hover,
+  .mention-suggestions li:focus { 
     background: #bfdbfe; 
+    color: #0c2b57;
+    outline: none;
   }
 
   .mention { 

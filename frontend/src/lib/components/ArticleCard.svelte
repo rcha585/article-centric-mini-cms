@@ -53,7 +53,7 @@
     <!-- Article Tags -->
     {#if article.tags?.length}
       <div class="article-tags">
-        {#each article.tags.slice(0, 4) as tag}
+        {#each article.tags.slice(0, 3) as tag}
           {#if typeof tag === 'string'}
             <a class="article-tag" href={`/search?tag=${encodeURIComponent(tag)}`}>#{tag}</a>
           {:else}
@@ -103,7 +103,7 @@
   /* Main Card Style */
   .article-card {
     width: 100%;
-    max-width: 420px;
+    max-width: 350px;
     min-height:580px;
     margin: 0 auto;
     display: flex;

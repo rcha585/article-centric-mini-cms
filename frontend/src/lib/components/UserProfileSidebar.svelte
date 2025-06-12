@@ -1,12 +1,32 @@
+<!--
+  User Sidebar Component:
+
+  This Svelte component displays a user sidebar panel for a blog or social platform.
+  It shows the user's avatar, username, introduction, statistics (liked posts and subscribers),
+  and provides two main actions: editing the profile and writing a new article.
+  The component is styled to be visually appealing and compact, suitable for dashboards or profile pages.
+
+  Props:
+    - user: An object containing user data (avatar, username, introduction, likedPosts, subscribers)
+
+  Events:
+    - editProfile: Triggered when the "Edit Profile" button is clicked
+    - writeArticle: Triggered when the "Write Article" button is clicked
+-->
+
 <script>
+  // Import user data from parent and event dispatcher utility
   export let user;
 
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
+   // Dispatches the "editProfile" event when the Edit Profile button is clicked
   function editProfile() {
     dispatch("editProfile");
   }
+
+   // Dispatches the "writeArticle" event when the Write Article button is clicked
   function writeArticle() {
     dispatch("writeArticle");
   }
@@ -34,6 +54,7 @@
 </div>
 
 <style>
+  /* Container for the entire sidebar */
   .user-sidebar {
     background: linear-gradient(135deg, #e6ecf6 0%, #f3f7fb 100%);
     border-radius: 12px;
@@ -45,6 +66,7 @@
     align-items: center;
   }
 
+  /* User styling */
   .avatar {
     width: 92px;
     height: 92px;
@@ -71,7 +93,28 @@
     min-height: 44px;
   }
 
+  .stats {
+    width: 100%;
+    margin-bottom: 22px;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    font-size: 0.98rem;
+    color: #495a78;
+    margin-bottom: 7px;
+  }
+
+  .stat .icon {
+    font-size: 1.12rem;
+    margin-right: 8px;
+  }
+
+  /* Button styling */
   .edit-btn {
+    width: 160px;
+    height: 40px;
     background: #fff;
     border: 1px solid #a4b5ce;
     border-radius: 8px;
@@ -83,24 +126,9 @@
     cursor: pointer;
     transition: background-color 0.16s;
   }
+
   .edit-btn:hover {
     background: #e8f0fe;
-  }
-
-  .stats {
-    width: 100%;
-    margin-bottom: 22px;
-  }
-  .stat {
-    display: flex;
-    align-items: center;
-    font-size: 0.98rem;
-    color: #495a78;
-    margin-bottom: 7px;
-  }
-  .stat .icon {
-    font-size: 1.12rem;
-    margin-right: 8px;
   }
 
   .write-btn {
@@ -116,6 +144,7 @@
     cursor: pointer;
     transition: background-color 0.17s;
   }
+
   .write-btn:hover {
     background: #1256a0;
   }
