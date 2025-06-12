@@ -68,17 +68,23 @@ export async function load({ fetch }) {
 
   	
   // modify article list
-  const mapArticle = (a) => ({
-    id: a.id,
-    title: a.title,
-    excerpt: htmlToText(a.content).slice(0, 180), 
-    createdAt: a.created_at,
-    coverUrl: a.image_path
-      ? (a.image_path.startsWith('/') ? a.image_path : `/${a.image_path}`)
-      : '/placeholder-cover.png',
-    likes: 0,
-    tags: []
-  });
+  const mapArticle = (a) => {
+    const plainText = htmlToText(a.content);
+    return{
+      id: a.id,
+      title: a.title,
+      excerpt:
+        plainText.length > 160
+        ? plainText.slice(0, 160) + "..."
+        : plainText,
+      createdAt: a.created_at,
+      coverUrl: a.image_path
+        ? (a.image_path.startsWith('/') ? a.image_path : `/${a.image_path}`)
+        : '/placeholder-cover.png',
+      likes: 0,
+      tags: []
+    }
+  };
 
 
   const articleById = new Map();
