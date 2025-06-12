@@ -156,12 +156,13 @@
 }
 
     //handle Enter key for input
-  function handleKeyDown(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      postComment();
-    }
-  }
+function highlightMentions(text) {
+  return escapeHtml(text).replace(/@([\w]+)/g, (match, username) => {
+    return users.some(user => user.username === username)
+      ? `<span class="mention">@${username}</span>`
+      : match;
+  });
+}
   }
 
    /** Delete a comment by its ID */
@@ -210,25 +211,27 @@
   }
 
   // Split text into parts: mention vs plain text
-  function splitByMentions(text) {
-    const parts = [];
-    let lastIndex = 0;
-    const regex = /@([\w]+)/g;
-    let match;
+function splitByMentions(text) {
+  const parts = [];
+  let lastIndex = 0;
+  const regex = /@([\w]+)/g;
+  let match;
 
-    while ((match = regex.exec(text)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push({ text: text.slice(lastIndex, match.index), isMention: false });
-      }
-      parts.push({ text: match[0], isMention: true });
-      lastIndex = match.index + match[0].length;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ text: text.slice(lastIndex, match.index), isMention: false });
     }
-
-    if (lastIndex < text.length) {
-      parts.push({ text: text.slice(lastIndex), isMention: false });
-    }
-    return parts;
+    const username = match[1];
+    const isValidUser = users.some(u => u.username === username);
+    parts.push({ text: match[0], isMention: isValidUser });
+    lastIndex = match.index + match[0].length;
   }
+
+  if (lastIndex < text.length) {
+    parts.push({ text: text.slice(lastIndex), isMention: false });
+  }
+  return parts;
+}
 
   // Handle input events to show mention suggestions
   function handleInput(e) {
@@ -350,7 +353,7 @@
 
       <div class="comments-section">
         <div class="comments-header">
-          <span>Comments</span>
+          <span>Comments: {comments.length}</span>
           <button class="btn-toggle" on:click={toggleComments}>{showComments ? 'Hide' : 'Show'} Comments</button>
         </div>
 
