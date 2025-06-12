@@ -71,7 +71,7 @@ export async function load({ fetch }) {
   const mapArticle = (a) => ({
     id: a.id,
     title: a.title,
-    excerpt: htmlToText(a.content).slice(0, 180), 
+    excerpt: htmlToText(a.content).slice(0, 150)+ "…", 
     createdAt: a.created_at,
     coverUrl: a.image_path
       ? (a.image_path.startsWith('/') ? a.image_path : `/${a.image_path}`)
