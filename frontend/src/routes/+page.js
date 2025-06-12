@@ -36,8 +36,8 @@ export async function load({ fetch }) {
 
       // Create a excerpt and remove all HTML tags from `a.content`
       const strippedText = htmlToText(a.content);
-      const excerpt = strippedText.length > 100
-        ? strippedText.slice(0, 100) + "…"
+      const excerpt = strippedText.length > 250
+        ? strippedText.slice(0, 250) + "…"
         : strippedText;
 
 

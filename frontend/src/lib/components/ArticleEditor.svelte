@@ -1,3 +1,29 @@
+<!--
+  Article Editor Component
+
+  This Svelte component provides a complete article creation form, including:
+    - Title input
+    - Tag input with validation (up to 6 tags, special format)
+    - Cover image selection and upload (size limited, supports preview)
+    - Word count and content length validation (Rich Text Editor)
+    - Publish event dispatching with collected form data
+
+  Props:
+    - defaultTitle:    Pre-filled title (string)
+    - defaultTags:     Pre-filled tags (string, space-separated, each starts with "#")
+    - defaultContent:  Pre-filled article HTML content (string)
+    - defaultCover:    Pre-filled cover image path (string)
+    - apiKey:          API key for the RichEditor if needed (string)
+
+  Events:
+    - publish:         Triggered on successful publish button click, sending all form data to parent
+
+  Other features:
+    - User-friendly validation errors and visual feedback
+    - Upload state and error handling
+    - Designed for integration in dashboards, user profile pages, or blog creation pages
+-->
+
 <script>
   // PROPS
   // These props are passed in from the parent page:
@@ -33,31 +59,35 @@
   let tagInputTouched = false;
 
   // maximum tags are 6, each length not exceed 15 characters.
-  const MAX_TAGS = 6;
-  const MAX_TAG_LEN = 15;
-  const TAG_RULE = /^#[a-zA-Z0-9]+$/;
+  const MAX_TAGS = 6;                    // Max allowed tags
+  const MAX_TAG_LEN = 15;                // Max length of a single tag
+  const TAG_RULE = /^#[a-zA-Z0-9]+$/;    // Tag format: must start with #, only letters/numbers
 
+  // Reactive declarations for tag parsing and validation
   $: tagArr   = parseTags(tags);
   $: tagValid = validateTags(tagArr);
   $: tagErrorMsg = getTagErrorMsg(tagArr);
 
+  // Strip "#" for payload
   $: tagValues = tagArr.map(t => t.startsWith('#') ? t.slice(1) : t);
 
+  // Split and clean user tag input into an array
   function parseTags(input = '') {
     if (Array.isArray(input)) return input.filter(Boolean);
     const s = typeof input === 'string' ? input : '';
     return s.split(/[\s\u3000]+/).map(x => x.trim()).filter(Boolean);
   }
 
+  // Check tag count, format, length, and uniqueness
   function validateTags(arr) {
     if (arr.length > MAX_TAGS) return false;
     if (arr.some(t => !TAG_RULE.test(t))) return false;
     if (arr.some(t => t.length > MAX_TAG_LEN)) return false;
-    if (arr.length !== new Set(arr.map(t => t.toLowerCase())).size) return false; // no same tags allowed
+    if (arr.length !== new Set(arr.map(t => t.toLowerCase())).size) return false;
     return true;
   }
 
-  // errors of tags system.
+  // Return error message if any tag rule is violated (no tag is allowed)
   function getTagErrorMsg(arr) {
     if (arr.length > MAX_TAGS) return `Maximum ${MAX_TAGS} tags allowed.`;
     if (arr.some(t => !TAG_RULE.test(t))) return "Each tag must start with # and use only letters/numbers.";
@@ -143,7 +173,7 @@
     if (coverFile) {
       imgPath = await uploadCover();
     } else if (existingCoverUrl && !existingCoverUrl.includes('/default-image.jpg')) {
-      // existingCoverUrl: "http://localhost:3000/images/xxx.jpg"
+      // Use already existing image if available
       imgPath = existingCoverUrl.replace('http://localhost:3000/', '');
     } else {
       imgPath = 'images/placeholder.png';
