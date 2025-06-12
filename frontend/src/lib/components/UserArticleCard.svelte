@@ -1,5 +1,26 @@
-<script>
+<!--
+  User Article Card Component
 
+  This Svelte component displays a single article summary card for a user.
+  It shows the article’s cover image, title, excerpt, tags, like count, and creation date.
+  Action buttons (Edit, Delete, Read More) are conditionally shown based on permissions.
+  Emits "edit", "delete", and "readmore" events to the parent with the article’s id.
+  Useful for profile/article list/dashboard layouts.
+
+  Props:
+    - article:   The article object (id, title, coverUrl, excerpt, tags, likes, createdAt, etc.)
+    - canEdit:   If true, shows the "Edit" button
+    - canDelete: If true, shows the "Delete" button
+    - canRead:   If true, shows the "Read More" button
+
+  Events:
+    - edit:      Emitted with article id when Edit is clicked
+    - delete:    Emitted with article id when Delete is clicked
+    - readmore:  Emitted with article id when Read More is clicked
+-->
+
+<script>
+  // Props
   export let article;
   export let canEdit   = false;
   export let canDelete = false;
@@ -16,12 +37,14 @@
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
+  // -------------- ACTION HANDLERS FOR BUTTONS --------------
   function handleEdit() { dispatch("edit",     { id: article.id }); }
   function handleReadMore() { dispatch("readmore", { id: article.id }); }
   function handleDelete() { dispatch("delete",   { id: article.id }); }
 </script>
 
 <div class="user-article-card">
+  <!-- Cover image -->
   <div class="card-cover">
     <img
       src={
@@ -39,6 +62,7 @@
     <div class="card-title">{article.title}</div>
     <div class="card-excerpt">{article.excerpt}</div>
 
+    <!-- Tags -->
     {#if article.tags?.length}
       <div class="tags">
         {#each article.tags.slice(0, 4) as tag}
@@ -54,10 +78,13 @@
         {/if}
       </div>
     {/if}
+
+    <!-- Likes -->
     <div class="likes-row">
       <span class="likes-count">Likes: {article.likes}</span>
     </div>
 
+    <!-- Buttons -->
     <div class="actions-row">
       {#if canDelete}
         <button class="delete-btn" on:click={() => dispatch('delete', { id: article.id })}>
@@ -77,6 +104,8 @@
         </button>
       {/if}
     </div>
+    
+    <!-- Date -->
     <div class="card-createdat">Created at {createdDate}</div>
   </div>
 </div>
