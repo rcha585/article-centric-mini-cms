@@ -102,7 +102,6 @@
     lastName.trim().length > 0 &&
     description.trim().length > 0 &&
     dateOfBirth &&
-    newPassword.trim().length > 0 &&
     !$usernameTaken &&
     !$dobInvalid;
 
@@ -449,9 +448,9 @@
       <div class="form-row">
         <label for="password">Password:</label>
         {#if showPassword}
-        <input type="text" id="password" bind:value={newPassword} placeholder="Enter new password" required/>
+        <input type="text" id="password" bind:value={newPassword} placeholder="Enter new password" />
         {:else}
-        <input type="password" id="password" bind:value={newPassword} placeholder="Enter new password" required />
+        <input type="password" id="password" bind:value={newPassword} placeholder="Enter new password" />
         {/if}
         
         <button type="button" class="btn-toggle-pwd" on:click={() => showPassword = !showPassword} title={showPassword ? 'Hide' : 'Show'}>

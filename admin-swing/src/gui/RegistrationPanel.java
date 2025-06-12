@@ -15,7 +15,7 @@ import model.SingleUserData;
 
 
 /**
- * A simple GUI app that does BMI calculations.
+ * A JPanel for the admin to sign in.
  */
 public class RegistrationPanel extends JPanel implements ActionListener {
 
@@ -27,79 +27,57 @@ public class RegistrationPanel extends JPanel implements ActionListener {
 
     protected static String userName;
     protected static String userPassWord;
-    public JLabel loginStatusLabel = new JLabel();
     private ButtonListener loginListener;
     protected static List<SingleUserData> usersData;
 
     /**
-     * Creates a new ExerciseOnePanel.
+     * Creates a new RegistrationPanel.
      */
     public RegistrationPanel() {
         setBackground(Color.white);
         setLayout(new GridBagLayout());
 
-        // TODO Construct JTextFields and JButtons.
-        // HINT: Declare them as instance variables so that other methods in this class (e.g. actionPerformed) can
-        // also access them.
-
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
 
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        // JLabel loginStatusLabel = new JLabel("");
-        this.add(loginStatusLabel,gbc);
-
-        // username
+        //1. username label and text field
         gbc.gridx = 0;
         gbc.gridy = 1;
-        // gbc.anchor = GridBagConstraints.EAST;
         JLabel usernameLabel = new JLabel("username");
         this.add(usernameLabel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 1;
-        // gbc.anchor = GridBagConstraints.WEST;
-        usernameTextField = new JTextField(15); //check with Daoli about validation
+        usernameTextField = new JTextField(15); 
         this.add(usernameTextField, gbc);
 
-        // password
+        //2. password label and text field
         gbc.gridx = 0;
         gbc.gridy = 2;
-        // gbc.anchor = GridBagConstraints.EAST;
         JLabel passwordLabel = new JLabel("password");
         this.add(passwordLabel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 2;
-        // gbc.anchor = GridBagConstraints.WEST;
-        passwordTextField = new JTextField(15); //check with Daoli about validation
+        passwordTextField = new JTextField(15); 
         this.add(passwordTextField, gbc);
 
         gbc.anchor = GridBagConstraints.WEST;
 
+        //3. Login button
         gbc.gridx = 0;
         gbc.gridy = 3;
         loginButton = new JButton("Login");
         this.add(loginButton, gbc);
 
+        //3. Logout button
         gbc.gridx = 1;
         gbc.gridy = 3;
         logoutButton = new JButton("Logout");
         logoutButton.setEnabled(false);
         this.add(logoutButton, gbc);
 
-
-        // TODO Declare and construct JLabels
-        // Note: These ones don't need to be accessed anywhere else so it makes sense just to declare them here as
-        // local variables, rather than instance variables.
-
-        // TODO Add JLabels, JTextFields and JButtons to window.
-        // Note: The default layout manager, FlowLayout, will be fine (but feel free to experiment with others if you want!!)
-
-
-        // TODO Add Action Listeners for the JButtons
-//        this.calculateBMIButton.setEnabled(false);
+        // Add Action Listeners for the JButtons
         this.loginButton.addActionListener(this);
         this.logoutButton.addActionListener(this);
     }
@@ -145,12 +123,17 @@ public class RegistrationPanel extends JPanel implements ActionListener {
                     }
                     logoutButton.setEnabled(true);
                     loginButton.setEnabled(false);
-                    loginStatusLabel.setText("");
+                    // loginStatusLabel.setText("");
                     usernameTextField.setText("");
                     passwordTextField.setText("");
                 }
                 else {
-                    loginStatusLabel.setText("Unauthorized Loggin, Please try again");
+                    JDialogNoti dialogNoti = new JDialogNoti(null);
+                    dialogNoti.setVisible(true);
+
+                    // After dialog closes, update login status label
+                    // loginStatusLabel.setText("Unauthorized login, please try again.");
+                    // loginStatusLabel.setText("Unauthorized Loggin, Please try again");
                 }
             }
 
