@@ -974,17 +974,30 @@ select:invalid:focus {
   }
   .popup-content {
     flex-direction: column;
-    width: 90%;
+    width: 92vw;
     padding: 16px;
   }
   .avatar-container {
     width: 100%;
     margin-right: 0;
     margin-bottom: 20px;
+    min-width: 0;
+    padding: 12px 6px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   .avatar-img {
-    width: 100px; 
-    height: 100px;
+    width: 85px; 
+    height: 85px;
+    margin: 0 auto 12px;
+  }
+
+   .edit-profile-popup {
+    align-items: flex-start;
+    padding: 16px 16px 16px 16px;
   }
 
   .profile-form {
@@ -998,6 +1011,13 @@ select:invalid:focus {
   .form-row label {
     width: 100%;
     margin-bottom: 4px;
+  }
+  .popup-buttons {
+    flex-direction: column;
+    gap: 7px;
+    align-items: stretch;
+    width: 100%;
+    margin-top: 18px;
   }
 }
 
@@ -1013,6 +1033,55 @@ select:invalid:focus {
   }
   .user-content {
     flex: 1;
+  }
+}
+
+@media (max-width: 700px) {
+  .user-tab-bar {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 0 2px;
+  }
+  .user-tab-bar button {
+    min-width: 90px;
+    margin-bottom: 4px;
+    font-size: 1rem;
+    padding: 7px 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .comments-feed {
+    gap: 8px;
+    padding: 0 2px;
+  }
+  .comment-block {
+    padding: 12px 7px;
+    font-size: 0.97rem;
+  }
+  .comment-content {
+    font-size: 0.98rem;
+    word-break: break-word;
+    line-height: 1.4;
+  }
+  .comment-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    font-size: 0.91rem;
+    gap: 3px;
+  }
+  .meta-title-link {
+    font-size: 1rem;
+  }
+  .comment-actions {
+    width: 100%;
+    margin-top: 6px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .comment-actions .delete-btn {
+    font-size: 0.98rem;
+    padding: 7px 13px;
   }
 }
 </style>

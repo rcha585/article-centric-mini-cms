@@ -339,4 +339,19 @@
     .main-page { padding: 0 12px; }
     .article-grid { grid-template-columns: 1fr;}
   }
+
+  @media (max-width: 700px) {
+  .article-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 16px;
+    overflow-x: visible;
+  }
+  .pagination {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+}
 </style>
