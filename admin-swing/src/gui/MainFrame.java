@@ -87,9 +87,14 @@ public class MainFrame extends JFrame {
 		tableModel = new UserTablePanel<>(userInfo);
         tableView.setModel(tableModel);
         
-		// Step 2: create row selection listener (ListSelectionListener) for tableView -
+		// Step 2: choose row selection listener (ListSelectionListener) for tableView -
 		// a specific interface used to listen for selection changes in components like JList or JTable.
-        tableView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		// Step 2.1: limit only 1 row can be selected at a time to control selection behavior
+        tableView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); 
+
+		// Step 2.2: getSelectionModel() returns which row is selected and attach addListSelectionListener
+		// to that row so we know when user selects or changes the selected row
         tableView.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
