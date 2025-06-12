@@ -30,7 +30,7 @@
   // true so users can navigate to the comment section after clicking the notification
   afterUpdate(async () => {
   if ($page.url.hash) {
-    await tick();
+    await tick(); // to finish page loading
     showComments = true;
     console.log("check showcomments",showComments);
   }});
@@ -660,9 +660,6 @@
   }
 
 
-<<<<<<< HEAD
-  .comment-input-row { position: relative; display: flex; gap: 8px; margin-top: 8px; }
-=======
   .comment-item {
     display: flex;
     gap: 1rem;
@@ -711,7 +708,6 @@
     outline: none;
     box-shadow: 0 0 0 3px rgba(61, 90, 128, 0.5);
   }
->>>>>>> origin/main
 
   .mention-suggestions {
     position: absolute;
