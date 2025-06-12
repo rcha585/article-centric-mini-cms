@@ -3,9 +3,12 @@ import javax.swing.*;
 import java.awt.*;
 import javax.swing.JLabel;
 
-public class JDialogNoti extends JDialog {
+/**
+ * Pop up DialogNoti if admin doesn't enter valid username or password
+ */
+public class DialogNoti extends JDialog {
 
-    public JDialogNoti(JFrame parent) {
+    public DialogNoti(JFrame parent) {
         super(parent, "Invalid Registration", true); // true = modal
 
         setLayout(new BorderLayout());

@@ -5,6 +5,9 @@ import java.util.List;
 
 import model.SingleUserData;
 
+/**
+ * a class to help convert raw JSON data (a String) into a list Java objects
+ */
 public class JsonManualParser {
 
     public static List<SingleUserData> parseUsers(String json) {
