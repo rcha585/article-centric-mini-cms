@@ -277,8 +277,10 @@
       <a href="/login" class="nav-login">Login</a>
       {:else}
       <button type="button" class="avatar-wrapper">
-        <img src={`/avatars/avatar${user.avatar_id}.png`} alt="Avatar" class="avatar-img-header" />
-        </button>
+        <div class="avatar-outer">
+          <img src={`/avatars/avatar${user.avatar_id}.png`} alt="Avatar" class="avatar-img-header" />
+        </div>
+      </button>
 
         <button class="nav-logout" on:click={handleLogout}>
           Logout
@@ -606,6 +608,26 @@
   
   .avatar-wrapper {
     position: relative;
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .avatar-outer {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   }
 
   .avatar-img-header {
