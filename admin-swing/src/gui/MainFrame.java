@@ -113,25 +113,25 @@ public class MainFrame extends JFrame {
 		top.add(Box.createRigidArea(new Dimension(10, 0)));
 
 		/* 2) user table (located at the middle) */
-		JPanel bottom = new JPanel();
-		bottom.setBorder(BorderFactory.createTitledBorder("All User Data"));
-		bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
+		JPanel middle = new JPanel();
+		middle.setBorder(BorderFactory.createTitledBorder("All User Data"));
+		middle.setLayout(new BoxLayout(middle, BoxLayout.Y_AXIS));
 		JScrollPane scrollPane = new JScrollPane(userDataView);
-		bottom.add(scrollPane);
-		bottom.add(Box.createRigidArea(new Dimension(10, 0)));
+		middle.add(scrollPane);
+		middle.add(Box.createRigidArea(new Dimension(10, 0)));
 
 		/* 3) delete button(Panel) (located at the bottom) */
-		JPanel deletePanel = new JPanel();
+		JPanel bottom = new JPanel();
 		deleteButton.setEnabled(false);
-		deletePanel.add(deleteButton);
+		bottom.add(deleteButton);
 
 		/* 4) Create main pane for the application. */
 		mainPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.Y_AXIS));
 		mainPane.add(top);
 		mainPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		mainPane.add(middle);
 		mainPane.add(bottom);
-		mainPane.add(deletePanel);
 
 		add(mainPane);
 
@@ -309,9 +309,8 @@ public class MainFrame extends JFrame {
 				Thread.sleep(1000); // Check every second
 				String json = HttpHelper.getAllUserData(userName, userPassWord);
 				List<SingleUserData> latestUsersData = JsonManualParser.parseUsers(json);
-				
 				// if latest usersData from db is different from the current data from user table panel 
-				if (!latestUsersData.equals(usersData)) {
+				if (!latestUsersData.equals(usersData) && !latestUsersData.isEmpty() && latestUsersData.get(0).userID != 0) {
 					publish(latestUsersData); // Send to process()
 					usersData = new ArrayList<>(latestUsersData);
 					}
