@@ -7,6 +7,7 @@
   import { currentUser } from '$lib/stores/currentUser.js';
   import { onDestroy } from "svelte";
   import { get } from "svelte/store";
+  import { writable } from 'svelte/store';
 
   let user;
   const unsubscribe = currentUser.subscribe(u => user = u);
@@ -27,7 +28,6 @@
   // to help the page reload and go to target_url, without this function, 
   // the page won't reload -> fail to navigate to new page
   async function handleReadNoti(target_url, notification_id) {
-    window.location.href = target_url;
 
     // Update all unread to read after the user clicked each notification child box
     const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications/${notification_id}`, {
@@ -38,6 +38,8 @@
       alert('Failed to update unviewed: ' + (await res.text()));
       return;
     }
+
+    window.location.href = target_url;
   }
 
   // this function is for handling the logic which relates to the notification box
@@ -91,7 +93,14 @@
 
   // remove tag/html entity and select first few words from the article content/comment to appear on the notification box
   function truncateChars(text, charLimit) {
-    const strippedText = text.replace(/<[^>]+>/g, "").replace(/&nbsp;/gi, " ").trim() ;
+    // Create a temporary div to decode HTML entities
+    const temp = document.createElement('div');
+    temp.innerHTML = text;
+    const decodedText = temp.textContent || temp.innerText || '';
+
+    // Remove extra spaces and trim
+    const strippedText = decodedText.replace(/\s+/g, ' ').trim();
+
     return strippedText.length > charLimit
       ? strippedText.slice(0, charLimit) + '...'
       : strippedText;
@@ -117,7 +126,7 @@
 
   // (added) track whether we do an exact or partial match
   // 'exact' means send the query literally; 'partial' means wrap in %…%
-  let matchType = "exact";
+  const matchType = writable("partial");
 
   let showProfileDropdown = false;
 
@@ -140,6 +149,12 @@
     }
   }
 
+  // Initialize from sessionStorage to save the latest matchType for avoiding UX confusion
+  onMount(() => {
+    const saved = sessionStorage.getItem('matchType');
+    if (saved) matchType.set(saved);
+  });
+
   // Modified handleSearch to wrap with %…% if matchType==='partial'
   function handleSearch(e) {
     e.preventDefault();
@@ -152,19 +167,13 @@
     }
 
     // If partial, wrap in %...%
-    const finalQuery = matchType === "partial"
+    const finalQuery = $matchType === "partial"
       ? `%${trimmed}%`
       : trimmed;
 
-    const searchUrl = `/search?q=${encodeURIComponent(finalQuery)}&match=${matchType}`;
-    goto(searchUrl);
+    sessionStorage.setItem('matchType', $matchType);
+    const searchUrl = `/search?q=${encodeURIComponent(finalQuery)}&match=${$matchType}`;
     window.location.href = searchUrl;
-    // Build the final URL based on matchType:
-    //   If matchType==="partial", we do ?key=<term>&match=partial
-    //   If matchType==="exact", we do ?key=<term>&match=exact
-    const finalURL = `${PUBLIC_API_BASE_URL}/articles/?key=${encodeURIComponent(
-      trimmed
-    )}&match=${matchType}`;
   }
 </script>
 
@@ -186,17 +195,17 @@
     <div class="match-toggle">
       <button
         type="button"
-        class:selected={matchType === "exact"}
-        on:click={() => (matchType = "exact")}
+        class:selected={$matchType === "partial"}
+        on:click|preventDefault={() => matchType.set("partial")}
       >
-        Exact
+        Partial
       </button>
       <button
         type="button"
-        class:selected={matchType === "partial"}
-        on:click={() => (matchType = "partial")}
+        class:selected={$matchType === "exact"}
+        on:click|preventDefault={() => matchType.set("exact")}
       >
-        Partial
+        Exact
       </button>
     </div>
 
@@ -217,7 +226,7 @@
 
       <div class="notif-wrapper" bind:this={notifWrapper}>
       
-        <button class="notif-bell" on:click={onClickNotification}>
+        <button class="notif-bell" on:click|preventDefault={onClickNotification}>
           <span class="icon-bell">🔔</span>
           {#if $unviewedCount > 0}
             <span class="notif-dot">{$unviewedCount}</span>
@@ -236,23 +245,36 @@
           {:else}
           {#each $myNotifications as n}
           <div class="notification-card {$newNotificationIds.includes(n.id) ? 'highlight' : ''}">
+            {#if n.comment_id}
             <img
               class="notification-cover"
-              src={n.author_avatar_path || n.commenter_avatar_path || '/default-cover.png'}
-              alt={n.article_title}
+              src={`/${n.commenter_avatar_path}`}
+              alt={n.commenter_name}
             />
-            
+            {:else}
+            <img
+              class="notification-cover"
+              src={`/${n.author_avatar_path}`}
+              alt={n.author_name}
+            />
+            {/if}
+
             <div class="notification-content">
               {#if n.comment_id}
-              <a href="/" class="notif-childbox">
+              <a 
+              href={`/articles/${n.article_id}#commentid-${n.commenter_id}${n.comment_id}`} 
+              class="notif-childbox" 
+              on:click|preventDefault={() => {handleReadNoti(
+                `/articles/${n.article_id}#commentid-${n.commenter_id}${n.comment_id}`,n.id)}}>
               <p class="notification-sender"><b>{n.commenter_name}</b> mentioned you in a comment to {n.article_title}</p>
-              <p class="notification-preview">{truncateChars(n.comment_content,50)}</p>
+              <p class="notification-preview">{truncateChars(n.comment_content,65)}</p>
               <p class="notification-date">{n.created_at}</p>
               </a>
               {:else}
-              <a href={`/articles/${n.article_id}`} class="notif-childbox" on:click={() => handleReadNoti(`/articles/${n.article_id}`,n.id)}>
+              <a href={`/articles/${n.article_id}`} class="notif-childbox" 
+              on:click|preventDefault={() => handleReadNoti(`/articles/${n.article_id}`,n.id)}>
               <p class="notification-sender"><b>{n.author_name}</b> published a new article: {n.article_title}</p>
-              <p class="notification-preview">{truncateChars(n.article_content, 50)}</p>
+              <p class="notification-preview">{truncateChars(n.article_content, 65)}</p>
               <p class="notification-date">{n.created_at}</p>
               </a>
               <!-- </div> -->
@@ -280,7 +302,7 @@
         <img src={`/avatars/avatar${user.avatar_id}.png`} alt="Avatar" class="avatar-img-header" />
         </button>
 
-        <button class="nav-logout" on:click={handleLogout}>
+        <button class="nav-logout" on:click|preventDefault={handleLogout}>
           Logout
         </button>
       {/if}
