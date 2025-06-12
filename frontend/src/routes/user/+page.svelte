@@ -108,7 +108,7 @@
 
   onMount(async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/avatars", {
+      const response = await fetch(`${PUBLIC_API_BASE_URL}/avatars`, {
         credentials: 'include',
       });
       if (response.ok) {
@@ -356,7 +356,7 @@
             <div class="comment-block">
               <div class="comment-content">{c.content}</div>
               <div class="comment-meta">
-                On: 
+                On Article: 
                 <a class="meta-title-link" href={`/articles/${c.articleId}`}>
                   {c.articleTitle}
                 </a>
@@ -404,7 +404,7 @@
       <div class="avatar-container">
         <img class="avatar-img" src={`http://localhost:5173/avatars/avatar${selectedAvatarId}.png`} alt="Avatar" />
         <div class="select-overlay">
-          <select bind:value={selectedAvatarId}>
+          <select bind:value={selectedAvatarId} class="btn-block-select">
             <option value={null} disabled>Change Avatar ▾</option>
               {#each avatars as a}
                 <option value={a.id}>{a.avatar_path.split('/').pop()}</option>
@@ -676,13 +676,21 @@
   justify-content: space-between;
 }
 
-.comment-meta .meta-title {
-  color: #4077b7;
-  font-weight: bold;
-}
-
 .comment-meta .meta-date {
   margin-left: 12px;
+}
+
+.meta-title-link {
+  text-decoration: none;
+  font-size: 1.08em;
+  color: #1a4b8c;
+  font-weight: 600;
+  transition: color 0.18s;
+}
+
+.meta-title-link:hover {
+  color: #336dcc;
+  text-decoration: underline;
 }
 
 .edit-profile-popup {
@@ -717,8 +725,6 @@
   margin-right: 32px;
   max-width: 100%;
   min-width: 160px;
-}
-.avatar-container .select-overlay {
   margin-top: 12px;
 }
 
@@ -812,7 +818,7 @@
   border: 1px solid #d4e3f6;
   border-radius: 6px;
   font-size: 0.96rem;
-  color: #254060;
+  color: #1f3958;
   background: #fff;
   resize: vertical;
   min-height: 100px;
@@ -824,6 +830,57 @@
   outline: none;
   border-color: #60a5fa;
   box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+}
+
+.select-overlay .btn-block-select {
+  width: 100%;
+  max-width: 140px;
+  padding: 14px 18px;
+  font-size: 0.95em;
+  background: #f8fafd;
+  border: none;
+  border-radius: 13px;
+  box-shadow: 0 2px 12px #b6cbe220;
+  color: #25507c;
+  font-weight: 500;
+  margin: 0 auto 16px auto;
+  display: block;
+  transition: background-color 0.18s, box-shadow 0.2s;
+  outline: none;
+  cursor: pointer;
+}
+
+.select-overlay .btn-block-select:focus,
+.select-overlay .btn-block-select:hover {
+  background: #e3effc;
+  box-shadow: 0 4px 18px #b6cbe233;
+}
+
+.form-row input[type="date"] {
+  width: 100%;
+  max-width: 130px;
+  padding: 14px 18px;
+  font-size: 0.95em;
+  background: #f8fafd;
+  border: none;
+  border-radius: 10px;
+  color: #25507c;
+  font-weight: 600;
+  transition: background-color 0.18s, box-shadow 0.2s;
+  outline: none;
+  cursor: pointer;
+}
+
+.form-row input[type="date"]:focus,
+.form-row input[type="date"]:hover {
+  background: #e3effc;
+  box-shadow: 0 4px 18px #b6cbe233;
+}
+
+.form-row label {
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 6px;
 }
 
 #avatarSelect {
@@ -902,7 +959,6 @@ select:invalid:focus {
 }
 
 
-
 @media (max-width: 768px) {
   .user-page-main {
     flex-wrap: wrap;
@@ -930,9 +986,6 @@ select:invalid:focus {
   .avatar-img {
     width: 100px; 
     height: 100px;
-  }
-  .select-overlay select {
-    max-width: 100%; 
   }
 
   .profile-form {
