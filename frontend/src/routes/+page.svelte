@@ -333,6 +333,8 @@
     color: #fff;
   }
 
+
+/* Responsive adjustments for smaller screens */
   @media (max-width: 600x) {
     .hero-content h1 { font-size: 2rem; }
     .hero-content p { font-size: 1rem; }
