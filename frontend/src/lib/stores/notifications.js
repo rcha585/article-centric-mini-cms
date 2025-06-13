@@ -1,12 +1,10 @@
 import { writable } from 'svelte/store';
 import { PUBLIC_API_BASE_URL } from "$env/static/public";
-import { get } from 'svelte/store';
-import exp from 'constants';
 export const unviewedCount = writable(0);
 export const newNotificationIds = writable([]);
 export const myNotifications = writable([]);
-export const showComments = writable(false);
 
+// create fetchNotifications in stores as we will call this function both from component and +layout.js
 export async function fetchNotifications({ fetch }) {
     try {
         const [notiResArticles, notiResComments] = await Promise.all([
@@ -29,7 +27,6 @@ export async function fetchNotifications({ fetch }) {
                 const unviewedCommentsNoti = myCommentsNotifications.filter(n => n.is_viewed === 0);
                 const unviewed = [...unviewedArticlesNoti, ...unviewedCommentsNoti];
                 unviewedCount.set(unviewed.length);
-                console.log("unviewedCount1:",get(unviewedCount));
                 
             }
             else {

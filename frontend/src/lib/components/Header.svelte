@@ -1,14 +1,13 @@
 <script>
   import { page } from "$app/stores";
   import { PUBLIC_API_BASE_URL } from "$env/static/public";
-  import { unviewedCount, newNotificationIds, myNotifications, fetchNotifications } from "../js/notifications.js";
+  import { unviewedCount, newNotificationIds, myNotifications, fetchNotifications } from "../stores/notifications.js";
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { currentUser } from '$lib/stores/currentUser.js';
   import { onDestroy } from "svelte";
   import { get } from "svelte/store";
   import { writable } from 'svelte/store';
-  import { showComments } from "../js/notifications.js";
 
   let user;
   const unsubscribe = currentUser.subscribe(u => user = u);
@@ -40,7 +39,6 @@
       return;
     }
 
-    // showComments.set(true);
     sessionStorage.setItem('showComments', 'true');
     window.location.href = target_url;
   }
@@ -70,7 +68,6 @@
     console.log("new notifications id:", get(newNotificationIds));
     console.log("new notifications id length:", get(newNotificationIds).length);
     console.log("all notifications:", get(myNotifications));
-    console.log("unviewedCount2:",get(unviewedCount));
 
     // step 4: Update all unviewed to viewed after the user clicked the notification bell icon
     const res = await fetch(`${PUBLIC_API_BASE_URL}/notifications`, {

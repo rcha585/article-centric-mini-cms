@@ -57,9 +57,4 @@ public class SingleUserData {
                 Objects.equals(description, other.description) &&
                 Objects.equals(avatarPath, other.avatarPath);
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(userID, userName, firstName, lastName, dateOfBirth, description, avatarPath);
-    }
 }
