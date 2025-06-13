@@ -8,11 +8,11 @@ import javax.swing.JLabel;
  */
 public class DialogNoti extends JDialog {
 
-    public DialogNoti(JFrame parent) {
-        super(parent, "Invalid Registration", true); // true = modal
+    public DialogNoti(JFrame parent, String dialogTitle, String message) {
+        super(parent, dialogTitle, true); // true = modal
 
         setLayout(new BorderLayout());
-        JLabel label = new JLabel("Invalid login, please try again.", SwingConstants.CENTER);
+        JLabel label = new JLabel(message, SwingConstants.CENTER);
         add(label, BorderLayout.CENTER);
         JButton closeBtn = new JButton("Close");
         closeBtn.addActionListener(e -> dispose()); // Close dialog
