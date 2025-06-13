@@ -36,7 +36,7 @@ public class MainFrame extends JFrame {
 	/* Main model for this application. */
 	private AllUserData userInfo;
 
-	List<SingleUserData> usersData;
+	private List<SingleUserData> usersData;
 
 	// store selected userID
 	private SingleUserData selectedUser;
@@ -45,11 +45,11 @@ public class MainFrame extends JFrame {
 	private UserTableModel<Object> tableModel;
 
 	// a delete button to delete user data
-	public JButton deleteButton = new JButton("Delete Selected User");
+	private JButton deleteButton = new JButton("Delete Selected User");
 
 	// a main JPanel to add registration panel, user table data panel and delete
 	// panel
-	public JPanel mainPane = new JPanel();
+	private JPanel mainPane = new JPanel();
 
 	// a seperate JFrame to display each user profile
 	private UserProfileFrame currentUserProfile = null;
@@ -135,7 +135,7 @@ public class MainFrame extends JFrame {
 
 		add(mainPane);
 
-		// -------------------- CREATE A MAIN PANE --------------------
+		// -------------------- CREATE LISTENER --------------------
 		/*
 		 * Create Listener:
 		 * 1) ActionListner for registrationPanel (login and logout logic)
@@ -200,7 +200,7 @@ public class MainFrame extends JFrame {
 				error.printStackTrace();
 			}
 			userInfo.clear(); // model clears and notifies the table
-			tableModel.fireTableDataChanged();
+			
 			// dispose user profile when logout
 			if (currentUserProfile != null) {
 				currentUserProfile.dispose();
@@ -311,7 +311,11 @@ public class MainFrame extends JFrame {
 				List<SingleUserData> latestUsersData = JsonManualParser.parseUsers(json);
 				// if latest usersData from db is different from the current data from user table panel 
 				if (!latestUsersData.equals(usersData) && !latestUsersData.isEmpty() && latestUsersData.get(0).userID != 0) {
-					publish(latestUsersData); // Send to process()
+					/* send to process():
+					 send data chunks to the process method. This method is to be used from inside the doInBackground method to deliver intermediate results for processing on the Event Dispatch Thread inside the process method.
+					 */
+					publish(latestUsersData); 
+
 					usersData = new ArrayList<>(latestUsersData);
 					}
 				}
@@ -320,7 +324,7 @@ public class MainFrame extends JFrame {
 		@Override
 		protected void process(List<List<SingleUserData>> publishedUsersData) {
 
-			// Refresh user table in the main frame
+			// Refresh user table in the main frame (get the latest List)
 			List<SingleUserData> latestUsersData = publishedUsersData.get(publishedUsersData.size() - 1);
 			userInfo.clear(); // Clear old data
 			for (SingleUserData user : latestUsersData) {

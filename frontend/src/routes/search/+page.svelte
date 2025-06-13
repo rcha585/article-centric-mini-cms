@@ -6,18 +6,13 @@
   const {
     author_id,
     tag_id,
-    // totalCount = 0,
-    // page = 1,
-    // perPage = 6,
     query,
     query_matchtype
   } = data;
 
-  // const totalPages = Math.ceil(totalCount / perPage);
-
   let articles = [];
 
-  console.log("checkingeddd", tag_id);
+  console.log("TAG ID", tag_id);
   
   async function returnSearchResults() {
     if (author_id) {
@@ -33,7 +28,7 @@
       author_subscriber_count: article.author_subscriber_count
     }));
   }
-  // let articlesRes;
+
     else if (tag_id) {
       const articlesRes = await fetch(`${PUBLIC_API_BASE_URL}/tags/${tag_id}/articles`, { credentials: 'include' });
       console.log(`${PUBLIC_API_BASE_URL}/tags/${tag_id}/articles`);
@@ -129,31 +124,6 @@
       </ul>
     {/if}
 
-    <!-- PAGINATION (unchanged) -->
-    <!-- {#if totalPages > 1}
-      <div class="pagination">
-        <span class="pagination-info">
-          Showing {(page - 1) * perPage + 1} – 
-          {Math.min(page * perPage, totalCount)} of {totalCount} results
-        </span>
-        <button
-          class="page-button"
-          disabled={page === 1}
-          on:click={() => goToPage(page - 1)}
-          title="Previous Page"
-        >
-          &lt;
-        </button>
-        <button
-          class="page-button"
-          disabled={page === totalPages}
-          on:click={() => goToPage(page + 1)}
-          title="Next Page"
-        >
-          &gt;
-        </button>
-      </div>
-    {/if} -->
   </div>
 </div>
 
@@ -303,40 +273,4 @@
     }
   }
 
-  /* ============================================ */
-  /*  PAGINATION (light on dark card)             */
-  /* ============================================ */
-  /* .pagination {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 14px;
-    margin-top: 32px;
-    color: #ffffff;
-    font-size: 1.13rem;
-  }
-  .pagination-info {
-    flex: 1;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.9);
-  }
-  .page-button {
-    background: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    border: none;
-    padding: 0.4em 1em;
-    border-radius: 999px;
-    font-size: 1.1em;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    transition: background 0.2s;
-  }
-  .page-button:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.3);
-  }
-  .page-button:disabled {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.5);
-    cursor: not-allowed;
-  } */
 </style>

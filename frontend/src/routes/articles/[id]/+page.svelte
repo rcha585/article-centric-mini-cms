@@ -1,8 +1,5 @@
 <script>
   import { onMount } from 'svelte';
-  import { page } from '$app/stores';
-  import { afterUpdate, tick } from 'svelte';
-  import { showComments } from '../../../lib/js/notifications.js';
   const PUBLIC_API_BASE_URL = "http://localhost:3000/api";
   
   export let data;
@@ -23,7 +20,7 @@
   let likes = likesCount;
   let liked = likedByMe;
 
-  // let showComments = false;
+  let showComments = false;
   let currentUserId = me?.id;
   let articleAuthorId = user?.id;
   
@@ -31,7 +28,7 @@
   // true so users can navigate to the comment section after clicking the notification
   onMount(() => {
   if (sessionStorage.getItem('showComments') === 'true') {
-    showComments.set(true);
+    showComments = true;
     sessionStorage.removeItem('showComments'); // optional cleanup
   }
   });
@@ -100,8 +97,7 @@
 
   // Toggle comments section
   function toggleComments() {
-    // showComments = !showComments;
-    showComments.set(!$showComments);
+    showComments = !showComments;
   }
 
   // Format an ISO date string to locale date
@@ -356,10 +352,10 @@ function splitByMentions(text) {
       <div class="comments-section">
         <div class="comments-header">
           <span>Comments: {comments.length}</span>
-          <button class="btn-toggle" on:click={toggleComments}>{$showComments ? 'Hide' : 'Show'} Comments</button>
+          <button class="btn-toggle" on:click={toggleComments}>{showComments ? 'Hide' : 'Show'} Comments</button>
         </div>
 
-        {#if $showComments}
+        {#if showComments}
           {#if comments.length === 0}
             <div class="no-comments">No comments yet.</div>
           {:else}
