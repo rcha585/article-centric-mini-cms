@@ -180,7 +180,7 @@ public class MainFrame extends JFrame {
 				registrationView.usernameTextField.setText("");
 				registrationView.passwordTextField.setText("");
 			} else {
-				DialogNoti dialogNoti = new DialogNoti(null);
+				DialogNoti dialogNoti = new DialogNoti(null, "Invalid Registration","Invalid login, please try again.");
 				dialogNoti.setVisible(true);
 			}
 		});
@@ -200,6 +200,7 @@ public class MainFrame extends JFrame {
 				error.printStackTrace();
 			}
 			userInfo.clear(); // model clears and notifies the table
+			tableModel.fireTableDataChanged();
 			
 			// dispose user profile when logout
 			if (currentUserProfile != null) {
@@ -252,7 +253,7 @@ public class MainFrame extends JFrame {
 
 		/* 3) ActionListner for delete user data */
 		deleteButton.addActionListener(e -> {
-			if (selectedUser != null) {
+			if (selectedUser != null && !selectedUser.userName.equals(userName)) {
 				int selectedUserID = selectedUser.getUserID();
 				System.out.println("Delete UserID: " + selectedUserID);
 				try {
@@ -271,6 +272,10 @@ public class MainFrame extends JFrame {
 				} catch (IOException | InterruptedException e1) {
 					e1.printStackTrace();
 				}
+			}
+			else if (selectedUser.userName.equals(userName)) {
+				DialogNoti dialogNoti = new DialogNoti(null, "Invalid Deletion","You can't delete your own account here.");	
+				dialogNoti.setVisible(true);
 			}
 		});
 
