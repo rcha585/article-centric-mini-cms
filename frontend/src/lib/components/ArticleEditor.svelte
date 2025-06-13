@@ -104,8 +104,8 @@
     if (!f) return;
 
     // if image large than 5MB, not update image.
-    if (f.size > 5 * 1024 * 1024) {
-      coverError = "Image size must be less than 5MB.";
+    if (f.size > 2 * 1024 * 1024) {
+      coverError = "Image size must be less than 2MB.";
       coverFile = null;
       return;
     }
