@@ -8,6 +8,7 @@
   import { onDestroy } from "svelte";
   import { get } from "svelte/store";
   import { writable } from 'svelte/store';
+  import { showComments } from "../js/notifications.js";
 
   let user;
   const unsubscribe = currentUser.subscribe(u => user = u);
@@ -39,6 +40,8 @@
       return;
     }
 
+    // showComments.set(true);
+    sessionStorage.setItem('showComments', 'true');
     window.location.href = target_url;
   }
 
