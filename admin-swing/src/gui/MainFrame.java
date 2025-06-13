@@ -200,7 +200,7 @@ public class MainFrame extends JFrame {
 				error.printStackTrace();
 			}
 			userInfo.clear(); // model clears and notifies the table
-
+			tableModel.fireTableDataChanged();
 			// dispose user profile when logout
 			if (currentUserProfile != null) {
 				currentUserProfile.dispose();

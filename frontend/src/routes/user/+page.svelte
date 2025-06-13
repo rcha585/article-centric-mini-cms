@@ -4,15 +4,15 @@
   import UserArticleCard from '$lib/components/UserArticleCard.svelte';
   import UserSubscriberCard from '../../lib/components/UserSubscriberCard.svelte';
   import { onMount } from 'svelte';
-  import { writable, derived} from 'svelte/store';
-  const PUBLIC_IMAGES_URL = "http://localhost:3000/images";
-  const PUBLIC_API_BASE_URL = "http://localhost:3000/api"; 
+  import { writable } from 'svelte/store';
+  import { PUBLIC_API_BASE_URL } from "$env/static/public";
 
+  // Sorting state for Overview, Liked, and Comments tabs
   let overviewSortDir = 'desc';
   let likedSortDir = 'desc';
   let commentsSortDir = 'desc'; 
 
-  // sorting logic
+  // Reactive: sorted arrays based on sort direction
   $: sortedMyArticles = [...myArticles].sort((a, b) => {
     const da = new Date(a.createdAt || a.created_at);
     const db = new Date(b.createdAt || b.created_at);
@@ -32,7 +32,10 @@
   let currentTab = "overview";
 
   let { user, myArticles, likedArticles, myComments, followingUsers } = data;
+  // Control visibility of the edit-profile popup
   let showEditProfile = writable(false);
+    
+  // Form fields for editing profile
   let firstName = user.firstName || "";
   let lastName = user.lastName || "";
   let description = user.introduction || "";
@@ -57,19 +60,23 @@
       displayFollow = Math.min(followingUsers.length, displayFollow + 3);
     }
   }
-
+  
+  // Username & Date-of-birth validation
   let dateOfBirth = '';
   $ : if (user.date_of_birth) {
     dateOfBirth = user.date_of_birth.split("T")[0];
   }
    const today = new Date().toISOString().split("T")[0];
+
+  // Validation flags
+  const usernameTaken = writable(false);
+  const dobInvalid = writable(false);
+  // Check DOB not in future
   $: dobInvalid.set(
     !!dateOfBirth && dateOfBirth > today
   );
-  const usernameTaken = writable(false);
-  const dobInvalid = writable(false);
-  const isSubmitting = writable(false);
-  const formError = writable(null);
+
+  // Watch username changes and debounce availability check
   const originalUsername = user.username;
   let username = originalUsername;
   let checkTimeout;
@@ -82,6 +89,8 @@
       usernameTaken.set(false);
     }
   }
+
+  // Async API call to check username uniqueness
   async function checkUsernameAvailability(name) {
     try {
       const res = await fetch(
@@ -93,8 +102,11 @@
       usernameTaken.set(false);
     }
   }
-  // require every field non-empty, DOB valid, username not taken
+  // require every field non-empt(password is optional), DOB valid, username not taken
+  const isSubmitting = writable(false);
+  const formError = writable(null);
   let canSave = false;
+  // Save button enabled only when form valid
   $: canSave =
     !$isSubmitting &&
     username.trim().length > 0 &&
@@ -104,7 +116,8 @@
     dateOfBirth &&
     !$usernameTaken &&
     !$dobInvalid;
-
+  
+    // Fetch available avatars on mount
   onMount(async () => {
     try {
       const response = await fetch(`${PUBLIC_API_BASE_URL}/avatars`, {
@@ -117,7 +130,8 @@
       console.error("Failed to fetch avatars:", error);
     }
   });
-
+  
+  // Password toggle for new password field
   let newPassword = '';
   let showPassword = false;
 
@@ -153,6 +167,7 @@
     showEditProfile.update(value => !value);
   }
 
+  // Save profile changes via PATCH
   async function handleSaveChanges() {
     if (!canSave) {
       alert("Please fill in all required fields correctly.");
@@ -200,7 +215,7 @@
     }
   }
 
-  // realise delete account
+  // Account deletion
   async function handleDeleteAccount() {
     if (!confirm("Are you sure you want to delete your account? This action cannot be undone."))return;
       try {
@@ -226,7 +241,7 @@
   }
 
 
-  // Edit profile in here, add delete profile button.
+  // Edit profile here, add delete profile button.
   function handleEditProfile() {
     alert("Wait for profile edited and delete account here");
   }
@@ -263,7 +278,7 @@
    }
   }
 </script>
-
+<!-- Main page wrapper -->
 <div class="user-page-main">
   <aside>
     <UserProfileSidebar
@@ -272,7 +287,7 @@
       on:writeArticle={handleWriteArticle}
     />
   </aside>
-
+  <!-- Content section for tabs and feeds -->
   <section class="user-content">
     <div class="user-tab-bar">
       <button class:active={currentTab === "overview"} on:click={() => (currentTab = "overview")}>
@@ -304,7 +319,7 @@
       {/if}
     </div>
 
-
+    <!-- Tab content: Overview -->
     {#if currentTab === "overview"}
       <div class="articles-feed">
         {#if myArticles.length === 0}
@@ -328,6 +343,7 @@
 
         {/if}
       </div>
+    <!-- Liked tab -->
     {:else if currentTab === "liked"}
       <div class="articles-feed">
         {#if likedArticles.length === 0}
@@ -346,6 +362,7 @@
           {/if}
         {/if}
       </div>
+    <!-- Comments tab -->
     {:else if currentTab === "comments"}
       <div class="comments-feed">
         {#if myComments.length === 0}
@@ -376,6 +393,7 @@
           {/if}
         {/if}
       </div>
+      <!-- Following tab -->
       {:else if currentTab === "following"}
         <div class="follow-feed">
           {#if followingUsers.length === 0}
@@ -393,10 +411,10 @@
           {/if}
         </div>
     {/if}
-
   </section>
 </div>
 
+<!-- Edit Profile Popup -->
 {#if $showEditProfile}
   <div class="edit-profile-popup">
     <div class="popup-content">
@@ -412,13 +430,13 @@
         </div>
         <button class="btn-delete-account" on:click={handleDeleteAccount}>Delete Account</button>
       </div>
-      
+      <!-- Profile form fields -->
       <div class="profile-form">
         <div class="form-row">
           <span class="static-field">User ID:</span>
         <div class="static-field">{user.id}</div>
       </div>
-
+      <!-- Username -->
       <div class="form-row">
         <label for="username">Username:</label>
         <input type="text" id="username" bind:value={username} class:invalid={$usernameTaken} required />
@@ -426,7 +444,7 @@
       {#if $usernameTaken}
         <div class="error-message">Username is already taken.</div>
       {/if}
-
+      <!-- First & Last Name -->
       <div class="form-row">
         <label for="firstName">First Name:</label>
         <input type="text" id="firstName" bind:value={firstName} required/>
@@ -436,7 +454,7 @@
         <label for="lastName">Last Name:</label>
         <input type="text" id="lastName" bind:value={lastName} required />
       </div>
-
+      <!-- Date of Birth -->
       <div class="form-row">
         <label for="dateOfBirth">Date of Birth:</label>
         <input type="date" id="dateOfBirth" bind:value={dateOfBirth} max={today} class:invalid={$dobInvalid} required/>
@@ -444,7 +462,7 @@
           <div class="error-message">Date of birth cannot be in the future.</div>
         {/if}
       </div>
-
+      <!-- Password -->
       <div class="form-row">
         <label for="password">Password:</label>
         {#if showPassword}
@@ -457,12 +475,7 @@
           {#if showPassword} 👁️ {:else} 🙈 {/if}
         </button>
       </div>
-
-      {#if $formError}
-        <div class="error-message">{$formError}</div>
-      {/if}
-
-
+      <!-- Description -->
       <div class="form-row textarea-row">
         <label for="description">Description:</label>
         <textarea id="description" bind:value={description}></textarea>
@@ -476,11 +489,14 @@
           {/each}
         </select>
       </div>
-
+      <!-- Save & Cancel Buttons -->
       <div class="popup-buttons">
         <button class="btn-save" on:click={handleSaveChanges} disabled={$isSubmitting}>{$isSubmitting ? "Saving…" : "Save Changes"} </button>
         <button class="btn-cancel" on:click={toggleEditProfile}>Cancel</button>
       </div>
+       {#if $formError}
+        <div class="error-message">{$formError}</div>
+      {/if}
     </div>
   </div>
 </div>
@@ -488,6 +504,7 @@
   
 
 <style>
+  /* Container background gradient & layout */
   .user-page-main {
     background: linear-gradient(90deg, #3d5a80 30%, #98c1d9 100%);
     color: #2b2b3c;
@@ -514,6 +531,7 @@
     pointer-events: none;
   }
 
+  /* Sidebar styling */
   .user-page-main aside {
     position: relative;
     background: rgba(255, 255, 255, 0.2);
@@ -526,7 +544,8 @@
     width: 100%;
     min-width: 200px;
   }
-
+  
+  /* Main content styling */
   .user-content {
     position: relative;
     flex: 2 1 0;
@@ -540,6 +559,7 @@
     overflow-x: visible;
   }
 
+  /* Tab bar styling */
   .user-tab-bar {
     display: flex;
     flex-wrap: nowrap;       
@@ -692,6 +712,7 @@
   text-decoration: underline;
 }
 
+/* Popup overlay & content */
 .edit-profile-popup {
   position: fixed;
   top: 0; 
@@ -957,7 +978,7 @@ select:invalid:focus {
   box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
 }
 
-
+/* Responsive adjustments for smaller screens */
 @media (max-width: 768px) {
   .user-page-main {
     flex-wrap: wrap;
@@ -997,7 +1018,7 @@ select:invalid:focus {
 
    .edit-profile-popup {
     align-items: flex-start;
-    padding: 16px 16px 16px 16px;
+    padding: 16px;
   }
 
   .profile-form {

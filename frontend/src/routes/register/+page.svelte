@@ -1,10 +1,9 @@
 <script>
-  const PUBLIC_API_BASE_URL = "http://localhost:3000/api";
-  const PUBLIC_IMAGES_URL = "http://localhost:3000/images";
-
+  import { PUBLIC_API_BASE_URL } from "$env/static/public";
   import { writable } from "svelte/store";
   import { goto } from "$app/navigation";
 
+  // List of available avatar options for user selection
   let avatarList = [
     { id: 1, path: '/avatars/avatar1.png' },
     { id: 2, path: '/avatars/avatar2.png' },
@@ -17,8 +16,10 @@
     { id: 9, path: '/avatars/avatar9.png' },
     { id: 10, path: '/avatars/avatar10.png' }
   ];
+  // Currently selected avatar ID
   let selectedAvatarId = 1;
 
+  // Form input bindings
   let username = "";
   let lastName = "";
   let firstName = "";
@@ -27,41 +28,50 @@
   let dateOfBirth = "";
   let description = "";
 
+  // Controls for toggling visibility of password fields
   let isPasswordVisible = false;
   let isConfirmPasswordVisible = false;
   let passwordInput;
   let confirmPasswordInput;
+
+  // Compute today's date in YYYY-MM-DD format for date validation
   const now = new Date();
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-based
   const dd = String(now.getDate()).padStart(2, '0');
   const today = `${yyyy}-${mm}-${dd}`; // Format as YYYY-MM-DD
 
+  // Toggle main password visibility
   function togglePasswordVisibility() {
     isPasswordVisible = !isPasswordVisible;
     if (passwordInput) {
       passwordInput.type = isPasswordVisible ? "text" : "password";
     }
   }
-
+  
+  // Toggle confirm-password visibility
   function toggleConfirmPasswordVisibility() {
     isConfirmPasswordVisible = !isConfirmPasswordVisible;
     if (confirmPasswordInput) {
       confirmPasswordInput.type = isConfirmPasswordVisible ? "text" : "password";
     }
   }
-
+  
+  // Reactive stores for UI state
   const usernameTaken = writable(false);
   const passwordMismatch = writable(false);
   const isSubmitting = writable(false);
   const formError = writable(null);
 
+  // Flag to show success modal after registration
   let showSuccess = false;
-
+  
+  // Handle avatar selection changes
   function selectAvatar(id) {
     selectedAvatarId = id;
   }
 
+  // Debounced check for username availability
   let checkTimeout;
   $: {
     clearTimeout(checkTimeout);
@@ -74,7 +84,8 @@
       usernameTaken.set(false);
     }
   }
-
+  
+  // API call to check if username is already taken
   async function checkUsernameAvailability(name) {
     try {
       const response = await fetch(
@@ -88,18 +99,23 @@
     }
   }
 
+  // Reactive check for password mismatch
   $: passwordMismatch.set(
     password !== "" && confirmPassword !== "" && password !== confirmPassword
   );
-
+  
+  // Main form submission handler
   async function handleRegister(event) {
     event.preventDefault();
     formError.set(null);
+
+    // Validate DOB is not in the future
     if (dateOfBirth && new Date(dateOfBirth) > new Date(today)) {
       formError.set("Date of birth cannot be in the future");
       return;
     }
 
+    // Check for username or password errors
     if ($usernameTaken) {
       formError.set("Username is already taken");
       return;
@@ -114,10 +130,12 @@
       formError.set("Please select your date of birth");
       return;
     }
-
+    
+    // Show loading state
     isSubmitting.set(true);
 
     try {
+      // Prepare payload for registration API
       const payload = {
         username: username.trim(),
         first_name: firstName.trim(),
@@ -127,7 +145,8 @@
         description: description.trim(),
         avatar_id: selectedAvatarId
       };
-
+      
+      // Send registration request
       const response = await fetch(`${PUBLIC_API_BASE_URL}/users`, {
         method: "POST",
         headers: {
@@ -137,6 +156,7 @@
       });
 
       if (response.ok) {
+        // Show success modal on successful registration
         showSuccess = true;
       } else if (response.status === 400) {
         const json = await response.json();
@@ -153,12 +173,14 @@
       isSubmitting.set(false);
     }
   }
-
+  
+  // Navigate back to login page
   function backToLogin() {
     goto("/login");
   }
 </script>
 
+<!-- Head section for page title -->
 <svelte:head>
   <title>Sign up</title>
 </svelte:head>
@@ -169,15 +191,19 @@
     <p>Let's get you all set up so you can access your personal account.</p>
   </div>
 
+  <!-- Display form-wide errors -->
   {#if $formError}
     <div class="error-message">
       <p>{$formError}</p>
     </div>
   {/if}
 
+  <!-- Registration form -->
   <form on:submit|preventDefault={handleRegister}>
     <div class="two-columns">
       <div class="column">
+
+        <!-- Username input with availability check -->
         <div class="field">
           <label for="username">Username</label>
           <input
@@ -191,7 +217,7 @@
             <div class="field-error">Username is already taken.</div>
           {/if}
         </div>
-
+        <!-- Last name input -->
         <div class="field">
           <label for="lastName">Last Name</label>
           <input
@@ -202,7 +228,7 @@
             required
           />
         </div>
-
+        <!-- Password input with toggle visibility -->
         <div class="field">
           <label for="password">Password</label>
           <div class="input-wrapper">
@@ -219,7 +245,7 @@
             </button>
           </div>
         </div>
-
+        <!-- Confirm password input with toggle -->
         <div class="field">
           <label for="confirmPassword">Confirm Password</label>
           <div class="input-wrapper">
@@ -245,7 +271,8 @@
           {/if}
         </div>
       </div>
-
+      
+       <!-- Right column: first name, DOB, description, avatar -->
       <div class="column">
         <div class="field">
           <label for="firstName">First Name</label>
@@ -269,6 +296,7 @@
           ></textarea>
         </div>
 
+        <!-- Avatar selection dropdown and preview -->
         <div class="field">
           <label for="avatarSelect">Choose an avatar</label>
           <div class="avatar-preview">
@@ -287,7 +315,8 @@
         </div>
       </div>
     </div>
-
+    
+    <!-- Submit button with disabled state while submitting or on errors -->
     <button
       type="submit"
       class="btn"
@@ -300,6 +329,7 @@
   </form>
 </div>
 
+<!-- Success modal displayed after successful registration -->
 {#if showSuccess}
   <div class="modal-overlay">
     <div class="modal">
@@ -312,6 +342,7 @@
 
 <style>
   .register-container {
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;       
@@ -321,11 +352,13 @@
     padding: 2rem;
     height: auto;
     background: linear-gradient(90deg,#2d4a6e 30%,#7eb3d1 100%);
+    border-radius: 12px;
   }
-
+  
   .register-box {
     width: 100%;
-    max-width: 360px;            
+    max-width: 360px;  
+    margin: auto;          
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
     border-radius: 12px;
@@ -334,6 +367,8 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     color: #f0f9ff;
     text-align: center;
+    width: 100%;              
+    box-sizing: border-box;
   }
 
   .register-box h1 {
@@ -362,6 +397,7 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
 
+  /* Responsive two-column layout that collapses on small screens */
   .two-columns {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -401,6 +437,7 @@
     transition: box-shadow 0.15s ease;  
   }
 
+  /* Focus effect for form controls */
   .field input:focus,
   .field textarea:focus,
   .field select:focus {
@@ -432,6 +469,7 @@
     padding-right: 2rem;
   }
 
+  /* Password toggle button positioning */
   .toggle-password {
     position: absolute;
     right: 0.8rem;
@@ -488,6 +526,7 @@
     transition: background-color 0.3s, transform 0.15s;
   }
 
+  /* Button hover and disabled states */
   .btn:hover:not(:disabled) {
     background: #486d8f;
     transform: translateY(-2px);
@@ -500,6 +539,7 @@
     transform: none;
   }
 
+  /* Modal styling for success message */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -545,11 +585,12 @@
     background: #3d85c6;
   }
 
-
+  /* Mobile responsiveness */
   @media screen and (max-width: 768px) {
     .register-container {
       padding: 1rem;      
     }
+    /* Stack columns on mobile */
     .two-columns {
       grid-template-columns: 1fr; 
       gap: 0.75rem;

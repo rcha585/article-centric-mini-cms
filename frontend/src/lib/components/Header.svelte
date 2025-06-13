@@ -317,12 +317,16 @@
 
 
 <style>
+  /* Main navigation bar container*/
   .nav-bar {
     width: 100vw;
     background: linear-gradient(90deg,#3d5a80 30%,#98c1d9 100%);    
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     padding: 0;
     margin: 0;
+    top: 0;
+    left: 0;
+    z-index: 100; 
   }
 
   .nav-inner {
@@ -358,6 +362,7 @@
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.25);
   }
 
+  /* Search bar with positioned search icon */
   .nav-search {
     display: inline-flex;
     align-items: center;
@@ -512,7 +517,7 @@
   }
 
   /* ------ the below is for the notification box ------ */
- 
+
   .notif-box {
     position: absolute;
     top: 100%; 
@@ -673,6 +678,7 @@
     transition: background-color 0.25s, box-shadow 0.25s, transform 0.2s;
 }
 
+/* Responsive breakpoints - mobile adaptation */
 /* ─── up to 1200px ─── */
 @media screen and (max-width: 1200px) {
   .nav-inner {

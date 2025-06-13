@@ -1,11 +1,17 @@
 <script>
+  // Receive a `follower` object as a prop from the parent component.
   export let follower;
-
+  // Navigate to the author’s page when the button is clicked.
   function gotoAuthor() {
     window.location.href = `/search?author_id=${follower.id}`;
   }
 </script>
+<!--
+  The main container for each follower card.
+  Uses flexbox to lay out avatar, info, and action button side by side.
+-->
 
+<!-- Container for username, subscriber count, and intro text -->
 <div class="following-card">
   <img class="avatar" src={follower.avatarUrl} alt={follower.username} />
   <div class="info">
@@ -13,6 +19,7 @@
       <span class="label">Username :</span>
       <span class="username">{follower.username}</span>
     </div>
+    <!-- Row showing how many subscribers this follower has -->
     <div class="row-subscribers">
       <span class="subscribers"><i>Subscribers:</i>
       <span class="count">{follower.subscribers ?? '--'}</span></span>
@@ -94,7 +101,6 @@
   margin-right: 9px;
 }
 
-
 .intro {
   font-size: 1.04rem;
   color: #2d384d;
@@ -132,6 +138,7 @@
   box-shadow: 0 3px 14px #ae1e1e21;
 }
 
+/* Responsive layout for narrow screens */
 @media (max-width: 700px) {
   .following-card { flex-direction: column; align-items: stretch; }
   .avatar { margin: 0 auto 8px auto; }
