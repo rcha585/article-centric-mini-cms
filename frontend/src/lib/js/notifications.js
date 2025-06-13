@@ -1,9 +1,11 @@
 import { writable } from 'svelte/store';
 import { PUBLIC_API_BASE_URL } from "$env/static/public";
 import { get } from 'svelte/store';
+import exp from 'constants';
 export const unviewedCount = writable(0);
 export const newNotificationIds = writable([]);
 export const myNotifications = writable([]);
+export const showComments = writable(false);
 
 export async function fetchNotifications({ fetch }) {
     try {
